@@ -6,8 +6,8 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/plutov/go-youtube-channel/01-grpc/proto"
-	"github.com/plutov/go-youtube-channel/01-grpc/server/blockchain"
+	"github.com/plutov/packagemain/01-grpc/proto"
+	"github.com/plutov/packagemain/01-grpc/server/blockchain"
 
 	"google.golang.org/grpc"
 )

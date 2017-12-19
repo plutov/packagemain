@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/plutov/go-youtube-channel/01-grpc/proto"
+	"github.com/plutov/packagemain/01-grpc/proto"
 
 	"google.golang.org/grpc"
 )

@@ -34,7 +34,7 @@ type Server struct {
 func (s *Server) AddBlock(ctx context.Context, in *proto.AddBlockRequest) (*proto.AddBlockResponse, error) {
 	block := s.Blockchain.AddBlock(in.Data)
 	return &proto.AddBlockResponse{
-		Hash: string(block.Hash),
+		Hash: block.Hash,
 	}, nil
 }
 
@@ -42,7 +42,7 @@ func (s *Server) AddBlock(ctx context.Context, in *proto.AddBlockRequest) (*prot
 func (s *Server) GetBlockchain(ctx context.Context, in *proto.GetBlockchainRequest) (*proto.GetBlockchainResponse, error) {
 	resp := new(proto.GetBlockchainResponse)
 	for _, b := range s.Blockchain.Blocks {
-		resp.Blocks = append(resp.Blocks, &proto.Block{string(b.PrevBlockHash), string(b.Data), string(b.Hash)})
+		resp.Blocks = append(resp.Blocks, &proto.Block{b.PrevBlockHash, b.Data, b.Hash})
 	}
 
 	return resp, nil

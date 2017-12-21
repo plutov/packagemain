@@ -16,10 +16,19 @@ Create gRPC Server and Client in Go. We will create a fictional blockchain servi
  - Run server first.
  - Run client.
 
-#### Comments
+#### Usage
 
- - Use [go-spew](https://github.com/davecgh/go-spew) to dump structs. 
+Start server:
+```
+go run server/main.go
+```
 
-#### Resources
+Add block as client:
+```
+go run client/main.go --add
+```
 
- - https://jeiwan.cc/posts/building-blockchain-in-go-part-1/
+get blockchain as client:
+```
+go run client/main.go --list
+```

@@ -1,15 +1,15 @@
 package blockchain
 
 import (
-	"bytes"
 	"crypto/sha256"
+	"encoding/hex"
 )
 
 // Block keeps block headers
 type Block struct {
-	Data          []byte
-	PrevBlockHash []byte
-	Hash          []byte
+	Data          string
+	PrevBlockHash string
+	Hash          string
 }
 
 // Blockchain keeps a sequence of Blocks
@@ -19,22 +19,21 @@ type Blockchain struct {
 
 // SetHash calculates and sets block hash
 func (b *Block) SetHash() {
-	headers := bytes.Join([][]byte{b.PrevBlockHash, b.Data}, []byte{})
-	hash := sha256.Sum256(headers)
+	hash := sha256.Sum256([]byte(b.PrevBlockHash + b.Data))
 
-	b.Hash = hash[:]
+	b.Hash = hex.EncodeToString(hash[:])
 }
 
 // NewBlock creates and returns Block
-func NewBlock(data string, prevBlockHash []byte) *Block {
-	block := &Block{[]byte(data), prevBlockHash, []byte{}}
+func NewBlock(data string, prevBlockHash string) *Block {
+	block := &Block{data, prevBlockHash, ""}
 	block.SetHash()
 	return block
 }
 
 // NewGenesisBlock creates and returns genesis Block
 func NewGenesisBlock() *Block {
-	return NewBlock("Genesis Block", []byte{})
+	return NewBlock("Genesis Block", "")
 }
 
 // AddBlock saves provided data as a block in the blockchain

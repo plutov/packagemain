@@ -66,4 +66,12 @@ We will also import `proto` package and create a client NewBlockchainClient usin
 
 We use `grpc.WithInsecure` option, but there are a lot more: timeout options, ssl options.
 
-I hope it was interesting and helpful. Send me your feedback if you have, and see you later!
+Let's run it together, we make it in 2 terminal tabs:
+```
+tab 1: go run server/main.go
+tab 2: go run client/main.go --add
+tab 2: go run client/main.go --add
+tab 2: go run client/main.go --list
+```
+
+I hope it was interesting and you liked it. Send me your feedback if you have, and see you later!

@@ -40,7 +40,11 @@ func (s *Server) AddBlock(ctx context.Context, in *proto.AddBlockRequest) (*prot
 func (s *Server) GetBlockchain(ctx context.Context, in *proto.GetBlockchainRequest) (*proto.GetBlockchainResponse, error) {
 	resp := new(proto.GetBlockchainResponse)
 	for _, b := range s.Blockchain.Blocks {
-		resp.Blocks = append(resp.Blocks, &proto.Block{b.PrevBlockHash, b.Data, b.Hash})
+		resp.Blocks = append(resp.Blocks, &proto.Block{
+			PrevBlockHash: b.PrevBlockHash,
+			Data:          b.Data,
+			Hash:          b.Hash,
+		})
 	}
 
 	return resp, nil

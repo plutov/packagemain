@@ -16,7 +16,7 @@ message AddBlockResponse {
 }
 
 message Block {
-	string prevHash = 1;
+	string prevBlockHash = 1;
 	string data = 2;
 	string hash = 3;
 }

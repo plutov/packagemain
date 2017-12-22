@@ -17,17 +17,17 @@ type Blockchain struct {
 	Blocks []*Block
 }
 
-// SetHash calculates and sets block hash
-func (b *Block) SetHash() {
+// setHash calculates and sets block hash
+func (b *Block) setHash() {
 	hash := sha256.Sum256([]byte(b.PrevBlockHash + b.Data))
-
 	b.Hash = hex.EncodeToString(hash[:])
 }
 
 // NewBlock creates and returns Block
 func NewBlock(data string, prevBlockHash string) *Block {
 	block := &Block{data, prevBlockHash, ""}
-	block.SetHash()
+	block.setHash()
+
 	return block
 }
 

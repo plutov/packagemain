@@ -65,3 +65,5 @@ The client will be a simple command line tool to add block to the blockchain or 
 We will also import `proto` package and create a client NewBlockchainClient using connection to port 8080. And then we just use client's functions and print results.
 
 We use `grpc.WithInsecure` option, but there are a lot more: timeout options, ssl options.
+
+I hope it was interesting and helpful. Send me your feedback if you have, and see you later!

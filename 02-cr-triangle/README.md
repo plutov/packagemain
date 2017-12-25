@@ -10,8 +10,8 @@
 - Fix `Saved as`: `output.Name()`
  - Test --in file and --out as dir, invalid memory address or nil pointer dereference. Replace to `file.Name()`
  - Test `go run cmd/triangle/main.go --in ~/go/src/github.com/plutov/packagemain/02-cr-triangle --out gopher`. Rename `dir` to `dir := strings.TrimRight(*source, "/")`
+- Add more description to Fatal(). Use `Fatalf`.
  - Remove `ch` as it's not necessary.
- - Add more description to Fatal(). Use `Fatalf`.
  - Remove `item` type as not used.
  - Combine `process` using `toProcess` map.
  - Do we really need wait group as inside process we have a lock? let's remove it.

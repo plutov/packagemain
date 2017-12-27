@@ -1,3 +1,6 @@
+03-build-flags/main
+03-build-flags/main.exe
+
 # Binaries for programs and plugins
 *.exe
 *.dll

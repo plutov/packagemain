@@ -77,7 +77,7 @@ func main() {
 		log.Fatalf("could not run inference: %v", err)
 	}
 
-	res := findBestLabels(labels, output[0].Value().([][]float32)[0])
+	res := getTopFiveLabels(labels, output[0].Value().([][]float32)[0])
 	for _, l := range res {
 		fmt.Printf("label: %s, probability: %d%%\n", l.Label, int(l.Probability*100))
 	}
@@ -109,7 +109,7 @@ func loadModel() (*tf.Graph, []string, error) {
 	return graph, labels, scanner.Err()
 }
 
-func findBestLabels(labels []string, probabilities []float32) []Label {
+func getTopFiveLabels(labels []string, probabilities []float32) []Label {
 	var resultLabels []Label
 	for i, p := range probabilities {
 		if i >= len(labels) {

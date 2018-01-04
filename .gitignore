@@ -1,5 +1,6 @@
 03-build-flags/main
 03-build-flags/main.exe
+04-go-bindata-tpl/app
 
 # Binaries for programs and plugins
 *.exe

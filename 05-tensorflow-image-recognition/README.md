@@ -17,7 +17,7 @@ https://github.com/ctava/tensorflow-go
 FROM ctava/tensorflow-go
 
 Download Inception data:
-https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip
+http://download.tensorflow.org/models/inception5h.zip
 
 Let's start with simple main.go file to test if our Dockerfile works.
 

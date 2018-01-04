@@ -11,7 +11,7 @@ import (
 	"os"
 	"sort"
 
-	tf "github.com/tensorflow/tensorflow/tensorflow/go"
+	"github.com/tensorflow/tensorflow/tensorflow/go"
 	"github.com/tensorflow/tensorflow/tensorflow/go/op"
 )
 
@@ -34,7 +34,6 @@ func (a Labels) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a Labels) Less(i, j int) bool { return a[i].Probability > a[j].Probability }
 
 func main() {
-	os.Setenv("TF_CPP_MIN_LOG_LEVEL", "2")
 	if len(os.Args) < 2 {
 		log.Fatalf("usage: imgrecognition <image_url>")
 	}
@@ -52,24 +51,23 @@ func main() {
 		log.Fatalf("unable to load model: %v", err)
 	}
 
-	// Make tensor
+	// Get normalized tensor
 	tensor, err := normalizeImage(response.Body)
 	if err != nil {
 		log.Fatalf("unable to make a tensor from image: %v", err)
 	}
 
-	// Create a session for inference over modelGraph.
-	session, err := tf.NewSession(modelGraph, nil)
+	// Create a session for inference over modelGraph
+	session, err := tensorflow.NewSession(modelGraph, nil)
 	if err != nil {
 		log.Fatalf("could not init session: %v", err)
 	}
-	defer session.Close()
 
 	output, err := session.Run(
-		map[tf.Output]*tf.Tensor{
+		map[tensorflow.Output]*tensorflow.Tensor{
 			modelGraph.Operation("input").Output(0): tensor,
 		},
-		[]tf.Output{
+		[]tensorflow.Output{
 			modelGraph.Operation("output").Output(0),
 		},
 		nil)
@@ -83,13 +81,13 @@ func main() {
 	}
 }
 
-func loadModel() (*tf.Graph, []string, error) {
+func loadModel() (*tensorflow.Graph, []string, error) {
 	// Load inception model
 	model, err := ioutil.ReadFile(graphFile)
 	if err != nil {
 		return nil, nil, err
 	}
-	graph := tf.NewGraph()
+	graph := tensorflow.NewGraph()
 	if err := graph.Import(model, ""); err != nil {
 		return nil, nil, err
 	}
@@ -122,31 +120,30 @@ func getTopFiveLabels(labels []string, probabilities []float32) []Label {
 	return resultLabels[:5]
 }
 
-func normalizeImage(body io.ReadCloser) (*tf.Tensor, error) {
+func normalizeImage(body io.ReadCloser) (*tensorflow.Tensor, error) {
 	var buf bytes.Buffer
 	io.Copy(&buf, body)
 
-	tensor, err := tf.NewTensor(buf.String())
+	tensor, err := tensorflow.NewTensor(buf.String())
 	if err != nil {
 		return nil, err
 	}
 
-	graph, input, output, err := makeTransformImageGraph()
+	graph, input, output, err := getNormalizedGraph()
 	if err != nil {
 		return nil, err
 	}
 
-	session, err := tf.NewSession(graph, nil)
+	session, err := tensorflow.NewSession(graph, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer session.Close()
 
 	normalized, err := session.Run(
-		map[tf.Output]*tf.Tensor{
+		map[tensorflow.Output]*tensorflow.Tensor{
 			input: tensor,
 		},
-		[]tf.Output{
+		[]tensorflow.Output{
 			output,
 		},
 		nil)
@@ -158,25 +155,25 @@ func normalizeImage(body io.ReadCloser) (*tf.Tensor, error) {
 }
 
 // Creates a graph to decode, rezise and normalize an image
-func makeTransformImageGraph() (graph *tf.Graph, input, output tf.Output, err error) {
+func getNormalizedGraph() (graph *tensorflow.Graph, input, output tensorflow.Output, err error) {
 	s := op.NewScope()
-	input = op.Placeholder(s, tf.String)
+	input = op.Placeholder(s, tensorflow.String)
 	// 3 return RGB image
 	decode := op.DecodeJpeg(s, input, op.DecodeJpegChannels(3))
 
-	// Div and Sub perform (value-Mean)/Scale for each pixel
-	output = op.Div(s,
-		op.Sub(s,
-			// Resize to 224x224 with bilinear interpolation
-			op.ResizeBilinear(s,
-				// Create a batch containing a single image
-				op.ExpandDims(s,
-					// Casts image to float type
-					op.Cast(s, decode, tf.Float),
-					op.Const(s.SubScope("make_batch"), int32(0))),
-				op.Const(s.SubScope("size"), []int32{224, 224})),
-			op.Const(s.SubScope("mean"), float32(117))),
-		op.Const(s.SubScope("scale"), float32(1)))
+	// Sub: returns x - y element-wise
+	output = op.Sub(s,
+		// make it 224x224: inception specific
+		op.ResizeBilinear(s,
+			// inserts a dimension of 1 into a tensor's shape.
+			op.ExpandDims(s,
+				// cast image to float type
+				op.Cast(s, decode, tensorflow.Float),
+				op.Const(s.SubScope("make_batch"), int32(0))),
+			op.Const(s.SubScope("size"), []int32{224, 224})),
+		// mean = 117: inception specific
+		op.Const(s.SubScope("mean"), float32(117)))
 	graph, err = s.Finalize()
+
 	return graph, input, output, err
 }

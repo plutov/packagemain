@@ -8,9 +8,9 @@ For some common-use-cases we're beginning to see organizations sharing their tra
 
 In this video we'll use one of them, called Inception to recognize an image. https://github.com/tensorflow/models/tree/master/research/inception/inception
 
-We'll build a small command line application that takes any JPG image as input and outputs labels in order.
+We'll build a small command line application that takes URL to an image as input and outputs labels in order.
 
-First of all we need to install TensorFlow, and here Docker can be really helpful, because installation of Tensorflow may be complicated. There is a Docker image with Tensorflow, but without Go, so I found an image with Tensorflow plus Go.
+First of all we need to install TensorFlow, and here Docker can be really helpful, because installation of Tensorflow may be complicated. There is a Docker image with Tensorflow, but without Go, so I found an image with Tensorflow plus Go to reduce my Dockerfile.
 
 Docker:
 https://github.com/ctava/tensorflow-go
@@ -47,7 +47,7 @@ if e != nil {
 defer response.Body.Close()
 ```
 
-Now we need to load our model. Model contains graph and labels:
+Now we need to load our model. Model contains graph and labels in 2 files:
 ```
 const (
 	graphFile = "/model/imagenet_comp_graph_label_strings.txt"
@@ -184,7 +184,7 @@ It will return list of probabilities for each label. What we need now is to loop
 ```
 res := getTopFiveLabels(labels, output[0].Value().([][]float32)[0])
 for _, l := range res {
-	fmt.Printf("label: %s, probability: %d%%\n", l.Label, int(l.Probability*100))
+	fmt.Printf("label: %s, probability: %.2f%%\n", l.Label, l.Probability*100)
 }
 
 func getTopFiveLabels(labels []string, probabilities []float32) []Label {
@@ -202,6 +202,11 @@ func getTopFiveLabels(labels []string, probabilities []float32) []Label {
 ```
 
 https://www.zoo-berlin.de/fileadmin/_processed_/4/4/csm_Meng_Meng_Baby_1_88cad0f74f.jpg
+
+Also let's skip those warnings:
+```
+os.Setenv("TF_CPP_MIN_LOG_LEVEL", "2")
+```
 
 Here we worked with pre-trained model, let's try this program with something unusual, like ... Gopher.
 ```

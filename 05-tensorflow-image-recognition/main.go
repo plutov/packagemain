@@ -34,6 +34,8 @@ func (a Labels) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a Labels) Less(i, j int) bool { return a[i].Probability > a[j].Probability }
 
 func main() {
+	os.Setenv("TF_CPP_MIN_LOG_LEVEL", "2")
+
 	if len(os.Args) < 2 {
 		log.Fatalf("usage: imgrecognition <image_url>")
 	}
@@ -77,7 +79,7 @@ func main() {
 
 	res := getTopFiveLabels(labels, output[0].Value().([][]float32)[0])
 	for _, l := range res {
-		fmt.Printf("label: %s, probability: %d%%\n", l.Label, int(l.Probability*100))
+		fmt.Printf("label: %s, probability: %.2f%%\n", l.Label, l.Probability*100)
 	}
 }
 

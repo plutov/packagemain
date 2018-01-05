@@ -12,7 +12,6 @@ We'll build a small command line application that takes URL to an image as input
 
 First of all we need to install TensorFlow, and here Docker can be really helpful, because installation of Tensorflow may be complicated. There is a Docker image with Tensorflow, but without Go, so I found an image with Tensorflow plus Go to reduce my Dockerfile.
 
-Docker:
 https://github.com/ctava/tensorflow-go
 FROM ctava/tensorflow-go
 
@@ -86,6 +85,7 @@ func loadModel() (*tf.Graph, []string, error) {
 }
 ```
 
+Here finally we start using tensorflow Go package.
 To be able to work with our image we need to normalize it, because Inception model expects it to be in a certain format, it uses images from ImageNet, and they are 224x224. But that's a bit tricky. Let's see:
  - NewTensor converts from a Go value to a Tensor
  - Build a graph of our image
@@ -93,8 +93,6 @@ To be able to work with our image we need to normalize it, because Inception mod
  - Run the session to normalize image, using input and output.
  - normalized[0] contains normalized Tensor.
  - In makeTransformImageGraph we define the rules of normalization.
-
-Here finally we start using tensorflow Go package.
 
 ```
 func normalizeImage(body io.ReadCloser) (*tensorflow.Tensor, error) {

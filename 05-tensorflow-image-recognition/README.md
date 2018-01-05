@@ -201,6 +201,8 @@ func getTopFiveLabels(labels []string, probabilities []float32) []Label {
 }
 ```
 
+https://www.zoo-berlin.de/fileadmin/_processed_/4/4/csm_Meng_Meng_Baby_1_88cad0f74f.jpg
+
 Here we worked with pre-trained model, let's try this program with something unusual, like ... Gopher.
 ```
 docker run imgrecognition https://i.pinimg.com/736x/12/5c/e0/125ce0baff3271761ca61843eccf7985.jpg

@@ -1,6 +1,8 @@
-03-build-flags/main
-03-build-flags/main.exe
-04-go-bindata-tpl/app
+02-build-flags/main
+02-build-flags/main.exe
+03-go-bindata-tpl/app
+05-gocv-machinebox/vendor
+05-gocv-machinebox/*.jpg
 
 # Binaries for programs and plugins
 *.exe

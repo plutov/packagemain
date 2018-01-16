@@ -1,11 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
 	"log"
-	"os"
 	"time"
 
 	"github.com/machinebox/sdk-go/facebox"
@@ -40,11 +40,8 @@ func main() {
 	defer classifier.Close()
 
 	for {
-		if ok := webcam.Read(img); !ok {
+		if ok := webcam.Read(img); !ok || img.Empty() {
 			log.Print("cannot read webcam")
-			continue
-		}
-		if img.Empty() {
 			continue
 		}
 
@@ -55,16 +52,14 @@ func main() {
 			imgFace := img.Region(r)
 			imgName := fmt.Sprintf("%d.jpg", time.Now().UnixNano())
 			gocv.IMWrite(imgName, imgFace)
-			imgFace.Close()
-
-			f, err := os.Open(imgName)
+			buf, err := gocv.IMEncode(".jpg", imgFace)
 			if err != nil {
-				log.Printf("unable to open saved img: %v", err)
+				log.Printf("unable to encode matrix: %v", err)
 				continue
 			}
+			imgFace.Close()
 
-			faces, err := fbox.Check(f)
-			f.Close()
+			faces, err := fbox.Check(bytes.NewReader(buf))
 			if err != nil {
 				log.Printf("unable to recognize face: %v", err)
 			}

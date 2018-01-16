@@ -53,11 +53,11 @@ func main() {
 			imgName := fmt.Sprintf("%d.jpg", time.Now().UnixNano())
 			gocv.IMWrite(imgName, imgFace)
 			buf, err := gocv.IMEncode(".jpg", imgFace)
+			imgFace.Close()
 			if err != nil {
 				log.Printf("unable to encode matrix: %v", err)
 				continue
 			}
-			imgFace.Close()
 
 			faces, err := fbox.Check(bytes.NewReader(buf))
 			if err != nil {

@@ -82,4 +82,20 @@ Cool, now we can send frame to Facebox for recognition. But first of all let's g
 go get github.com/machinebox/sdk-go/facebox
 ```
 
+```
+fbox := facebox.New("http://192.168.1.216:8080")
+
+if len(frame) != 0 {
+	faces, err := fbox.Check(bytes.NewReader(frame))
+	if err != nil {
+		log.Printf("unable to recognize face: %v", err)
+		continue
+	}
+
+	for _, f := range faces {
+		log.Printf("face: %s, confidence: %.2f", f.Name, f.Confidence)
+	}
+}
+```
+
 In the next video we'll add Google Text to Speech integration to our Raspberry Pi client, so it can say something if face is recognized.

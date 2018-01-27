@@ -49,6 +49,12 @@ func main() {
 	}
 	defer cam.Close()
 
+	for code, formatName := range cam.GetSupportedFormats() {
+		if formatName == "Motion-JPEG" {
+			cam.SetImageFormat(code, 1280, 720)
+		}
+	}
+
 	err = cam.StartStreaming()
 	if err != nil {
 		log.Fatalf("unable to start streaming: %v", err)
@@ -86,10 +92,16 @@ go get github.com/machinebox/sdk-go/facebox
 fbox := facebox.New("http://192.168.1.216:8080")
 
 if len(frame) != 0 {
-	faces, err := fbox.Check(bytes.NewReader(frame))
+	frame = addMotionDht(frame)
+
+	faces, err := fbox.Check(bytes.NewBuffer(frame))
 	if err != nil {
 		log.Printf("unable to recognize face: %v", err)
 		continue
+	}
+
+	if len(faces) == 0 {
+		log.Print("no faces found")
 	}
 
 	for _, f := range faces {

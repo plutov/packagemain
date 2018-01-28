@@ -3,6 +3,7 @@
 03-go-bindata-tpl/app
 05-gocv-machinebox/vendor
 05-gocv-machinebox/*.jpg
+06-raspi-go-1/*.jpg
 
 # Binaries for programs and plugins
 *.exe

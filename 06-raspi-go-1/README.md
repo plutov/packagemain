@@ -8,7 +8,7 @@ In this video we will write a Go program which can capture image from web camera
 
 My Raspberry Pi is already connected to wi-fi and has SSH interface. Also I have webcam connected to my Raspberry Pi.
 
-Let's write a small program to capture image from web camera. I found a package blackjack/webcam, which uses V4L2 Linux framework, and it's already installed on Raspberry Pi. It makes life easier, because OpenCV installation on RasPi may be complicated.
+Let's write a small program to capture image from web camera. In previous video I did it with OpenCV, I found a package blackjack/webcam, which uses V4L2 Linux framework, and it's already installed on Raspberry Pi. It makes life easier, because OpenCV installation on RasPi may be complicated.
 
 But this package works only in Linux, so when we do go get we need to set GOARCH and GOOS environment variables.
 

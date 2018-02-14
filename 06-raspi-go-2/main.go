@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/blackjack/webcam"
@@ -58,6 +61,7 @@ func main() {
 						greetings[f.Name] = time.Now()
 						speech := htgotts.Speech{Folder: "audio", Language: "en"}
 						speech.Speak(fmt.Sprintf("Hi %s, how are you today?", f.Name))
+						break
 					}
 				}
 			}
@@ -91,4 +95,21 @@ func isGreeted(name string) bool {
 	g, ok := greetings[name]
 	now := time.Now()
 	return ok && now.Before(g.Time.Add(time.Hour*12))
+}
+
+// Record from mic to a file
+// Stop if silence detected (<3% volume for 0.5s)
+// timeLimitSecs is a maximum time
+// rate 16000, bit 16
+func record(fileName string, timeLimitSecs int) (err error) {
+	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs), "silence", "1", "0.5", "3%", "1", "0.5", "3%")
+
+	env := os.Environ()
+	env = append(env, "AUDIODEV=hw:1,0")
+	cmd.Env = env
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	return cmd.Run()
 }

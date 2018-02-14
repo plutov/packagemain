@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/blackjack/webcam"
-	htgotts "github.com/hegedustibor/htgo-tts"
 	"github.com/machinebox/sdk-go/facebox"
+	htgotts "github.com/plutov/htgo-tts"
 )
 
 var (
@@ -53,16 +53,36 @@ func main() {
 				continue
 			}
 
+			log.Printf("found %d faces", len(faces))
+
 			for _, f := range faces {
-				if f.Confidence >= 0.5 {
-					greeted := isGreeted(f.Name)
-					log.Printf("face: %s, confidence: %.2f, greeted: %t", f.Name, f.Confidence, greeted)
-					if !greeted {
-						greetings[f.Name] = time.Now()
-						speech := htgotts.Speech{Folder: "audio", Language: "en"}
-						speech.Speak(fmt.Sprintf("Hi %s, how are you today?", f.Name))
-						break
+				greeted := isGreeted(f.Name)
+
+				log.Printf("face: %s, confidence: %.2f, greeted: %t", f.Name, f.Confidence, greeted)
+				if !greeted && f.Confidence >= 0.5 {
+					greetings[f.Name] = time.Now()
+
+					msg := fmt.Sprintf("hi %s, how are you today?", f.Name)
+					log.Printf("greeting user: %s", msg)
+
+					speech := htgotts.Speech{Folder: "audio", Language: "en"}
+					err = speech.Speak(msg)
+					if err != nil {
+						log.Printf("unable to run text-to-speech: %v", err)
+						continue
 					}
+
+					file := fmt.Sprintf("%d.wav", time.Now().UnixNano())
+					log.Printf("recording voice input into %s", file)
+					err = record(file, 5)
+					if err != nil {
+						log.Printf("unable to record user voice input: %v", err)
+						continue
+					}
+
+					log.Printf("recording completed: %s", file)
+
+					break
 				}
 			}
 		}
@@ -94,7 +114,7 @@ func openWebcam(path string) (*webcam.Webcam, error) {
 func isGreeted(name string) bool {
 	g, ok := greetings[name]
 	now := time.Now()
-	return ok && now.Before(g.Time.Add(time.Hour*12))
+	return ok && now.Before(g.Add(time.Hour*12))
 }
 
 // Record from mic to a file
@@ -102,7 +122,7 @@ func isGreeted(name string) bool {
 // timeLimitSecs is a maximum time
 // rate 16000, bit 16
 func record(fileName string, timeLimitSecs int) (err error) {
-	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs), "silence", "1", "0.5", "3%", "1", "0.5", "3%")
+	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs), "silence", "0", "1", "0.5", "3%")
 
 	env := os.Environ()
 	env = append(env, "AUDIODEV=hw:1,0")

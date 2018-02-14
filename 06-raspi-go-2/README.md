@@ -6,17 +6,13 @@ Let's start with Text to Speech.
 
 We will use the code we've written last time.
 
-Google Translate API has an option to get audio from text. It's easy to implement this API call, but also there is a package to do it faster.
+Google Translate API has an option to get audio from text. It's easy to implement this API call, and I already prepared a package for easier use.
 
 ```
 go get github.com/plutov/htgo-tts
 ```
 
-This package is good because it caches results, so when we need to have a speech of same text, it will just play a record. To play it we'll need to install mplayer on Raspberry Pi device:
-
-```
-sudo apt-get install mplayer
-```
+This package caches results, so when we need to have a speech of same text, it will just play a record. To play the audio file package uses `omxplayer` which is already installed on Raspberry Pi device:
 
 Let's change our main.go file to greet person when face is recognized, but let's do it only 1 time in 12 hours.
 
@@ -62,6 +58,7 @@ As you remember to build we need to set GOARCH and GOOS:
 ```
 GOARCH=arm GOOS=linux go build -o capture
 rsync capture pi@192.168.1.49:~/
+./capture
 ```
 
 Now let's parse user's voice input. There is a nice linux tool `sox` to record audio. Let's install it first:

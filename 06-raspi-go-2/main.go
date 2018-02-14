@@ -36,7 +36,7 @@ func main() {
 		log.Fatalf("unable to start streaming: %v", err)
 	}
 
-	fbox := facebox.New("http://192.168.1.216:8080")
+	//fbox := facebox.New("http://192.168.1.216:8080")
 	for {
 		frame, err := cam.ReadFrame()
 		if err != nil {
@@ -47,7 +47,11 @@ func main() {
 		if len(frame) != 0 {
 			frame = addMotionDht(frame)
 
-			faces, err := fbox.Check(bytes.NewBuffer(frame))
+			faces := []facebox.Face{facebox.Face{
+				Name:       "Alex",
+				Confidence: 0.5,
+			}}
+			//faces, err := fbox.Check(bytes.NewBuffer(frame))
 			if err != nil {
 				log.Printf("unable to recognize face: %v", err)
 				continue
@@ -62,7 +66,7 @@ func main() {
 				if !greeted && f.Confidence >= 0.5 {
 					greetings[f.Name] = time.Now()
 
-					msg := fmt.Sprintf("hi %s, how are you today?", f.Name)
+					msg := fmt.Sprintf("Hello, is that you %s?", f.Name)
 					log.Printf("greeting user: %s", msg)
 
 					speech := htgotts.Speech{Folder: "audio", Language: "en"}
@@ -72,7 +76,7 @@ func main() {
 						continue
 					}
 
-					file := fmt.Sprintf("%d.wav", time.Now().UnixNano())
+					file := fmt.Sprintf("record/%d.wav", time.Now().UnixNano())
 					log.Printf("recording voice input into %s", file)
 					err = record(file, 5)
 					if err != nil {

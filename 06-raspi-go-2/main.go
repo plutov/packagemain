@@ -126,7 +126,7 @@ func isGreeted(name string) bool {
 // timeLimitSecs is a maximum time
 // rate 16000, bit 16
 func record(fileName string, timeLimitSecs int) (err error) {
-	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs), "silence", "0", "1", "0.5", "3%")
+	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs))
 
 	env := os.Environ()
 	env = append(env, "AUDIODEV=hw:1,0")

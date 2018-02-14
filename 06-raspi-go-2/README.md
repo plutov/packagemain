@@ -67,7 +67,7 @@ Now let's parse user's voice input. There is a nice linux tool `sox` to record a
 sudo apt-get install pulseaudio sox
 ```
 
-`rec` command line tool will be also installed. We need to stop recording when user stop speaking, it can be done with `silence` option. Also we need to set a time limit, for example 5s.
+`rec` command line tool will be also installed.
 
 As we will send this audio to Google Speech API, we need to set a specific format of audio. It should have 16000 rate, 1 channel.
 
@@ -76,7 +76,7 @@ Here is the command to do it in shell:
 We set AUDIODEV env variable, it may be different on your device. I am using microphone built-in to webcam.
 
 ```
-AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 5 silence 0 1 0.5 3%
+AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 5
 ```
 
 0 is to avoid losing all silence.
@@ -88,7 +88,7 @@ We will execute this command from Go using exec package, let's write a function 
 
 ```
 func record(fileName string, timeLimitSecs int) (err error) {
-	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs), "silence", "0", "1", "0.5", "3%")
+	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs))
 
 	env := os.Environ()
 	env = append(env, "AUDIODEV=hw:1,0")

@@ -2,16 +2,22 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
+	speech "cloud.google.com/go/speech/apiv1"
 	"github.com/blackjack/webcam"
 	"github.com/machinebox/sdk-go/facebox"
 	htgotts "github.com/plutov/htgo-tts"
+	"google.golang.org/api/option"
+	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
 )
 
 var (
@@ -36,7 +42,7 @@ func main() {
 		log.Fatalf("unable to start streaming: %v", err)
 	}
 
-	//fbox := facebox.New("http://192.168.1.216:8080")
+	fbox := facebox.New("http://192.168.1.216:8080")
 	for {
 		frame, err := cam.ReadFrame()
 		if err != nil {
@@ -47,11 +53,7 @@ func main() {
 		if len(frame) != 0 {
 			frame = addMotionDht(frame)
 
-			faces := []facebox.Face{facebox.Face{
-				Name:       "Alex",
-				Confidence: 0.5,
-			}}
-			//faces, err := fbox.Check(bytes.NewBuffer(frame))
+			faces, err := fbox.Check(bytes.NewBuffer(frame))
 			if err != nil {
 				log.Printf("unable to recognize face: %v", err)
 				continue
@@ -78,13 +80,29 @@ func main() {
 
 					file := fmt.Sprintf("record/%d.wav", time.Now().UnixNano())
 					log.Printf("recording voice input into %s", file)
-					err = record(file, 5)
+					err = record(file, 3)
 					if err != nil {
 						log.Printf("unable to record user voice input: %v", err)
 						continue
 					}
 
 					log.Printf("recording completed: %s", file)
+
+					text, err := speechToText(file)
+					if err != nil {
+						log.Printf("unable to parse user voice: %v", err)
+						continue
+					}
+
+					log.Printf("speech to text results: %s", text)
+
+					if strings.Contains(text, "yes") {
+						speech.Speak(fmt.Sprintf("Have a nice day %s", f.Name))
+					}
+
+					if strings.Contains(text, "no") {
+						speech.Speak("Oops, I am sorry")
+					}
 
 					break
 				}
@@ -117,14 +135,9 @@ func openWebcam(path string) (*webcam.Webcam, error) {
 
 func isGreeted(name string) bool {
 	g, ok := greetings[name]
-	now := time.Now()
-	return ok && now.Before(g.Add(time.Hour*12))
+	return ok && time.Now().Before(g.Add(time.Hour*12))
 }
 
-// Record from mic to a file
-// Stop if silence detected (<3% volume for 0.5s)
-// timeLimitSecs is a maximum time
-// rate 16000, bit 16
 func record(fileName string, timeLimitSecs int) (err error) {
 	cmd := exec.Command("rec", "-r", "16000", "-c", "1", fileName, "trim", "0", strconv.Itoa(timeLimitSecs))
 
@@ -132,8 +145,41 @@ func record(fileName string, timeLimitSecs int) (err error) {
 	env = append(env, "AUDIODEV=hw:1,0")
 	cmd.Env = env
 
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
 	return cmd.Run()
+}
+
+func speechToText(filename string) (string, error) {
+	ctx := context.Background()
+
+	client, err := speech.NewClient(ctx, option.WithServiceAccountFile("speech.json"))
+	if err != nil {
+		return "", err
+	}
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.Recognize(ctx, &speechpb.RecognizeRequest{
+		Config: &speechpb.RecognitionConfig{
+			Encoding:        speechpb.RecognitionConfig_LINEAR16,
+			SampleRateHertz: 16000,
+			LanguageCode:    "en-US",
+		},
+		Audio: &speechpb.RecognitionAudio{
+			AudioSource: &speechpb.RecognitionAudio_Content{Content: data},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			return alt.Transcript, err
+		}
+	}
+
+	return "", err
 }

@@ -1,6 +1,6 @@
 ### Building Face Detection Go program for Raspberry Pi. Part 2
 
-In previous episode we've build a program in Go which captures image from Webcam and uses Facebox to recognize the face. But that's not smart as we just print the name in stdout. In this video we'll improve it a bit, we will make our program greet person using Text to Speech and recognize user's voice using Google Speech to Text voice recognition.
+In previous episode we've build a program in Go which captures image from Webcam and uses Facebox to recognize the face. But that's not smart as we just print the name in stdout. In this video we'll improve it a bit, we will make our program greet person using Text to Speech and recognize user's voice using Google Speech API.
 
 Let's start with Text to Speech.
 
@@ -23,8 +23,7 @@ var (
 
 func isGreeted(name string) bool {
 	g, ok := greetings[name]
-	now := time.Now()
-	return ok && now.Before(g.Add(time.Hour*12))
+	return ok && time.Now().Before(g.Add(time.Hour*12))
 }
 ```
 
@@ -61,7 +60,7 @@ rsync capture pi@192.168.1.49:~/
 ./capture
 ```
 
-Now let's parse user's voice input. There is a nice linux tool `sox` to record audio. Let's install it first:
+Now let's parse user's voice input. There are a lot of command line tools to record audio, let's go with `sox`.
 
 ```
 sudo apt-get install pulseaudio sox
@@ -76,13 +75,10 @@ Here is the command to do it in shell:
 We set AUDIODEV env variable, it may be different on your device. I am using microphone built-in to webcam.
 
 ```
-AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 5
+AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 4
 ```
 
-0 is to avoid losing all silence.
-1 means that we enabled silence detection at the end
-0.5 - silence time to stop
-3% - volume threshold
+We set 4s limit.
 
 We will execute this command from Go using exec package, let's write a function for it:
 
@@ -94,16 +90,13 @@ func record(fileName string, timeLimitSecs int) (err error) {
 	env = append(env, "AUDIODEV=hw:1,0")
 	cmd.Env = env
 
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
 	return cmd.Run()
 }
 
 ...
 
 file := fmt.Sprintf("%d.wav", time.Now().UnixNano())
-err = record(file, 5)
+err = record(file, 3)
 if err != nil {
 	log.Printf("unable to record user voice input: %v", err)
 	continue
@@ -116,4 +109,80 @@ rsync capture pi@192.168.1.49:~/
 ./capture
 ```
 
-I hope it was helpful and interesting, see you later!
+Now let's send our audio to Google Speech API. First of all we need to create an application in Google Developer Console. Then create a service account and download a server JSON key I already downloaded it and sent to my Raspberyy Pi home folder.
+
+And we need to get Go packages to work with Speech API:
+
+```
+go get cloud.google.com/go/speech/apiv1
+go get google.golang.org/api/option
+go get google.golang.org/genproto/googleapis/cloud/speech/v1
+```
+
+Then we can use `speech.json` file as a token and get text transcript:
+
+```
+func speechToText(filename string) (string, error) {
+	ctx := context.Background()
+
+	client, err := speech.NewClient(ctx, option.WithServiceAccountFile("speech.json"))
+	if err != nil {
+		return "", err
+	}
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.Recognize(ctx, &speechpb.RecognizeRequest{
+		Config: &speechpb.RecognitionConfig{
+			Encoding:        speechpb.RecognitionConfig_LINEAR16,
+			SampleRateHertz: 16000,
+			LanguageCode:    "en-US",
+		},
+		Audio: &speechpb.RecognitionAudio{
+			AudioSource: &speechpb.RecognitionAudio_Content{Content: data},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			return alt.Transcript, err
+		}
+	}
+
+	return "", err
+}
+```
+
+And let's make a simpliest parsing of yes|no keywords and reply something back:
+
+```
+text, err := speechToText(file)
+if err != nil {
+	log.Printf("unable to parse user voice: %v", err)
+	continue
+}
+
+log.Printf("speech to text results: %s", text)
+
+if strings.Contains(text, "yes") {
+	speech.Speak(fmt.Sprintf("Have a nice day %s", f.Name))
+}
+
+if strings.Contains(text, "no") {
+	speech.Speak("Oops, I am sorry")
+}
+```
+
+```
+GOARCH=arm GOOS=linux go build -o capture
+rsync capture pi@192.168.1.49:~/
+./capture
+```
+
+I hope it was helpful and interesting, In the next episode we will add Natural Language Understanding feature to this program, so stay tuned.

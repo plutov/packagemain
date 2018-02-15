@@ -118,9 +118,7 @@ Now let's send our audio to Google Speech API. First of all we need to create an
 And we need to get Go packages to work with Speech API:
 
 ```
-go get cloud.google.com/go/speech/apiv1
-go get google.golang.org/api/option
-go get google.golang.org/genproto/googleapis/cloud/speech/v1
+go get cloud.google.com/go/speech/apiv1 google.golang.org/api/option google.golang.org/genproto/googleapis/cloud/speech/v1
 ```
 
 Then we can use `speech.json` file as a token and get text transcript:

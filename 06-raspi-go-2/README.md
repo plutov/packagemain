@@ -32,16 +32,18 @@ I don't use mutex here, because all access to `greetings` var are done synchrono
 Also let's check confidence. It should be higher than 50%:
 
 ```
+speech := htgotts.Speech{Folder: "audio", Language: "en"}
+
 log.Printf("found %d faces", len(faces))
 
-if f.Confidence >= 0.5 {
+for _, f := range faces {
 	greeted := isGreeted(f.Name)
+
 	log.Printf("face: %s, confidence: %.2f, greeted: %t", f.Name, f.Confidence, greeted)
-	if !greeted {
+	if !greeted && f.Confidence >= 0.5 {
 		greetings[f.Name] = time.Now()
 
-		speech := htgotts.Speech{Folder: "audio", Language: "en"}
-		err = speech.Speak(fmt.Sprintf("Hi %s, how are you today?", f.Name))
+		err = speech.Speak(fmt.Sprintf("Hello, is that you %s?", f.Name))
 		if err != nil {
 			log.Printf("unable to run text-to-speech: %v", err)
 			continue
@@ -75,10 +77,10 @@ Here is the command to do it in shell:
 We set AUDIODEV env variable, it may be different on your device. I am using microphone built-in to webcam.
 
 ```
-AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 4
+AUDIODEV=hw:1,0 rec -r 16000 -c 1 test1.wav trim 0 3
 ```
 
-We set 4s limit.
+We set 3s limit.
 
 We will execute this command from Go using exec package, let's write a function for it:
 

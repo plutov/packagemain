@@ -43,6 +43,8 @@ func main() {
 	}
 
 	fbox := facebox.New("http://192.168.1.216:8080")
+	speech := htgotts.Speech{Folder: "audio", Language: "en"}
+
 	for {
 		frame, err := cam.ReadFrame()
 		if err != nil {
@@ -68,11 +70,7 @@ func main() {
 				if !greeted && f.Confidence >= 0.5 {
 					greetings[f.Name] = time.Now()
 
-					msg := fmt.Sprintf("Hello, is that you %s?", f.Name)
-					log.Printf("greeting user: %s", msg)
-
-					speech := htgotts.Speech{Folder: "audio", Language: "en"}
-					err = speech.Speak(msg)
+					err = speech.Speak(fmt.Sprintf("Hello, is that you %s?", f.Name))
 					if err != nil {
 						log.Printf("unable to run text-to-speech: %v", err)
 						continue
@@ -90,7 +88,7 @@ func main() {
 
 					text, err := speechToText(file)
 					if err != nil {
-						log.Printf("unable to parse user voice: %v", err)
+						log.Printf("unable to run speech-to-text: %v", err)
 						continue
 					}
 

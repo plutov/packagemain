@@ -54,6 +54,8 @@ for _, f := range faces {
 }
 ```
 
+I don't have portable speakers, so I connected my Raspi by HDMI to TV to be able to play the speech.
+
 As you remember to build we need to set GOARCH and GOOS:
 
 ```

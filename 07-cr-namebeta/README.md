@@ -165,6 +165,8 @@ godep restore
 godep save
 ```
 
+I'd also change Godeps to dep and remove vendor folder from repository, but I'll leave this decision to the owner of the project of course.
+
 Build Run!
 
 Yeah! we reduced dependencies!

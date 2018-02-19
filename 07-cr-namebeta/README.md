@@ -172,3 +172,13 @@ Yeah! we reduced dependencies!
 #### query.go
 
 I think we should check result slice length to be sure, otherwise we can get panic. It will be perfect to define response type via structs, but I checked that response is not well structured, it contains different types in one slice, so it will be messy to work with it, let's keep as is.
+
+#### Results
+
+```
+git cm "review 1"
+[master 2e7767e] review 1
+28 files changed, 91 insertions(+), 12722 deletions(-)
+```
+
+Not bad improvement I think.

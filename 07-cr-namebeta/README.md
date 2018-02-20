@@ -203,3 +203,5 @@ git cm "review 1"
 ```
 
 Not bad improvement I think.
+
+Now I am going to create a Pull Request and send for review. You can find its link in the description.

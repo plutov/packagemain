@@ -1,8 +1,15 @@
 ### Code review of command line domain query tool
 
-Repository: https://github.com/TimothyYe/namebeta
+For long time I haven't done any code review, and in this video I am going to make a review of command line domain query tool writen in Go.
+
+Basically it does request to external API to check domain availability and whois information.
+
+Let's install it and build.
+
 ```
 go get github.com/TimothyYe/namebeta
+cd github.com/TimothyYe/namebeta
+code .
 ```
 
 #### Common package review
@@ -12,7 +19,7 @@ go get github.com/TimothyYe/namebeta
 #### How it works
 
 ```
-go build -o namebeta
+make build
 ./namebeta
 ./namebeta golang.org
 ./namebeta -w golang.org
@@ -20,7 +27,7 @@ go build -o namebeta
 
 #### main.go
 
-Move this code to utils.go:
+Move this code to utils.go as same code we have there.
 
 ```
 if len(os.Args) == 1 {
@@ -160,6 +167,10 @@ params:
 params := map[string]string{
 	"q": domain,
 }
+```
+
+```
+row := []string{data[0].(string)}
 ```
 
 #### utils.go

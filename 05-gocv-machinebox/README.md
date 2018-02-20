@@ -19,10 +19,10 @@ Now to be able to capture video and recognize faces from the web camera we have 
 brew install opencv3
 ```
 
-Then we need to set someenvironment variables, original `env.sh` file didn't work for me so I had to change it a bit, gocv developers said that fix will be soon in master branch.
+Then we need to set someenvironment variables:
 
 ```
-source gocv.osx.env.sh
+source $GOPATH/src/gocv.io/x/gocv/env.sh
 ```
 
 On https://gocv.io/getting-started/osx/ you can find how to install it on Mac. To verify that GoCV works fine we can run:

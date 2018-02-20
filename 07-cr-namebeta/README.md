@@ -14,7 +14,8 @@ go get github.com/TimothyYe/namebeta
 ```
 go build -o namebeta
 ./namebeta
-./namebeta alex.com
+./namebeta golang.org
+./namebeta -w golang.org
 ```
 
 #### main.go
@@ -153,6 +154,13 @@ So now we got rid from printing error in multiple places.
 Move to withMore:
 
 `if len(resultMore) > 0 && resultMore[0].(bool) {`
+
+params:
+```
+params := map[string]string{
+	"q": domain,
+}
+```
 
 #### utils.go
 

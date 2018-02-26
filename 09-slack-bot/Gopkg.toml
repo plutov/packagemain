@@ -1,0 +1,11 @@
+[[constraint]]
+  name = "github.com/nlopes/slack"
+  version = "0.2.0"
+
+[[constraint]]
+  name = "github.com/jsgoecke/go-wit"
+  version = "0.3.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/Krognol/go-wolfram"

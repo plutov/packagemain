@@ -2,7 +2,7 @@
 
 For long time I haven't done any code review, and in this video I am going to make a review of command line domain query tool writen in Go.
 
-Basically it does request to external API to check domain availability and whois information.
+Basically it does requests to external API to check domain availability and whois information.
 
 Let's install it and build.
 

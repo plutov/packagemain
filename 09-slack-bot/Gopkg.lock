@@ -2,16 +2,22 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/Krognol/go-wolfram"
+  packages = ["."]
+  revision = "b1692b9f2c39f4377d935e8d9e8b8b672e2d8387"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/christianrondeau/go-wit"
+  packages = ["."]
+  revision = "d540d3cc2c3d9d7f1a62ae0d11b166d8f1a632c8"
+
+[[projects]]
   name = "github.com/gorilla/websocket"
   packages = ["."]
   revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
   version = "v1.2.0"
-
-[[projects]]
-  name = "github.com/jsgoecke/go-wit"
-  packages = ["."]
-  revision = "6484c8e57b084d2b1efd9070ec2ff841fe2f458c"
-  version = "0.3"
 
 [[projects]]
   name = "github.com/nlopes/slack"
@@ -22,6 +28,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "05e29fba1656126b28d0e65912339af01d15bffd05e4164e16a257eda6190f2f"
+  inputs-digest = "d3855e5b782faab71ad95aa3eed4cdf58540c5418987811cee38d929b3cb885f"
   solver-name = "gps-cdcl"
   solver-version = 1

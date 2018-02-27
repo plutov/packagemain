@@ -3,8 +3,8 @@
   version = "0.2.0"
 
 [[constraint]]
-  name = "github.com/jsgoecke/go-wit"
-  version = "0.3.0"
+  name = "github.com/christianrondeau/go-wit"
+  branch = "master"
 
 [[constraint]]
   branch = "master"

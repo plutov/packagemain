@@ -4,7 +4,6 @@
 05-gocv-machinebox/vendor
 05-gocv-machinebox/*.jpg
 06-raspi-go-1/*.jpg
-09-slack-bot/keys
 09-slack-bot/vendor
 
 # Binaries for programs and plugins

@@ -6,13 +6,23 @@ There are different platforms for NLU, such as LUIS.ai, Wit.ai, RASA_NLU, we wil
 
 Our Bot will have minimal functionality, such as: "Reply to user on greeting" and then "Search in Wolfram and reply back". Why do we need NLU here? Because we don't know how user greets us, also we don't know how user will ask our Bot, will it be something like "Do you know who is the president of USA?" or "Can you tell me who is the president of USA.". Also it could be a typo from user. And NLU will help us to extract useful info from a custom message.
 
-Let's start with Wit.ai.
+Let's start with creating our new Bot in Slack, for this I created new Slack team.
+
+ - https://packagemain.slack.com/apps
+ - Search for Bots
+ - Add Configuration
+ - Username "packagemain"
+ - Configure other settigns if you need and get token
+ - Now we can check if bot exists: Hi
+
+Let's write some simple program which will use Slack real time messaging to recive user input. We need to use Slack token, which I already set.
 
 #### Setup Wit.ai
 
+ - Go to https://wit.ai/home
  - New App
  - Define Entities
- - Get server access token
+ - Get server access token in Settings
 
 Wit.ai has predefined entities and we will use 2 of them. We can also define our own and train Wit.ai to understand it, but I'll leave it to you as a homework.
 
@@ -21,14 +31,9 @@ Wit.ai has predefined entities and we will use 2 of them. We can also define our
 
 #### Setup Wolfram
 
- - Go to https://developer.wolframalpha.com/portal
- - Create new app
- - Get App ID
-
-#### Setup Slack
-
- - Create new Custom integration
- - Get access token
+ - Go to https://developer.wolframalpha.com/portal/myapps
+ - Click Get App ID
+ - Copy APP ID
 
 #### Development
 

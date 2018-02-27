@@ -12,14 +12,14 @@ import (
 const confidenceThreshold = 0.5
 
 var (
-	witClient     *wit.Client
 	slackClient   *slack.Client
+	witClient     *wit.Client
 	wolframClient *wolfram.Client
 )
 
 func main() {
-	witClient = wit.NewClient(os.Getenv("WIT_AI_ACCESS_TOKEN"))
 	slackClient = slack.New(os.Getenv("SLACK_ACCESS_TOKEN"))
+	witClient = wit.NewClient(os.Getenv("WIT_AI_ACCESS_TOKEN"))
 	wolframClient = &wolfram.Client{AppID: os.Getenv("WOLFRAM_APP_ID")}
 
 	rtm := slackClient.NewRTM()
@@ -43,20 +43,23 @@ func handleMessage(ev *slack.MessageEvent) {
 	}
 
 	var (
-		topEntity    *wit.MessageEntity
+		topEntity    wit.MessageEntity
 		topEntityKey string
 	)
 
 	for key, entityList := range result.Entities {
 		for _, entity := range entityList {
-			moreConfident := topEntity == nil || entity.Confidence > topEntity.Confidence
-			if entity.Confidence > confidenceThreshold && moreConfident {
-				topEntity = &entity
+			if entity.Confidence > confidenceThreshold && entity.Confidence > topEntity.Confidence {
+				topEntity = entity
 				topEntityKey = key
 			}
 		}
 	}
 
+	replyToUser(ev, topEntity, topEntityKey)
+}
+
+func replyToUser(ev *slack.MessageEvent, topEntity wit.MessageEntity, topEntityKey string) {
 	switch topEntityKey {
 	case "greetings":
 		slackClient.PostMessage(ev.User, "Hello user! How can I help you?", slack.PostMessageParameters{

@@ -15,9 +15,41 @@ Let's start with creating our new Bot in Slack, for this I created new Slack tea
  - Configure other settigns if you need and get token
  - Now we can check if bot exists: Hi
 
-Let's write some simple program which will use Slack real time messaging to recive user input. We need to use Slack token, which I already set.
+Let's write some simple program which will use Slack real time messaging to receive user input. We need to use Slack token, which I already set locally.
+
+Let's handle each incoming message in separate go routine.
+
+```
+go get github.com/nlopes/slack
+```
+
+```
+var (
+	slackClient   *slack.Client
+)
+
+func main() {
+	slackClient = slack.New(os.Getenv("SLACK_ACCESS_TOKEN"))
+
+	rtm := slackClient.NewRTM()
+	go rtm.ManageConnection()
+
+	for msg := range rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.MessageEvent:
+			go handleMessage(ev)
+		}
+	}
+}
+
+func handleMessage(ev *slack.MessageEvent) {
+	fmt.Printf("%v\n", ev)
+}
+```
 
 #### Setup Wit.ai
+
+Before we're going to make Bot reply to user, we should configure Wit.ai. We're going to create an application there now.
 
  - Go to https://wit.ai/home
  - New App
@@ -29,42 +61,96 @@ Wit.ai has predefined entities and we will use 2 of them. We can also define our
 1. wit/greetings: Hi, Hello.
 2. wit/wolfram_search_query: Who is the president of Belarus, distance between Earth and Mars, formula of ethanol.
 
-#### Setup Wolfram
-
- - Go to https://developer.wolframalpha.com/portal/myapps
- - Click Get App ID
- - Copy APP ID
-
-#### Development
-
-Let's start with Slack Real time messaging using Go slack package
-
-```
-go get github.com/nlopes/slack
-```
-
-I store all keys in `keys` file. We need 3 keys for our program: WOLFRAM_APP_ID, WIT_AI_ACCESS_TOKEN, SLACK_ACCESS_TOKEN.
-
-Let's handle each message in a separate Go routine.
-
-Then I searched for Wit.ai Go package, there are 5 packages on godoc.org and 4 of them are not compatible with new API. And one which is working has 2 stars on GitHub. We will use it, but I don't recommend to use it in Production environments. Wanna try to create Go package - create Wit.ai SDK please.
+I searched for Wit.ai Go package, there are 5 packages on godoc.org and 4 of them are not compatible with new API. And one which is working has 2 stars on GitHub. We will use it, but I don't recommend to use it in Production environments. Wanna try to create Go package - create Wit.ai SDK please.
 
 ```
 go get github.com/christianrondeau/go-wit
 ```
 
-Wit.ai will return us list of entities, each entity contains value and confidence, so let's filter entities with low confidence, we will set a confidence threshold as 0.5.
+```
+result, err := witClient.Message(ev.Msg.Text)
+if err != nil {
+	log.Printf("unable to get wit.ai result: %v", err)
+	return
+}
 
-When we type "hi" Wit.ai returns us 2 successfull entities as "hi" is a valid wolfram search also. But greetings entity has a higher confidence, let's use one with highest confidence.
+fmt.Printf("%v\n", result)
+```
 
-Now we can see that our program also handles messages send by itself, let's fix that.
+Wit.ai will return us list of entities, each entity contains value and confidence, so let's filter entities with low confidence, for that we will set a confidence threshold as 0.5.
 
-#### Wolfram
+```
+const confidenceThreshold = 0.5
+```
 
-Let's get wolfram Go package.
+As you can see when we type "hi" Wit.ai returns us 2 successfull entities as "hi" is a valid wolfram search also. But greetings entity has a higher confidence, let's use one with highest confidence.
+
+```
+var (
+	topEntity    wit.MessageEntity
+	topEntityKey string
+)
+
+for key, entityList := range result.Entities {
+	for _, entity := range entityList {
+		if entity.Confidence > confidenceThreshold && entity.Confidence > topEntity.Confidence {
+			topEntity = entity
+			topEntityKey = key
+		}
+	}
+}
+```
+
+Now we can reply to user based on input:
+
+```
+func replyToUser(ev *slack.MessageEvent, topEntity wit.MessageEntity, topEntityKey string) {
+	switch topEntityKey {
+	case "greetings":
+		slackClient.PostMessage(ev.User, "Hello user! How can I help you?", slack.PostMessageParameters{
+			AsUser: true,
+		})
+		return
+	case "wolfram_search_query":
+		// TODO
+	}
+
+	slackClient.PostMessage(ev.User, "¯\\_(o_o)_/¯", slack.PostMessageParameters{
+		AsUser: true,
+	})
+}
+```
+
+We can see that our program also handles messages send by itself, let's fix that.
+
+```
+if len(ev.BotID) == 0 {
+	go handleMessage(ev)
+}
+```
+
+#### Setup Wolfram
+
+We can say hello, let's now get answer to user's question from Wolfram:
+
+ - Go to https://developer.wolframalpha.com/portal/myapps
+ - Click Get App ID
+ - Copy APP ID
 
 ```
 go get github.com/Krognol/go-wolfram
+```
+
+```
+res, err := wolframClient.GetSpokentAnswerQuery(topEntity.Value.(string), wolfram.Metric, 1000)
+if err == nil {
+	slackClient.PostMessage(ev.User, res, slack.PostMessageParameters{
+		AsUser: true,
+	})
+	return
+}
+
+log.Printf("unable to get data from wolfram: %v", err)
 ```
 
 #### Testing part

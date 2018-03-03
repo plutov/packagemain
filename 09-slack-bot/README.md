@@ -54,7 +54,6 @@ Before we're going to make Bot reply to user, we should configure Wit.ai. We're 
  - Go to https://wit.ai/home
  - New App
  - Define Entities
- - Get server access token in Settings
 
 Wit.ai has predefined entities and we will use 2 of them. We can also define our own and train Wit.ai to understand it, but I'll leave it to you as a homework.
 
@@ -62,6 +61,8 @@ Wit.ai has predefined entities and we will use 2 of them. We can also define our
 2. wit/wolfram_search_query: Who is the president of Belarus, distance between Earth and Mars, formula of ethanol.
 
 I searched for Wit.ai Go package, there are 5 packages on godoc.org and 4 of them are not compatible with new API. And one which is working has 2 stars on GitHub. We will use it, but I don't recommend to use it in Production environments. Wanna try to create Go package - create Wit.ai SDK please.
+
+Get server access token in Settings
 
 ```
 go get github.com/christianrondeau/go-wit

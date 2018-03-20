@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
@@ -49,7 +48,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	city := strings.ToLower(strings.Replace(dfReq.Result.Parameters["geo-city"], " ", "", -1))
+	city := dfReq.Result.Parameters["geo-city"]
 
 	ctx := appengine.NewContext(r)
 	client := urlfetch.Client(ctx)

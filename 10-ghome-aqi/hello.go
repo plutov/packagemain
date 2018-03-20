@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
@@ -37,18 +38,13 @@ type AQICNResponse struct {
 var errMsg = "Sorry, I was unable to get data from AQICN. Please try later."
 
 func handle(w http.ResponseWriter, r *http.Request) {
+	var city = "here"
 	dfReq := DialogFlowRequest{}
 	dfErr := json.NewDecoder(r.Body).Decode(&dfReq)
-	_, withCity := dfReq.Result.Parameters["geo-city"]
-	if dfErr != nil || !withCity {
-		json.NewEncoder(w).Encode(DialogFlowResponse{
-			Speech:      errMsg,
-			DisplayText: errMsg,
-		})
-		return
+	geoCity, withCity := dfReq.Result.Parameters["geo-city"]
+	if dfErr == nil || withCity {
+		city = strings.ToLower(strings.Replace(geoCity, " ", "-", -1))
 	}
-
-	city := dfReq.Result.Parameters["geo-city"]
 
 	ctx := appengine.NewContext(r)
 	client := urlfetch.Client(ctx)

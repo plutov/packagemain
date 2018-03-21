@@ -3,7 +3,6 @@ package hello
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"google.golang.org/appengine"
@@ -35,7 +34,12 @@ type DialogFlowOriginalRequestDevice struct {
 }
 
 type DialogFlowOriginalRequestLocation struct {
-	City string `json:"city"`
+	Coordinates DialogFlowOriginalRequestCoordinates `json:"coordinates"`
+}
+
+type DialogFlowOriginalRequestCoordinates struct {
+	Lat  float32 `json:"latitude"`
+	Long float32 `json:"longitude"`
 }
 
 // DialogFlowResponse struct
@@ -128,20 +132,10 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleYesIntent(w http.ResponseWriter, r *http.Request, dfReq DialogFlowRequest) {
-	var feedID = "here"
-	geoCity := dfReq.OriginalRequest.Data.Device.Location.City
-	if len(geoCity) > 0 {
-		foundFeedID, feedErr := getFeedID(r, geoCity)
-		if feedErr == nil && len(foundFeedID) > 0 {
-			feedID = foundFeedID
-		}
-	}
+	lat := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Lat
+	long := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Long
 
-	if feedID == "here" {
-		geoCity = "your city"
-	}
-
-	aqi, aqiErr := getFeedAQI(r, feedID)
+	aqi, aqiErr := getAQIByCoordinates(r, lat, long)
 	if aqiErr != nil {
 		json.NewEncoder(w).Encode(DialogFlowResponse{
 			Speech: apiErrMsg,
@@ -149,41 +143,17 @@ func handleYesIntent(w http.ResponseWriter, r *http.Request, dfReq DialogFlowReq
 		return
 	}
 
-	msg := fmt.Sprintf("The air quality index in %s is %d right now. %s", geoCity, aqi, getAirQualityDescription(aqi))
+	msg := fmt.Sprintf("The air quality index in your city is %d right now. %s", aqi, getAirQualityDescription(aqi))
 	json.NewEncoder(w).Encode(DialogFlowResponse{
 		Speech: msg,
 	})
 }
 
-func getFeedID(r *http.Request, city string) (string, error) {
+func getAQIByCoordinates(r *http.Request, lat float32, long float32) (int, error) {
 	ctx := appengine.NewContext(r)
 	client := urlfetch.Client(ctx)
 
-	resp, err := client.Get(fmt.Sprintf("http://api.waqi.info/search/?token=%s&keyword=%s", token, template.URLQueryEscaper(city)))
-	if err != nil {
-		return "", err
-	}
-
-	defer resp.Body.Close()
-
-	search := AQICNSearchResponse{}
-	decodeErr := json.NewDecoder(resp.Body).Decode(&search)
-	if decodeErr != nil {
-		return "", decodeErr
-	}
-
-	if search.Status != "ok" || len(search.Data) == 0 {
-		return "", fmt.Errorf("unable to find station in %s", city)
-	}
-
-	return fmt.Sprintf("@%d", search.Data[0].UID), nil
-}
-
-func getFeedAQI(r *http.Request, feedID string) (int, error) {
-	ctx := appengine.NewContext(r)
-	client := urlfetch.Client(ctx)
-
-	resp, err := client.Get(fmt.Sprintf("http://api.waqi.info/feed/%s/?token=%s", feedID, token))
+	resp, err := client.Get(fmt.Sprintf("http://api.waqi.info/feed/geo:%.2f;%.2f/?token=%s", lat, long, token))
 	if err != nil {
 		return 0, err
 	}
@@ -197,7 +167,7 @@ func getFeedAQI(r *http.Request, feedID string) (int, error) {
 	}
 
 	if aqi.Status != "ok" {
-		return 0, fmt.Errorf("unable to find feed %s", feedID)
+		return 0, fmt.Errorf("unable to get info for %.2f %.2f", lat, long)
 	}
 
 	return aqi.Data.AQI, nil

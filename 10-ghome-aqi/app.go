@@ -92,7 +92,7 @@ type AQICNFeedResponse struct {
 
 var (
 	apiErrMsg     = "Sorry, I was unable to get data from AQICN. Please try later."
-	unknownErrMsg = "Sorry, I can't help you with this right now. Please try later. ok?"
+	unknownErrMsg = "Sorry, I can't help you with this right now. Please try later."
 	token         = "c3bfc1119947754409a5b92bfc9eb1e404ae953b"
 )
 

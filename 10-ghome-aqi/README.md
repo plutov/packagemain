@@ -1,10 +1,10 @@
 ### Building Google Home Action with Go
 
-Google Home is a voice Assistant, similar to Amazon Alexa, but working with Google services. It has a lot of built-in integrations, but what is interesting for us developes is that we can build our our programs for it. Google call them Actions.
+Google Home is a voice Assistant, similar to Amazon Alexa, but working with Google services. It has a lot of built-in integrations, but what is interesting for us developes is that we can build our programs for it. Google call them Actions.
 
 In this video we will build an Action, which will help user to find an air quality index of the city user is located in. It's not necessary to have Google Home device to be able to build and test it, Google has very nice Similuator. However, I have device, so I'll show you how it works after we build it.
 
-Google Home Actions are using DialogFlow (previously api.ai) to setup conversation flow using NLU. And we will build a simple backend API to get data, which we'll deploy to Google Cloud.
+Google Home Actions are using DialogFlow (previously it called api.ai) to setup conversation flow using NLU. And we will build a simple backend API to get data, which we'll deploy to Google Cloud.
 
 ### Let's start.
 
@@ -169,3 +169,5 @@ Test with Google Home.
 `Hey Google, talk to Air Quality`.
 
 Profit!
+
+I am going to send this application for Google review, as I find this air quality information really necessary for me as I'm living in Asia.

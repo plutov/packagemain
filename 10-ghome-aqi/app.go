@@ -134,6 +134,12 @@ func handle(w http.ResponseWriter, r *http.Request) {
 func handleYesIntent(w http.ResponseWriter, r *http.Request, dfReq DialogFlowRequest) {
 	lat := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Lat
 	long := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Long
+	if lat == 0 || long == 0 {
+		json.NewEncoder(w).Encode(DialogFlowResponse{
+			Speech: unknownErrMsg,
+		})
+		return
+	}
 
 	aqi, aqiErr := getAQIByCoordinates(r, lat, long)
 	if aqiErr != nil {
@@ -143,9 +149,8 @@ func handleYesIntent(w http.ResponseWriter, r *http.Request, dfReq DialogFlowReq
 		return
 	}
 
-	msg := fmt.Sprintf("The air quality index in your city is %d right now. %s", aqi, getAirQualityDescription(aqi))
 	json.NewEncoder(w).Encode(DialogFlowResponse{
-		Speech: msg,
+		Speech: fmt.Sprintf("The air quality index in your city is %d right now. %s", aqi, getAirQualityDescription(aqi)),
 	})
 }
 

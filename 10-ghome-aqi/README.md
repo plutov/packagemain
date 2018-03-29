@@ -43,7 +43,7 @@ handlers:
   script: _go_app
 ```
 
-Let's create empty API and deploy it to see if it works:
+Let's create empty API and deploy it to see if it works. We don't need to call Serve function on a port, Google Cloud will do it for us, we just need to code endpoints.
 
 ```go
 package app

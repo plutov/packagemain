@@ -158,7 +158,7 @@ Go to Integrations -> Assistant, setup welcome intent and click Test.
 
 Simulator works with keyboard input and also with voice input. Currently our Action is accessible only to us, to make it public, we need to submit it for verification.
 
-Type `Talk to Air Quality`.
+Type `Talk to Air Quality Station`.
 - Yes.
 - Profit!
 
@@ -166,7 +166,7 @@ If your Google Home device is using same Google account, we can test it there al
 
 Test with Google Home.
 
-`Hey Google, talk to Air Quality`.
+`Hey Google, talk to Air Quality Station`.
 
 Profit!
 

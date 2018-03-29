@@ -1,0 +1,17 @@
+{
+  "originalRequest": {
+	"data": {
+		"device": {
+			"location": {
+				"coordinates": {
+					"latitude": 10.823,
+					"longitude": 106.629
+				}
+			}
+		}
+	}
+  },
+  "result": {
+    "action": "get"
+  }
+}

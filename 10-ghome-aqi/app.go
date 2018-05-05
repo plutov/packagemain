@@ -11,9 +11,8 @@ func init() {
 }
 
 var (
-	apiErrMsg     = "Sorry, I was unable to get data from AQICN. Please try later."
-	unknownErrMsg = "Sorry, I can't help you with this right now. Please try later."
-	userMsg       = "The air quality index in your city is %d right now. %s"
+	defaultIndex = 49
+	userMsg      = "The air quality index in your city is %d right now. %s"
 )
 
 func handle(w http.ResponseWriter, r *http.Request) {
@@ -30,11 +29,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	index := 49
-	levelDescription := getAirQualityDescription(index)
-	json.NewEncoder(w).Encode(DialogFlowResponse{
-		Speech: fmt.Sprintf(userMsg, index, levelDescription),
-	})
+	returnDefaultResults(w)
 }
 
 func handleLocationPermissionAction(w http.ResponseWriter, r *http.Request, dfReq DialogFlowRequest) {
@@ -57,21 +52,24 @@ func handleLocationPermissionAction(w http.ResponseWriter, r *http.Request, dfRe
 	})
 }
 
+func returnDefaultResults(w http.ResponseWriter) {
+	levelDescription := getAirQualityDescription(defaultIndex)
+	json.NewEncoder(w).Encode(DialogFlowResponse{
+		Speech: fmt.Sprintf(userMsg, defaultIndex, levelDescription),
+	})
+}
+
 func handleGetAction(w http.ResponseWriter, r *http.Request, dfReq DialogFlowRequest) {
 	lat := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Lat
 	long := dfReq.OriginalRequest.Data.Device.Location.Coordinates.Long
 	if lat == 0 || long == 0 {
-		json.NewEncoder(w).Encode(DialogFlowResponse{
-			Speech: unknownErrMsg,
-		})
+		returnDefaultResults(w)
 		return
 	}
 
 	index, levelDescription, aqiErr := getAirQualityByCoordinates(r, lat, long)
 	if aqiErr != nil {
-		json.NewEncoder(w).Encode(DialogFlowResponse{
-			Speech: apiErrMsg,
-		})
+		returnDefaultResults(w)
 		return
 	}
 

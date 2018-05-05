@@ -13,6 +13,7 @@ func init() {
 var (
 	apiErrMsg     = "Sorry, I was unable to get data from AQICN. Please try later."
 	unknownErrMsg = "Sorry, I can't help you with this right now. Please try later."
+	userMsg       = "The air quality index in your city is %d right now. %s"
 )
 
 func handle(w http.ResponseWriter, r *http.Request) {
@@ -29,8 +30,10 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	index := 49
+	levelDescription := getAirQualityDescription(index)
 	json.NewEncoder(w).Encode(DialogFlowResponse{
-		Speech: unknownErrMsg,
+		Speech: fmt.Sprintf(userMsg, index, levelDescription),
 	})
 }
 
@@ -73,6 +76,6 @@ func handleGetAction(w http.ResponseWriter, r *http.Request, dfReq DialogFlowReq
 	}
 
 	json.NewEncoder(w).Encode(DialogFlowResponse{
-		Speech: fmt.Sprintf("The air quality index in your city is %d right now. %s", index, levelDescription),
+		Speech: fmt.Sprintf(userMsg, index, levelDescription),
 	})
 }

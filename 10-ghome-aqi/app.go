@@ -19,7 +19,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	dfReq := DialogFlowRequest{}
 	dfErr := json.NewDecoder(r.Body).Decode(&dfReq)
 
-	if dfErr == nil && dfReq.Result.Action == "location_permission" {
+	if dfErr == nil && dfReq.Result.Action == "location" {
 		handleLocationPermissionAction(w, r, dfReq)
 		return
 	}

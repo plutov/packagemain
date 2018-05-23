@@ -10,10 +10,7 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const htmlIndex = `<html><body>
-<a href="/login">Log in with Google</a>
-</body></html>
-`
+const htmlIndex = `<html><body><a href="/login">Google Log In</a></body></html>`
 
 var (
 	googleOauthConfig = &oauth2.Config{
@@ -23,6 +20,7 @@ var (
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
+	// TODO: randomize it
 	oauthStateString = "random"
 )
 
@@ -43,15 +41,13 @@ func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
-	state := r.FormValue("state")
-	if state != oauthStateString {
-		fmt.Println("invalid oauth state\n")
+	if r.FormValue("state") != oauthStateString {
+		fmt.Println("invalid oauth state")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	code := r.FormValue("code")
-	token, err := googleOauthConfig.Exchange(oauth2.NoContext, code)
+	token, err := googleOauthConfig.Exchange(oauth2.NoContext, r.FormValue("code"))
 	if err != nil {
 		fmt.Printf("code exchange failed: %s\n", err.Error())
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -61,10 +57,17 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
 		fmt.Printf("failed getting user info: %s\n", err.Error())
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
 	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("failed reading response body: %s\n", err.Error())
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	fmt.Fprintf(w, "Content: %s\n", contents)
 }

@@ -4,20 +4,22 @@ Authentication usually is very important part in any application. You can always
 
 In this video we'll create a simple web page with Google login using oauth2 Go package.
 
+First of all, let's create our Google OAuth2 keys.
+
 ### Google Project, OAuth2 keys
 
  - Go to [Google Cloud Platform](https://console.developers.google.com/)
- - Create new project
+ - Create new project or use an existing one
  - Go to Credentials
  - Click "Create credentials"
  - Choose "OAuth client ID"
+ - Add authorized redirect URL, in our case it will be `localhost:8080/callback`
  - Get client id and client secret
  - Save it in a safe place
- - Add authorized redirect URL, in our case it will be `localhost:8080/callback`
 
 ### What is OAuth2
 
-It looks simple, but let's summarize how OAuth2 works:
+Also we want to understand how OAuth2 works:
 
 1. The user opens the website and clicks the login button.
 2. The user gets redirected to the google login handler page. This page generates a random state string by which it will identify the user, and constructs a google login link using it. The user then gets redirected to that page.
@@ -35,7 +37,7 @@ We'll do everything in 1 main.go file, and register 3 URL handlers:
 ### Initial handlers and OAuth2 config
 
 ```
-go get "golang.org/x/oauth2
+go get golang.org/x/oauth2
 ```
 
 We save google client id and secret in env variables and only use os.Getenv in the code.
@@ -51,8 +53,6 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const htmlIndex = `<html><body><a href="/login">Google Log In</a></body></html>`
-
 var (
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL:  "http://localhost:8080/callback",
@@ -61,8 +61,6 @@ var (
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
-	// TODO: randomize it
-	oauthStateString = "random"
 )
 
 func main() {
@@ -90,6 +88,9 @@ func handleMain(w http.ResponseWriter, r *http.Request) {
 We send random state string. In our cause it's not random.
 
 ```
+// TODO: randomize it
+oauthStateString = "random"
+
 func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)

@@ -4,19 +4,6 @@ Authentication usually is very important part in any application. You can always
 
 In this video we'll create a simple web page with Google login using oauth2 Go package.
 
-First of all, let's create our Google OAuth2 keys.
-
-### Google Project, OAuth2 keys
-
- - Go to [Google Cloud Platform](https://console.developers.google.com/)
- - Create new project or use an existing one
- - Go to Credentials
- - Click "Create credentials"
- - Choose "OAuth client ID"
- - Add authorized redirect URL, in our case it will be `localhost:8080/callback`
- - Get client id and client secret
- - Save it in a safe place
-
 ### What is OAuth2
 
 Also we want to understand how OAuth2 works:
@@ -26,6 +13,19 @@ Also we want to understand how OAuth2 works:
 3. The user logs in and gets back a code and the random string we gave him. He gets redirected back to our page, using a POST request to give us the code and state string.
 4. We verify if it’s the same state string. If it is then we use the code to ask google for a short-lived access token. We can save the code for future use to get another token later.
 5. We use the token to initiate actions regarding the user account.
+
+### Google Project, OAuth2 keys
+
+First of all, let's create our Google OAuth2 keys.
+
+ - Go to [Google Cloud Platform](https://console.developers.google.com/)
+ - Create new project or use an existing one
+ - Go to Credentials
+ - Click "Create credentials"
+ - Choose "OAuth client ID"
+ - Add authorized redirect URL, in our case it will be `localhost:8080/callback`
+ - Get client id and client secret
+ - Save it in a safe place
 
 ### Structure
 

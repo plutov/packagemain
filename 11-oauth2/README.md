@@ -3,17 +3,6 @@
 Authentication usually is very important part in any application. You can always implement your own authentication system, but it will require a lot of work, registration, forgot password form, etc. That's why OAuth2 was created, to allow user to log in using one of the many accounts user already has.
 
 In this video we'll create a simple web page with Google login using oauth2 Go package.
-
-### What is OAuth2
-
-Also we want to understand how OAuth2 works:
-
-1. The user opens the website and clicks the login button.
-2. The user gets redirected to the google login handler page. This page generates a random state string by which it will identify the user, and constructs a google login link using it. The user then gets redirected to that page.
-3. The user logs in and gets back a code and the random string we gave him. He gets redirected back to our page, using a POST request to give us the code and state string.
-4. We verify if it’s the same state string. If it is then we use the code to ask google for a short-lived access token. We can save the code for future use to get another token later.
-5. We use the token to initiate actions regarding the user account.
-
 ### Google Project, OAuth2 keys
 
 First of all, let's create our Google OAuth2 keys.

@@ -47,6 +47,7 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oauth2.C
 	token, err := googleOauthConfig.Exchange(oauth2.NoContext, r.FormValue("code"))
 	if err != nil {
 		fmt.Printf("code exchange failed: %s\n", err.Error())

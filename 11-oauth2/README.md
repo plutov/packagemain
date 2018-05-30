@@ -3,6 +3,7 @@
 Authentication usually is very important part in any application. You can always implement your own authentication system, but it will require a lot of work, registration, forgot password form, etc. That's why OAuth2 was created, to allow user to log in using one of the many accounts user already has.
 
 In this video we'll create a simple web page with Google login using oauth2 Go package.
+
 ### Google Project, OAuth2 keys
 
 First of all, let's create our Google OAuth2 keys.
@@ -15,6 +16,13 @@ First of all, let's create our Google OAuth2 keys.
  - Add authorized redirect URL, in our case it will be `localhost:8080/callback`
  - Get client id and client secret
  - Save it in a safe place
+
+### How OAuth2 works with Google
+
+ - Obtain OAuth 2.0 credentials from the Google API Console.
+ - Obtain an access token from the Google Authorization Server.
+ - Send the access token to an API.
+ - Refresh the access token, if necessary.
 
 ### Structure
 
@@ -70,9 +78,13 @@ func main() {
 Now let's render an HTML on index page
 
 ```
-const htmlIndex = `<html><body><a href="/login">Google Log In</a></body></html>`
-
 func handleMain(w http.ResponseWriter, r *http.Request) {
+	var htmlIndex = `<html>
+<body>
+	<a href="/login">Google Log In</a>
+</body>
+</html>`
+
 	fmt.Fprintf(w, htmlIndex)
 }
 ```
@@ -82,8 +94,10 @@ func handleMain(w http.ResponseWriter, r *http.Request) {
 We send random state string. In our cause it's not random.
 
 ```
-// TODO: randomize it
-oauthStateString = "random"
+var (
+	// TODO: randomize it
+	oauthStateString = "pseudo-random"
+)
 
 func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	url := googleOauthConfig.AuthCodeURL(oauthStateString)

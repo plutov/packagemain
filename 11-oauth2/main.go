@@ -10,9 +10,13 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const htmlIndex = `<html><body><a href="/login">Google Log In</a></body></html>`
-
 var (
+	googleOauthConfig *oauth2.Config
+	// TODO: randomize it
+	oauthStateString = "pseudo-random"
+)
+
+func init() {
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL:  "http://localhost:8080/callback",
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -20,9 +24,7 @@ var (
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
-	// TODO: randomize it
-	oauthStateString = "random"
-)
+}
 
 func main() {
 	http.HandleFunc("/", handleMain)
@@ -32,6 +34,7 @@ func main() {
 }
 
 func handleMain(w http.ResponseWriter, r *http.Request) {
+	var htmlIndex = `<html><body><a href="/login">Google Log In</a></body></html>`
 	fmt.Fprintf(w, htmlIndex)
 }
 
@@ -41,34 +44,36 @@ func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("state") != oauthStateString {
-		fmt.Println("invalid oauth state")
+	content, err := getUserInfo(r.FormValue("state"), r.FormValue("code"))
+	if err != nil {
+		fmt.Println(err.Error())
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	oauth2.C
-	token, err := googleOauthConfig.Exchange(oauth2.NoContext, r.FormValue("code"))
+	fmt.Fprintf(w, "Content: %s\n", content)
+}
+
+func getUserInfo(state string, code string) ([]byte, error) {
+	if state != oauthStateString {
+		return nil, fmt.Errorf("invalid oauth state")
+	}
+
+	token, err := googleOauthConfig.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		fmt.Printf("code exchange failed: %s\n", err.Error())
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
+		return nil, fmt.Errorf("code exchange failed: %s", err.Error())
 	}
 
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
-		fmt.Printf("failed getting user info: %s\n", err.Error())
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
+		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
 	}
 
 	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Printf("failed reading response body: %s\n", err.Error())
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
+		return nil, fmt.Errorf("failed reading response body: %s", err.Error())
 	}
 
-	fmt.Fprintf(w, "Content: %s\n", contents)
+	return contents, nil
 }

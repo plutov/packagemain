@@ -1,0 +1,12 @@
+version: "2"
+services:
+  users:
+    build:
+      context: .
+      dockerfile: users/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
+    container_name: users
+    ports:
+    - 8800:8081

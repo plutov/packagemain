@@ -20,6 +20,12 @@ And if you are a Go developer, here go-kit comes to us with set of abstractions,
 
 With this video I want to start an in-depth tutorial on using go-kit. We'll create a system built on microservices, setup environment, review how services interact with each other.
 
+We will create a fictional bug tracker system with help of few microservices:
+
+ - Users
+ - Bugs
+ - Notificator
+
 ### go-kit review
 
 We should understand that go-kit is not a framework, it's a toolkit for building microservices in Go, including packages and interfaces. It is similar to Java Spring Boot but smaller in scope.
@@ -35,11 +41,60 @@ As you can see there are a lot of folders: sd, auth, circuit breaker, etc. which
 There is a separate package to create a service from template:
 
 ```
+go get github.com/go-kit/kit
 go get github.com/kujtimiihoxha/kit
 ```
 
-Let's create our first service:
+Let's create our first Users service:
 
 ```
-kit new service hello
+kit new service users
+```
+
+This will generate the initial folder structure and the service interface. The interface is empty by default, let's define the functions in our interface. We need a function for User creation, let's start with this.
+
+```
+package service
+
+import "context"
+
+// UsersService describes the service.
+type UsersService interface {
+	Create(ctx context.Context, email string) error
+}
+```
+
+Then we need to run a command to generate a service, it will create the service boilerplate, service middleware and endpoint code. It also create `cmd/` package to run our service.
+
+```
+kit generate service users
+```
+
+This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our Create User logic in service.go (1 place only). For now let's just log something inside this function using go-kit/log package:
+
+```
+import (
+	"context"
+
+	log "github.com/go-kit/kit/log"
+)
+
+func (b *basicUsersService) Create(ctx context.Context, email string) (err error) {
+	logger := log.NewJSONLogger(os.Stderr)
+	logger.Log("created user with email", email)
+	return err
+}
+```
+
+go-kit CLI can also create a boilerplate docker-compose setup, let's try it.
+
+```
+kit generate docker
+```
+
+So it created Dockerfile, docker-compose.yml with ports mapping. Let's run our environment and trigger our `/create` endpoint.
+
+```
+docker-compose up
+curl -XPOST http://localhost:8800/create -d '{"email": "test"}'
 ```

@@ -70,27 +70,19 @@ Then we need to run a command to generate a service, it will create the service 
 kit generate service users --dmw
 ```
 
---dmw creates default endpoint middleware.
+--dmw creates default endpoint middleware, logging middleware.
 
-This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our Create User logic in service.go (1 place only). For now let's just log something inside this function using go-kit/log package:
+This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our Create User logic in service.go (1 place only).
 
+We can call pre-generated functions to enable middlewares:
+
+service.go
 ```
-import (
-	"context"
+func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
+	mw = []service.Middleware{}
+	addDefaultServiceMiddleware(logger, mw)
 
-	log "github.com/go-kit/kit/log"
-)
-
-// NewBasicUsersService returns a naive, stateless implementation of UsersService.
-func NewBasicUsersService() UsersService {
-	return &basicUsersService{
-		logger: log.NewJSONLogger(os.Stderr),
-	}
-}
-
-func (b *basicUsersService) Create(ctx context.Context, email string) (err error) {
-	b.logger.Log("created user with email", email)
-	return err
+	return
 }
 ```
 

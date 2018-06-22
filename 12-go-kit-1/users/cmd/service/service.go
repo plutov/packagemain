@@ -44,7 +44,7 @@ func Run() {
 	fs.Parse(os.Args[1:])
 
 	// Create a single logger, which we'll use and give to other components.
-	logger = log.NewLogfmtLogger(os.Stderr)
+	logger = log.NewJSONLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
@@ -105,13 +105,13 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 }
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
-	// Append your middleware here
+	addDefaultServiceMiddleware(logger, mw)
 
 	return
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}
-	// Add you endpoint middleware here
+	addDefaultEndpointMiddleware(logger, mw)
 
 	return
 }

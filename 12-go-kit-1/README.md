@@ -67,8 +67,10 @@ type UsersService interface {
 Then we need to run a command to generate a service, it will create the service boilerplate, service middleware and endpoint code. It also create `cmd/` package to run our service.
 
 ```
-kit generate service users
+kit generate service users --dmw
 ```
+
+--dmw creates default endpoint middleware.
 
 This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our Create User logic in service.go (1 place only). For now let's just log something inside this function using go-kit/log package:
 

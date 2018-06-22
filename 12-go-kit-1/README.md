@@ -79,9 +79,15 @@ import (
 	log "github.com/go-kit/kit/log"
 )
 
+// NewBasicUsersService returns a naive, stateless implementation of UsersService.
+func NewBasicUsersService() UsersService {
+	return &basicUsersService{
+		logger: log.NewJSONLogger(os.Stderr),
+	}
+}
+
 func (b *basicUsersService) Create(ctx context.Context, email string) (err error) {
-	logger := log.NewJSONLogger(os.Stderr)
-	logger.Log("created user with email", email)
+	b.logger.Log("created user with email", email)
 	return err
 }
 ```

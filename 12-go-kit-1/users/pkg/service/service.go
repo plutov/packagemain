@@ -12,17 +12,20 @@ type UsersService interface {
 	Create(ctx context.Context, email string) (err error)
 }
 
-type basicUsersService struct{}
+type basicUsersService struct {
+	logger log.Logger
+}
 
 func (b *basicUsersService) Create(ctx context.Context, email string) (err error) {
-	logger := log.NewJSONLogger(os.Stderr)
-	logger.Log("created user with email", email)
+	b.logger.Log("created user with email", email)
 	return err
 }
 
 // NewBasicUsersService returns a naive, stateless implementation of UsersService.
 func NewBasicUsersService() UsersService {
-	return &basicUsersService{}
+	return &basicUsersService{
+		logger: log.NewJSONLogger(os.Stderr),
+	}
 }
 
 // New returns a UsersService with all of the expected middleware wired in.

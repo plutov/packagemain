@@ -1,18 +1,17 @@
 package service
 
-import (
-	"context"
-)
+import "context"
 
 // UsersService describes the service.
 type UsersService interface {
-	Create(ctx context.Context, email string) (err error)
+	Create(ctx context.Context, email string) error
 }
 
 type basicUsersService struct{}
 
-func (b *basicUsersService) Create(ctx context.Context, email string) (err error) {
-	return err
+func (b *basicUsersService) Create(ctx context.Context, email string) (e0 error) {
+	// TODO implement the business logic of Create
+	return e0
 }
 
 // NewBasicUsersService returns a naive, stateless implementation of UsersService.

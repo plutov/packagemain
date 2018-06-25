@@ -3,12 +3,12 @@ package endpoint
 import (
 	"context"
 	endpoint "github.com/go-kit/kit/endpoint"
-	service "github.com/plutov/packagemain/12-go-kit-1/users/pkg/service"
+	service "github.com/plutov/packagemain/12-go-kit-1/bugs/pkg/service"
 )
 
 // CreateRequest collects the request parameters for the Create method.
 type CreateRequest struct {
-	Email string `json:"email"`
+	Bug string `json:"bug"`
 }
 
 // CreateResponse collects the response parameters for the Create method.
@@ -17,10 +17,10 @@ type CreateResponse struct {
 }
 
 // MakeCreateEndpoint returns an endpoint that invokes Create on the service.
-func MakeCreateEndpoint(s service.UsersService) endpoint.Endpoint {
+func MakeCreateEndpoint(s service.BugsService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateRequest)
-		e0 := s.Create(ctx, req.Email)
+		e0 := s.Create(ctx, req.Bug)
 		return CreateResponse{E0: e0}, nil
 	}
 }
@@ -38,8 +38,8 @@ type Failure interface {
 }
 
 // Create implements Service. Primarily useful in a client.
-func (e Endpoints) Create(ctx context.Context, email string) (e0 error) {
-	request := CreateRequest{Email: email}
+func (e Endpoints) Create(ctx context.Context, bug string) (e0 error) {
+	request := CreateRequest{Bug: bug}
 	response, err := e.CreateEndpoint(ctx, request)
 	if err != nil {
 		return

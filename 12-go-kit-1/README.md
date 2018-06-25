@@ -26,6 +26,8 @@ We will create a fictional bug tracker system with help of few microservices:
  - Bugs
  - Notificator
 
+Some of them will be accessible with JSON over HTTP, and internal communication will be done with gRPC.
+
 ### go-kit review
 
 We should understand that go-kit is not a framework, it's a toolkit for building microservices in Go, including packages and interfaces. It is similar to Java Spring Boot but smaller in scope.
@@ -34,7 +36,7 @@ Let's go to GitHub project page and review the go-kit project.
 
 https://github.com/go-kit/kit
 
-As you can see there are a lot of folders: sd, auth, circuit breaker, etc. which we can import into our project and implement. There is a `kitgen` command line tool to generate a service from template which is not ready to be used yet, but there are other packages which can help you.
+As you can see there are a lot of folders: sd, auth, circuit breaker, etc. which we can import into our project. There is a `kitgen` command line tool to generate a service from template which is not ready to be used yet, but there are other packages which can help you.
 
 ### go-kit CLI
 
@@ -45,14 +47,17 @@ go get github.com/go-kit/kit
 go get github.com/kujtimiihoxha/kit
 ```
 
-Let's create our first Users service:
+Let's create our services:
 
 ```
 kit new service users
+kit new service bugs
+kit new service notificator
 ```
 
 This will generate the initial folder structure and the service interface. The interface is empty by default, let's define the functions in our interface. We need a function for User creation, let's start with this.
 
+users:
 ```
 package service
 
@@ -64,27 +69,53 @@ type UsersService interface {
 }
 ```
 
+bugs:
+```
+package service
+
+import "context"
+
+// BugsService describes the service.
+type BugsService interface {
+	// Add your methods here
+	Create(ctx context.Context, bug string) error
+}
+```
+
+notifcator:
+```
+package service
+
+import "context"
+
+// NotificatorService describes the service.
+type NotificatorService interface {
+	// Add your methods here
+	SendEmail(ctx context.Context, email string, content string) error
+}
+
+```
+
 Then we need to run a command to generate a service, it will create the service boilerplate, service middleware and endpoint code. It also create `cmd/` package to run our service.
 
 ```
 kit generate service users --dmw
+kit generate service bugs --dmw
 ```
 
 --dmw creates default endpoint middleware, logging middleware.
 
-This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our Create User logic in service.go (1 place only).
+This command has added go-kit packages to our code already: endpoint and http transport. What we need to do now is to implement our business logic in 1 place only.
 
-We can call pre-generated functions to enable middlewares:
+We will continue with business logic in the next video.
 
-service.go
+Notificator should not have REST API, so we generate service with gRPC transport, for this we need to install protoc and protobuf Go packages.
+
 ```
-func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
-	mw = []service.Middleware{}
-	addDefaultServiceMiddleware(logger, mw)
-
-	return
-}
+kit generate service notificator -t grpc --dmw
 ```
+
+This also created .pb file, but we will fill it in the next video.
 
 go-kit CLI can also create a boilerplate docker-compose setup, let's try it.
 
@@ -96,5 +127,18 @@ So it created Dockerfile, docker-compose.yml with ports mapping. Let's run our e
 
 ```
 docker-compose up
+```
+
+Dockerfiles are using `watcher` go package, which is updating and restarting binary files if Go code has been changed, which is very convenient on local environment.
+
+Now our services are running on the ports 8800, 8801, 8802. Let's call the endpoint of Users:
+
+```
 curl -XPOST http://localhost:8800/create -d '{"email": "test"}'
 ```
+
+### Conclusion
+
+We haven't implemented services yet, but we prepared a good local environment in few mins, which can be deployed later to your infrastructure as we containerized it with Docker.
+
+In the next video we'll connect these services between each other and implement some logic and we'll try some go-kit packages to manage microservices.

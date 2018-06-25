@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	http1 "github.com/go-kit/kit/transport/http"
-	endpoint "github.com/plutov/packagemain/12-go-kit-1/users/pkg/endpoint"
+	endpoint "github.com/plutov/packagemain/12-go-kit-1/bugs/pkg/endpoint"
 	"net/http"
 )
 

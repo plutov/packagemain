@@ -111,7 +111,7 @@ We will continue with business logic in the next video.
 
 Notificator should not have REST API as it's an internal service, so we generate service with gRPC transport. gRPC stands for Google RPC framework, if you never used it before, check https://grpc.io.
 
-For this we need to install protoc and protobuf Go packages first.
+For this we need to [install protoc and protobuf](https://developers.google.com/protocol-buffers/docs/gotutorial) first.
 
 ```
 kit generate service notificator -t grpc --dmw

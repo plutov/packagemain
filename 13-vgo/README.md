@@ -63,3 +63,9 @@ And we can list our modules with `vgo list -m`:
 ```
 vgo list -m
 ```
+
+### Resources
+
+ - [Go & Versioning](https://research.swtch.com/vgo)
+ - [vgo mirror on GitHub](https://github.com/golang/vgo)
+

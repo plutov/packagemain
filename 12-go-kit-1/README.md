@@ -109,7 +109,9 @@ This command has added go-kit packages to our code already: endpoint and http tr
 
 We will continue with business logic in the next video.
 
-Notificator should not have REST API, so we generate service with gRPC transport, for this we need to install protoc and protobuf Go packages.
+Notificator should not have REST API as it's an internal service, so we generate service with gRPC transport. gRPC stands for Google RPC framework, if you never used it before, check https://grpc.io.
+
+For this we need to install protoc and protobuf Go packages first.
 
 ```
 kit generate service notificator -t grpc --dmw

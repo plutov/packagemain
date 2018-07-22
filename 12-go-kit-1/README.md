@@ -1,4 +1,12 @@
+Hi Gophers, My name is Alex Pliutau.
+
+Welcome to the "package main" new video.
+
 ## Microservices with go-kit. Part 1
+
+Before we talk about go-kit, I wanna share some good news with you.
+
+If you're from Vietnam and watching this video, we're organizing the first GopherCon in Vietnam, Ho Chi Minh city. It will be hold in November. Sponsors and speakers are welcomed, you may find all information on gophercon.vn.
 
 Nowadays, Microservices is one of the most popular buzz-word in the field of software architecture.
 
@@ -16,9 +24,9 @@ Sounds cool, but there are challenges which come with microservices
  - Request tracing
  - Service discovery
 
-And if you are a Go developer, here go-kit comes to us with set of abstractions, packages and interfaces for the developer, so the implementations across your services becomes standard. 
+And if you are a Go developer, here go-kit comes to us with set of abstractions, packages and interfaces for the developer, so the implementations across your services become standard. 
 
-With this video I want to start an in-depth tutorial on using go-kit. We'll create a system built on microservices, setup environment, review how services interact with each other.
+With this video I want to start an in-depth tutorial on using go-kit tool. We'll create a system built on microservices, setup environment, review how services interact with each other.
 
 We will create a fictional bug tracker system with help of few microservices:
 
@@ -32,11 +40,9 @@ Some of them will be accessible with JSON over HTTP, and internal communication 
 
 We should understand that go-kit is not a framework, it's a toolkit for building microservices in Go, including packages and interfaces. It is similar to Java Spring Boot but smaller in scope.
 
-Let's go to GitHub project page and review the go-kit project.
+Let's init our project.
 
-https://github.com/go-kit/kit
-
-As you can see there are a lot of folders: sd, auth, circuit breaker, etc. which we can import into our project. There is a `kitgen` command line tool to generate a service from template which is not ready to be used yet, but there are other packages which can help you.
+There is a `kitgen` command line tool to generate a service from template which is not ready to be used yet, but there are other packages which can help you.
 
 ### go-kit CLI
 
@@ -96,7 +102,7 @@ type NotificatorService interface {
 
 ```
 
-Then we need to run a command to generate a service, it will create the service boilerplate, service middleware and endpoint code. It also create `cmd/` package to run our service.
+Then we need to run a command to generate a service, it will create the service boilerplate, service middleware and endpoint code. It also creates `cmd/` package to run our service.
 
 ```
 kit generate service users --dmw

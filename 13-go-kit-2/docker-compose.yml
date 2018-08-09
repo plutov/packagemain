@@ -1,0 +1,32 @@
+version: "2"
+services:
+  bugs:
+    build:
+      context: .
+      dockerfile: bugs/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/13-go-kit-2
+    container_name: bugs
+    ports:
+    - 8800:8081
+  notificator:
+    build:
+      context: .
+      dockerfile: notificator/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/13-go-kit-2
+    container_name: notificator
+    ports:
+    - 8801:8082
+  users:
+    build:
+      context: .
+      dockerfile: users/Dockerfile
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/13-go-kit-2
+    container_name: users
+    ports:
+    - 8802:8081

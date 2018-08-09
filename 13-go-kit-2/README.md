@@ -39,9 +39,9 @@ cd notificator/pkg/grpc/pb
 ./compile.sh
 ```
 
-If we check `notificator.pb.go` it is updated.
+If we check `notificator.pb.go` - it was updated.
 
-Now we need to implement the service itself, let's generate a uuid and return it. But first we have to edit a bit the service to match our Request / Response formats (new `id` return argument).
+Now we need to implement the service itself. Instead of sending a real email let's generate a uuid only and return it, pretending that it's sent. But first we have to edit a bit the service to match our Request / Response formats (new `id` return argument).
 
 notificator/pkg/service/service.go:
 ```
@@ -111,3 +111,67 @@ func encodeSendEmailResponse(_ context.Context, r interface{}) (interface{}, err
 	return endpoint.SendEmailResponse{Id: reply.Id}, nil
 }
 ```
+
+### Service discovery
+
+The SendEmail will be invoked by User service, so User service needs to know the address of Notificator, the typical service discovery problem. Of course in our local environment we know how to connect to the service as we use Docker Compose, but it may be more difficult in real distributed environment.
+
+Let's start with registering our Notificator service in the etcd. Basically etcd is a distributed reliable key-value store, widely used for service discovery. go-kit supports other technologies for service discovery: eureka, consul, zookeeper, etc.
+
+Let's add it to our Docker Compose so it will be available for our servers. Copied from Internet:
+
+```
+    etcd:
+        image: 'quay.io/coreos/etcd:v3.1.7'
+        restart: always
+        ports:
+            - '23791:2379'
+            - '23801:2380'
+        environment:
+            ETCD_NAME: infra
+            ETCD_INITIAL_ADVERTISE_PEER_URLS: 'http://etcd:2380'
+            ETCD_INITIAL_CLUSTER: infra=http://etcd:2380
+            ETCD_INITIAL_CLUSTER_STATE: new
+            ETCD_INITIAL_CLUSTER_TOKEN: secrettoken
+            ETCD_LISTEN_CLIENT_URLS: 'http://etcd:2379,http://localhost:2379'
+            ETCD_LISTEN_PEER_URLS: 'http://etcd:2380'
+            ETCD_ADVERTISE_CLIENT_URLS: 'http://etcd:2379'
+```
+
+Let's register Notificator in etcd, notificator/cmd/service/service.go:
+
+```
+registrar, err := registerService(logger)
+if err != nil {
+	logger.Log(err)
+	return
+}
+
+defer registrar.Deregister()
+
+func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
+	var (
+		etcdServer = "http://etcd:2379"
+		prefix     = "/services/notificator/"
+		instance   = "notificator:8082"
+		key        = prefix + instance
+		value      = "http://" + instance
+	)
+
+	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
+		Key:   key,
+		Value: value,
+	}, logger)
+
+	registrar.Register()
+
+	return registrar, nil
+}
+```
+
+We should always remember to deregister service when our program is stopped or crashed,

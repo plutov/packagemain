@@ -1,11 +1,19 @@
 package service
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
+	sdetcd "github.com/go-kit/kit/sd/etcd"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
@@ -17,13 +25,8 @@ import (
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
 )
 
 var tracer opentracinggo.Tracer
@@ -86,8 +89,14 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	logger.Log("exit", g.Run())
+	registrar, err := registerService(logger)
+	if err != nil {
+		logger.Log(err)
+		return
+	}
 
+	defer registrar.Deregister()
+	logger.Log("exit", g.Run())
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
@@ -155,4 +164,28 @@ func initCancelInterrupt(g *group.Group) {
 	}, func(error) {
 		close(cancelInterrupt)
 	})
+}
+
+func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
+	var (
+		etcdServer = "http://etcd:2379"
+		prefix     = "/services/notificator/"
+		instance   = "notificator:8082"
+		key        = prefix + instance
+		value      = "http://" + instance
+	)
+
+	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
+		Key:   key,
+		Value: value,
+	}, logger)
+
+	registrar.Register()
+
+	return registrar, nil
 }

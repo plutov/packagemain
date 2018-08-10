@@ -174,4 +174,13 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 }
 ```
 
-We should always remember to deregister service when our program is stopped or crashed,
+We should always remember to deregister service when our program is stopped or crashed. Now etcd knows about our service, in this example we have only 1 instance, but in real life it could be more of course.
+
+Now let's test our Notificator service and check if it is able to register in etcd:
+
+```
+docker-compose up -d etcd
+docker-compose up notificator
+```
+
+Now let's get back to our Users service and invoke the Notificator service, basically we're going to send a fictional notification to user after it's created.

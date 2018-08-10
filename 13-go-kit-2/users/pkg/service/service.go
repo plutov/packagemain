@@ -1,6 +1,8 @@
 package service
 
-import "context"
+import (
+	"context"
+)
 
 // UsersService describes the service.
 type UsersService interface {

@@ -24,8 +24,8 @@ func decodeSendEmailRequest(_ context.Context, r interface{}) (interface{}, erro
 // encodeSendEmailResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 func encodeSendEmailResponse(_ context.Context, r interface{}) (interface{}, error) {
-	reply := r.(*pb.SendEmailReply)
-	return endpoint.SendEmailResponse{Id: reply.Id}, nil
+	reply := r.(endpoint.SendEmailResponse)
+	return &pb.SendEmailReply{Id: reply.Id}, nil
 }
 
 func (g *grpcServer) SendEmail(ctx context1.Context, req *pb.SendEmailRequest) (*pb.SendEmailReply, error) {

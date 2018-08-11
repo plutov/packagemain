@@ -107,8 +107,8 @@ func decodeSendEmailRequest(_ context.Context, r interface{}) (interface{}, erro
 }
 
 func encodeSendEmailResponse(_ context.Context, r interface{}) (interface{}, error) {
-	reply := r.(*pb.SendEmailReply)
-	return endpoint.SendEmailResponse{Id: reply.Id}, nil
+	reply := r.(endpoint.SendEmailResponse)
+	return &pb.SendEmailReply{Id: reply.Id}, nil
 }
 ```
 
@@ -120,6 +120,7 @@ Let's start with registering our Notificator service in the etcd. Basically etcd
 
 Let's add it to our Docker Compose so it will be available for our servers. Copied from Internet:
 
+docker-compose.yml:
 ```
     etcd:
         image: 'quay.io/coreos/etcd:v3.1.7'
@@ -155,7 +156,6 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 		prefix     = "/services/notificator/"
 		instance   = "notificator:8082"
 		key        = prefix + instance
-		value      = "http://" + instance
 	)
 
 	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
@@ -165,7 +165,7 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 
 	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
 		Key:   key,
-		Value: value,
+		Value: instance,
 	}, logger)
 
 	registrar.Register()
@@ -180,7 +180,89 @@ Now let's test our Notificator service and check if it is able to register in et
 
 ```
 docker-compose up -d etcd
-docker-compose up notificator
+docker-compose up -d notificator
 ```
 
 Now let's get back to our Users service and invoke the Notificator service, basically we're going to send a fictional notification to user after it's created.
+
+As Notificator is a gRPC service we need to share a client stub file with our client, in our case Users service.
+
+So the protobuf client stub code is located in `notificator/pkg/grpc/pb/notificator.pb.go`.
+
+users/pkg/service/service.go:
+```
+import (
+	"github.com/plutov/packagemain/13-go-kit-2/notificator/pkg/grpc/pb"
+	"google.golang.org/grpc"
+)
+
+type basicUsersService struct {
+	notificatorServiceClient pb.NotificatorClient
+}
+
+func (b *basicUsersService) Create(ctx context.Context, email string) error {
+	reply, err := b.notificatorServiceClient.SendEmail(context.Background(), &pb.SendEmailRequest{
+		Email:   email,
+		Content: "Hi! Thank you for registration...",
+	})
+
+	if reply != nil {
+		log.Printf("Email ID: %s", reply.Id)
+	}
+
+	return err
+}
+
+// NewBasicUsersService returns a naive, stateless implementation of UsersService.
+func NewBasicUsersService() UsersService {
+	conn, err := grpc.Dial("notificator:8082", grpc.WithInsecure())
+	if err != nil {
+		log.Printf("unable to connect to notificator: %s", err.Error())
+		return new(basicUsersService)
+	}
+
+	log.Printf("connected to notificator")
+
+	return &basicUsersService{
+		notificatorServiceClient: pb.NewNotificatorClient(conn),
+	}
+}
+```
+
+But as we registered Notificator in etcd we can replace hardcoded Notificator address by getting it from etcd.
+
+```
+var etcdServer = "http://etcd:2379"
+
+client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+if err != nil {
+	log.Printf("unable to connect to etcd: %s", err.Error())
+	return new(basicUsersService)
+}
+
+entries, err := client.GetEntries("/services/notificator/")
+if err != nil || len(entries) == 0 {
+	log.Printf("unable to get prefix entries: %s", err.Error())
+	return new(basicUsersService)
+}
+
+conn, err := grpc.Dial(entries[0], grpc.WithInsecure())
+```
+
+We get the first entry as we have only one, but in real system it may be hundreads of entries, so we can apply some logic for instance selection, for example Round Robin.
+
+Now let's start our Users service and test this out:
+
+```
+docker-compose up users
+```
+
+We're going to call the http endpoint to create a user:
+
+```
+curl -XPOST http://localhost:8802/create -d '{"email": "test"}'
+```
+
+### Conclusion
+
+In this video we have implemented fictional Notificator gRPC service, registered it 

@@ -172,7 +172,6 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 		prefix     = "/services/notificator/"
 		instance   = "notificator:8082"
 		key        = prefix + instance
-		value      = "http://" + instance
 	)
 
 	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
@@ -182,7 +181,7 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 
 	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
 		Key:   key,
-		Value: value,
+		Value: instance,
 	}, logger)
 
 	registrar.Register()

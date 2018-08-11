@@ -11,7 +11,7 @@ cp -R ../12-go-kit-1/* .
 find . -type f -print0 | xargs -0 sed -i "" "s/12-go-kit-1/13-go-kit-2/g"
 ```
 
-Let's implement our Notificator service first by writing the proto definition as it's supposed to be a gRPC service. We aleady have pre-generated file `notificator/pkg/grpc/pb/notificator.pb`:
+Let's implement our Notificator service first by writing the proto definition as it's supposed to be a gRPC service. We aleady have pre-generated file `notificator/pkg/grpc/pb/notificator.pb`, let's make it really simple.
 
 ```
 syntax = "proto3";

@@ -1,10 +1,12 @@
 Hi Gophers, My name is Alex Pliutau.
 
-Welcome to the "package main" new video.
+And today me and my buddy (Gopher toy) are going to make the second part of "Microservices with go-kit" series.
 
 ## Microservices with go-kit. Part 2
 
 In the previous video we prepared a local environment for our services using kit command line tool. In this video we'll continue to work with this code.
+
+I will copy all code to a new folder and replace the go imports.
 
 ```
 cp -R ../12-go-kit-1/* .
@@ -32,7 +34,7 @@ message SendEmailReply {
 }
 ```
 
-Now we need to generate server and client stubs, we can use the `compile.sh` script already given us by kit tool.
+Now we need to generate server and client stubs, we can use the `compile.sh` script already given us by kit tool, it basically contains the `protoc` command.
 
 ```
 cd notificator/pkg/grpc/pb
@@ -185,9 +187,9 @@ docker-compose up -d notificator
 
 Now let's get back to our Users service and invoke the Notificator service, basically we're going to send a fictional notification to user after it's created.
 
-As Notificator is a gRPC service we need to share a client stub file with our client, in our case Users service.
+As Notificator is a gRPC service, so we need to share a client stub file with our client, in our case Users service.
 
-So the protobuf client stub code is located in `notificator/pkg/grpc/pb/notificator.pb.go`.
+The protobuf client stub code is located in `notificator/pkg/grpc/pb/notificator.pb.go`, and we can just import this package to our cient.
 
 users/pkg/service/service.go:
 ```
@@ -265,4 +267,6 @@ curl -XPOST http://localhost:8802/create -d '{"email": "test"}'
 
 ### Conclusion
 
-In this video we have implemented fictional Notificator gRPC service, registered it 
+In this video we have implemented fictional Notificator gRPC service, registered it in etcd and invoked from another service Users.
+
+In the next video we're going to review the service authorization through JWT (SON Web Tokens).

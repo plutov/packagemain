@@ -124,21 +124,21 @@ Let's add it to our Docker Compose so it will be available for our servers. Copi
 
 docker-compose.yml:
 ```
-    etcd:
-        image: 'quay.io/coreos/etcd:v3.1.7'
-        restart: always
-        ports:
-            - '23791:2379'
-            - '23801:2380'
-        environment:
-            ETCD_NAME: infra
-            ETCD_INITIAL_ADVERTISE_PEER_URLS: 'http://etcd:2380'
-            ETCD_INITIAL_CLUSTER: infra=http://etcd:2380
-            ETCD_INITIAL_CLUSTER_STATE: new
-            ETCD_INITIAL_CLUSTER_TOKEN: secrettoken
-            ETCD_LISTEN_CLIENT_URLS: 'http://etcd:2379,http://localhost:2379'
-            ETCD_LISTEN_PEER_URLS: 'http://etcd:2380'
-            ETCD_ADVERTISE_CLIENT_URLS: 'http://etcd:2379'
+etcd:
+	image: 'quay.io/coreos/etcd:v3.1.7'
+	restart: always
+	ports:
+		- '23791:2379'
+		- '23801:2380'
+	environment:
+		ETCD_NAME: infra
+		ETCD_INITIAL_ADVERTISE_PEER_URLS: 'http://etcd:2380'
+		ETCD_INITIAL_CLUSTER: infra=http://etcd:2380
+		ETCD_INITIAL_CLUSTER_STATE: new
+		ETCD_INITIAL_CLUSTER_TOKEN: secrettoken
+		ETCD_LISTEN_CLIENT_URLS: 'http://etcd:2379,http://localhost:2379'
+		ETCD_LISTEN_PEER_URLS: 'http://etcd:2380'
+		ETCD_ADVERTISE_CLIENT_URLS: 'http://etcd:2379'
 ```
 
 Let's register Notificator in etcd, notificator/cmd/service/service.go:

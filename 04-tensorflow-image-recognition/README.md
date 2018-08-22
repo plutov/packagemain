@@ -13,7 +13,6 @@ We'll build a small command line application that takes URL to an image as input
 First of all we need to install TensorFlow, and here Docker can be really helpful, because installation of Tensorflow may be complicated. There is a Docker image with Tensorflow, but without Go, so I found an image with Tensorflow plus Go to reduce my Dockerfile.
 
 https://github.com/ctava/tensorflow-go
-FROM ctava/tensorflow-go
 
 Download Inception data:
 http://download.tensorflow.org/models/inception5h.zip

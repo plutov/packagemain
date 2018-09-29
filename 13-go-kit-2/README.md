@@ -269,4 +269,4 @@ curl -XPOST http://localhost:8802/create -d '{"email": "test"}'
 
 In this video we have implemented fictional Notificator gRPC service, registered it in etcd and invoked from another service Users.
 
-In the next video we're going to review the service authorization through JWT (SON Web Tokens).
+In the next video we're going to review the service authorization through JWT (JSON Web Tokens).

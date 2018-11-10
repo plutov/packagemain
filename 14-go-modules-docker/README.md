@@ -1,0 +1,139 @@
+Hi Gophers, My name is Alex Pliutau.
+
+I want to apologize that I haven't uploaded any videos in the last 2 months. I was busy with relocation to Berlin. Yes, I changed my job and now I am working as Technical Manager at 24metrics.com where we're building new-gen product in AdTech using Go for our backend services.
+
+As you may know Go 1.11 includes opt-in feature for versioned modules. Before go modules Gophers used dependency managers like `dep` or `glide`, but with go modules you don't need a 3rd-party manager as they are included into standard `go` toolchain.
+
+Also modules allow for the deprecation of the GOPATH, which was a blocker for some newcomers in Go.
+
+In this video I am going to demonstrate how to enable go modules for your program and then package it with Docker. And you will see how easy is this.
+
+## Create a project
+
+Let's create simple http server which will import logrus package for logging.
+
+As I said before go modules is an opt-in feature, which can be enabled by setting environment variable `GO111MODULE=on`.
+
+```bash
+export GO111MODULE=on
+mkdir httpserver && cd httpserver
+go mod init
+go get github.com/sirupsen/logrus
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	http.Handle("/", loggingMiddleware(http.HandlerFunc(handler)))
+	http.ListenAndServe(":8080", nil)
+}
+
+func handler(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "package main #14")
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		log.Infof("uri: %s", req.RequestURI)
+		next.ServeHTTP(w, req)
+	})
+}
+```
+
+Now if we run `go build` it will download deoendencies and build a binary:
+
+```bash
+go build
+./httpserver
+```
+
+## Package with Docker
+
+Let's create a simple Dockerfile for our server.
+
+```
+FROM golang as builder
+
+ENV GO111MODULE=on
+
+WORKDIR /app
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+
+EXPOSE 8080
+ENTRYPOINT ["/app/httpserver"]
+```
+
+```bash
+docker build -t httpserver .
+docker run -p 8080:8080 httpserver
+```
+
+## Cache go modules
+
+As you can see `go build` downloads our dependency. But what is not good here is that it will do it every time we build an image. Let's change something in main.go fiel and run build again.
+
+To fix this we can use `go mod download` which will doenload dependencies first. But we should re-run it if our go.mod / go.sum fiels have been changed.
+
+```
+FROM golang as builder
+
+ENV GO111MODULE=on
+
+WORKDIR /app
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN go build
+
+EXPOSE 8080
+ENTRYPOINT ["/app/httpserver"]
+```
+
+## Multi-stage build
+
+One more thing I like to do with my Dockerfiles is to use multi-stage build to reduce the size of final image. To run our server we only need a binary file, we don't need the go installed, so inside one Dockerfile we can build program first using `golang` image, and then copy only a binary from it to scratch.
+
+```
+# build stage
+FROM golang as builder
+
+ENV GO111MODULE=on
+
+WORKDIR /app
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+
+# final stage
+FROM scratch
+COPY --from=builder /app/httpserver /app/
+EXPOSE 8080
+ENTRYPOINT ["/app/httpserver"]
+```

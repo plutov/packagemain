@@ -5,6 +5,7 @@
 05-gocv-machinebox/*.jpg
 06-raspi-go-1/*.jpg
 09-slack-bot/vendor
+14-go-modules-docker/httpserver/httpserver
 
 # Binaries for programs and plugins
 *.exe

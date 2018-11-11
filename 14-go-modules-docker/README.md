@@ -1,16 +1,16 @@
 Hi Gophers, My name is Alex Pliutau.
 
-I want to apologize that I haven't uploaded any videos in the last 2 months. I was busy with relocation to Berlin. Yes, I changed my job and now I am working as Technical Manager at 24metrics where we're building new-gen product in AdTech using Go for our backend services.
+I want to apologize that I haven't uploaded any videos in the last 2 months. I was busy with relocation to Berlin. Yes, I changed my job and now I am working as Technical Manager at 24metrics where we're building new-gen product in AdTech using Go for our backend services. If you are looking for a job and you want to join my team, check the link below.
 
 As you may know Go 1.11 includes opt-in feature for versioned modules. Before go modules Gophers used dependency managers like `dep` or `glide`, but with go modules you don't need a 3rd-party manager as they are included into standard `go` toolchain.
 
 Also modules allow for the deprecation of the GOPATH, which was a blocker for some newcomers in Go.
 
-In this video I am going to demonstrate how to enable go modules for your program and then package it with Docker. And you will see how easy is this.
+In this video I am going to demonstrate how to enable go modules for your program and then package it with Docker. And you will see how easy it is.
 
 ## Create a project
 
-Let's create simple http server which will import logrus package for logging.
+Let's create simple http server which will use logrus package for logging.
 
 As I said before go modules is an opt-in feature, which can be enabled by setting environment variable `GO111MODULE=on`.
 
@@ -20,6 +20,8 @@ mkdir httpserver && cd httpserver
 go mod init
 go get github.com/sirupsen/logrus
 ```
+
+2 new files have been created in our folder: go.mod and go.sum.
 
 ```go
 package main
@@ -81,9 +83,11 @@ docker run -p 8080:8080 httpserver
 
 ## Cache go modules
 
-As you can see `go build` downloads our dependency. But what is not good here is that it will do it every time we build an image. And imagine if your project have a lot of dependencies, it will slow down your build process. Let's change something in main.go file and run build again.
+As you can see `go build` downloads our dependencies. But what is not good here is that it will do it every time we build an image. And imagine if your project have a lot of dependencies, it will slow down your build process. Let's change something in main.go file and run build again.
 
 To fix this we can use `go mod download` which will download dependencies first. But we should re-run it if our go.mod / go.sum files have been changed.
+
+We can do it by copying go.mod / go.sum files into docker first, then run `go mod download`, then copy all other files and run `go build`.
 
 ```
 FROM golang
@@ -132,3 +136,7 @@ COPY --from=builder /app/httpserver /app/
 EXPOSE 8080
 ENTRYPOINT ["/app/httpserver"]
 ```
+
+## Conclusion
+
+So I think go modules is a nice feature, and you definitely should try it, I use it in all my services I write. Of course it needs some improvements, but it works well in practice.

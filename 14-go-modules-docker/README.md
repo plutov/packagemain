@@ -1,6 +1,6 @@
 Hi Gophers, My name is Alex Pliutau.
 
-I want to apologize that I haven't uploaded any videos in the last 2 months. I was busy with relocation to Berlin. Yes, I changed my job and now I am working as Technical Manager at 24metrics.com where we're building new-gen product in AdTech using Go for our backend services.
+I want to apologize that I haven't uploaded any videos in the last 2 months. I was busy with relocation to Berlin. Yes, I changed my job and now I am working as Technical Manager at 24metrics where we're building new-gen product in AdTech using Go for our backend services.
 
 As you may know Go 1.11 includes opt-in feature for versioned modules. Before go modules Gophers used dependency managers like `dep` or `glide`, but with go modules you don't need a 3rd-party manager as they are included into standard `go` toolchain.
 
@@ -60,16 +60,11 @@ go build
 Let's create a simple Dockerfile for our server.
 
 ```
-FROM golang as builder
+FROM golang
 
 ENV GO111MODULE=on
 
 WORKDIR /app
-
-COPY go.mod .
-COPY go.sum .
-
-RUN go mod download
 
 COPY . .
 
@@ -86,12 +81,12 @@ docker run -p 8080:8080 httpserver
 
 ## Cache go modules
 
-As you can see `go build` downloads our dependency. But what is not good here is that it will do it every time we build an image. Let's change something in main.go fiel and run build again.
+As you can see `go build` downloads our dependency. But what is not good here is that it will do it every time we build an image. And imagine if your project have a lot of dependencies, it will slow down your build process. Let's change something in main.go file and run build again.
 
-To fix this we can use `go mod download` which will doenload dependencies first. But we should re-run it if our go.mod / go.sum fiels have been changed.
+To fix this we can use `go mod download` which will download dependencies first. But we should re-run it if our go.mod / go.sum files have been changed.
 
 ```
-FROM golang as builder
+FROM golang
 
 ENV GO111MODULE=on
 
@@ -104,7 +99,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
 EXPOSE 8080
 ENTRYPOINT ["/app/httpserver"]

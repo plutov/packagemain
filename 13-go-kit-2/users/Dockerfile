@@ -3,6 +3,7 @@ FROM golang
 RUN mkdir -p /go/src/github.com/plutov/packagemain/13-go-kit-2
 
 ADD . /go/src/github.com/plutov/packagemain/13-go-kit-2
+WORKDIR /go/src/github.com/plutov/packagemain/12-go-kit-1/users
 
 RUN go get  -t -v ./...
 RUN go get  github.com/canthefason/go-watcher

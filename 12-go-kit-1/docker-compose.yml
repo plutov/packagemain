@@ -4,29 +4,29 @@ services:
     build:
       context: .
       dockerfile: bugs/Dockerfile
-    restart: always
-    volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
     container_name: bugs
     ports:
     - 8800:8081
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
   notificator:
     build:
       context: .
       dockerfile: notificator/Dockerfile
-    restart: always
-    volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
     container_name: notificator
     ports:
     - 8801:8082
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
   users:
     build:
       context: .
       dockerfile: users/Dockerfile
-    restart: always
-    volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
     container_name: users
     ports:
     - 8802:8081
+    restart: always
+    volumes:
+    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1

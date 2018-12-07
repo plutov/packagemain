@@ -57,3 +57,5 @@ gcloud app deploy
 ```
 
 This command will deploy our Go web server to App Engine and will give us URL like `https://*.appspot.com`. Let's open and test if it works.
+
+And we should add it on Dialogflow as Fulfillment webhook URL.

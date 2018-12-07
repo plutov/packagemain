@@ -12,9 +12,34 @@ First of all we need to define intents in Dialogflow, in our case user will say 
 
 Sounds good? Let's make it!
 
-### Public endpoint
+### Dialogflow
+
+- Create new Dialogflow agent. This will create a project in Google Cloud.
+- Create entity `currency` with multiple phrases / synonyms: bitcoin, litecoin, etc.
+- Add intent `get_price` with training phrases: "What is the price of Bitcoin?", etc. and select @currency entity.
+- Enable Fulfillment
+
+### Fulfillment endpoint
 
 For Dialogflow we should have external endpoint of our service, so I am going to deploy our application to Google App Engine.
+
+#### app.go
+
+```go
+package app
+
+import (
+	"net/http"
+)
+
+func init() {
+	http.HandleFunc("/", handle)
+}
+
+func handle(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+```
 
 #### app.yaml
 
@@ -26,3 +51,9 @@ handlers:
 - url: /
   script: _go_app
 ```
+
+```bash
+gcloud app deploy
+```
+
+This command will deploy our Go web server to App Engine and will give us URL like `https://*.appspot.com`. Let's open and test if it works.

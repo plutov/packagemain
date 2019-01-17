@@ -6,6 +6,7 @@
 06-raspi-go-1/*.jpg
 09-slack-bot/vendor
 14-go-modules-docker/httpserver/httpserver
+15-google-cloud-functions-in-go/api/vendor
 
 # Binaries for programs and plugins
 *.exe

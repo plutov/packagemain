@@ -4,7 +4,7 @@ Hi Gophers, My name is Alex Pliutau.
 
 Earlier this month Google Cloud team finally announced beta support of Go, the runtime uses Go 1.11, which includes go modules as we know.
 
-And in this video I am goin to show how to write and deploy 2 types of functions: HTTP function and background function.
+And in this video I am going to show how to write and deploy 2 types of functions: HTTP function and background function.
 
 ## 2 types of functions
 
@@ -24,21 +24,28 @@ gcloud services enable cloudfunctions.googleapis.com
 
 ## HTTP function
 
-It will be a simple HTTP function which generates a random and sends it to Cloud Pub/Sub topic.
+It will be a simple HTTP function which generates a random number and sends it to Cloud Pub/Sub topic.
+
+Let's create our topic first:
+
+```bash
+gcloud alpha pubsub topics create randomNumbers
+```
 
 I will create a separate folder / package for this function.
 
 Our package uses `cloud.google.com/go/pubsub` package, so let's initialize go modules.
 
 ```bash
-GO111MODULE=on go mod init
-GO111MODULE=on go mod tidy
+export GO111MODULE=on
+go mod init
+go mod tidy
 ```
 
 If you have external dependencies, you have to vendor them under the library package locally before deploying.
 
 ```bash
-GO111MODULE=on go mod vendor
+go mod vendor
 ```
 
 Now it's time to deploy it:
@@ -65,12 +72,6 @@ httpsTrigger:
 ```
 
 ## Background function
-
-Let's check if topic has been created by our API.
-
-```bash
-gcloud alpha pubsub topics list
-```
 
 Since Google Cloud background functions can be triggered from Pub/Sub, let's just write a function which will simply log a payload of event triggering it.
 

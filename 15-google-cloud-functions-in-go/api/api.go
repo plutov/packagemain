@@ -25,22 +25,6 @@ func Send(w http.ResponseWriter, r *http.Request) {
 
 	// check if topic exists
 	topic := client.Topic(topicName)
-	ok, err := topic.Exists(ctx)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	// if topic doesnt exist create new one
-	if !ok {
-		topic, err = client.CreateTopic(ctx, topicName)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			return
-		}
-	}
 
 	rand.Seed(time.Now().UnixNano())
 

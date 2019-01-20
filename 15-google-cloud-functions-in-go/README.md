@@ -81,7 +81,7 @@ CODE 1
 
 Note: we don't need go modules in consumer.
 
-The deployment part is very similar to HTTP function, except we are saying how to trigger this function.
+The deployment part is very similar to HTTP function, except how we're triggering this function.
 
 ```bash
 gcloud alpha functions deploy consumer --entry-point Receive --runtime go111 --trigger-topic=randomNumbers

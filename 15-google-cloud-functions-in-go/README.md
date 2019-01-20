@@ -34,6 +34,8 @@ gcloud alpha pubsub topics create randomNumbers
 
 I will create a separate folder / package for this function.
 
+CODE 1
+
 Our package uses `cloud.google.com/go/pubsub` package, so let's initialize go modules.
 
 ```bash
@@ -74,6 +76,8 @@ httpsTrigger:
 ## Background function
 
 Since Google Cloud background functions can be triggered from Pub/Sub, let's just write a function which will simply log a payload of event triggering it.
+
+CODE 1
 
 Note: we don't need go modules in consumer.
 

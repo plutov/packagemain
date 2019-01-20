@@ -2,7 +2,7 @@
 
 Hi Gophers, My name is Alex Pliutau.
 
-Earlier this month Google Cloud team finally announced beta support of Go, the runtime uses Go 1.11, which includes go modules as we know.
+Earlier this month Google Cloud Functions team finally announced beta support of Go, the runtime uses Go 1.11, which includes go modules as we know.
 
 And in this video I am going to show how to write and deploy 2 types of functions: HTTP function and background function.
 
@@ -58,7 +58,7 @@ Where `api` is a name, `Send` is an entrypoint function, `--trigger-http` tells 
 
 The deployment may take few minutes.
 
-HTTP functions can be reached without an additional API gateway layer. Cloud Functions gives you an HTTPS URL. After the function is deployed, you can invoke the function by entering the URL into your browser.
+HTTP functions can be reached without an additional API gateway layer. Cloud Functions give you an HTTPS URL. After the function is deployed, you can invoke the function by entering the URL into your browser.
 
 Output:
 

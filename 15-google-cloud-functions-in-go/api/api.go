@@ -23,7 +23,6 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if topic exists
 	topic := client.Topic(topicName)
 
 	rand.Seed(time.Now().UnixNano())

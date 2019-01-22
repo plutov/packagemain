@@ -9,7 +9,7 @@ import (
 	"google.golang.org/appengine/urlfetch"
 )
 
-var token = "c3bfc1119947754409a5b92bfc9eb1e404ae953b"
+var token = ""
 
 // AQICNSearchResponse struct
 type AQICNSearchResponse struct {

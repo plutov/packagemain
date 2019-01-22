@@ -29,7 +29,7 @@ It will be a simple HTTP function which generates a random number and sends it t
 Let's create our topic first:
 
 ```bash
-gcloud alpha pubsub topics create randomNumbers
+gcloud pubsub topics create randomNumbers
 ```
 
 I will create a separate folder / package for this function.
@@ -53,7 +53,7 @@ go mod vendor
 Now it's time to deploy it:
 
 ```bash
-gcloud alpha functions deploy api --entry-point Send --runtime go111 --trigger-http --set-env-vars PROJECT_ID=projectname-227718
+gcloud functions deploy api --entry-point Send --runtime go111 --trigger-http --set-env-vars PROJECT_ID=projectname-227718
 ```
 
 Where `api` is a name, `Send` is an entrypoint function, `--trigger-http` tells that it is HTTP function. And we also set a PROJECT_ID env var.
@@ -84,13 +84,13 @@ Note: we don't need go modules in consumer.
 The deployment part is very similar to HTTP function, except how we're triggering this function.
 
 ```bash
-gcloud alpha functions deploy consumer --entry-point Receive --runtime go111 --trigger-topic=randomNumbers
+gcloud functions deploy consumer --entry-point Receive --runtime go111 --trigger-topic=randomNumbers
 ```
 
 Let's check logs now after execution.
 
 ```bash
-gcloud alpha functions logs read consumer
+gcloud functions logs read consumer
 ```
 
 ## Cleanup
@@ -98,9 +98,9 @@ gcloud alpha functions logs read consumer
 To cleanup let's delete everything we created: function and pub/sub topic.
 
 ```bash
-gcloud alpha functions delete api
-gcloud alpha functions delete consumer
-gcloud alpha pubsub topics delete randomNumbers
+gcloud functions delete api
+gcloud functions delete consumer
+gcloud pubsub topics delete randomNumbers
 ```
 
 ## Conclusion

@@ -62,10 +62,10 @@ func handleConnection(conn net.Conn) {
 Welcome to TelnetChat!
 ` + usage)
 
-	go c.startSender()
+	go c.startChat()
 }
 
-func (c *client) startSender() {
+func (c *client) startChat() {
 loop:
 	for {
 		msg, err := c.readClientInput()
@@ -83,8 +83,8 @@ loop:
 				break
 			}
 
-			c.name = strings.Join(msgArgs[1:len(msgArgs)], " ")
-			c.sendMsgToClient(fmt.Sprintf("all right, I will call you %s", c.name))
+			name := strings.Join(msgArgs[1:len(msgArgs)], " ")
+			c.changeNick(name)
 			break
 		case "/join":
 			if len(msgArgs) < 2 {
@@ -92,20 +92,8 @@ loop:
 				break
 			}
 
-			c.quitCurrentRoom()
-
-			c.room = strings.Join(msgArgs[1:len(msgArgs)], " ")
-			_, ok := rooms[c.room]
-			if !ok {
-				rooms[c.room] = &room{
-					members: make(map[net.Addr]*client),
-				}
-			}
-
-			rooms[c.room].announce(c, fmt.Sprintf("> %s joined the room", c.name))
-			rooms[c.room].members[c.conn.RemoteAddr()] = c
-
-			c.sendMsgToClient(fmt.Sprintf("welcome to %s", c.room))
+			room := strings.Join(msgArgs[1:len(msgArgs)], " ")
+			c.joinRoom(room)
 			break
 		case "/say":
 			if len(msgArgs) < 2 {
@@ -113,26 +101,58 @@ loop:
 				break
 			}
 
-			if len(c.room) == 0 {
-				c.sendMsgToClient("join a room first to send a message")
-				break
-			}
-
-			rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, strings.Join(msgArgs[1:len(msgArgs)], " ")))
+			message := strings.Join(msgArgs[1:len(msgArgs)], " ")
+			c.say(message)
 			break
 
 		case "/quit":
-			log.Printf("client %s left", c.conn.RemoteAddr())
-
-			c.quitCurrentRoom()
-
-			c.sendMsgToClient("Sad to see you go =(")
-			c.conn.Close()
+			c.quit()
 			break loop
 		default:
 			c.sendMsgToClient(usage)
 		}
 	}
+}
+
+func (c *client) changeNick(name string) {
+	c.name = name
+	c.sendMsgToClient(fmt.Sprintf("all right, I will call you %s", c.name))
+}
+
+func (c *client) joinRoom(roomName string) {
+	c.quitCurrentRoom()
+
+	c.room = roomName
+
+	_, ok := rooms[c.room]
+	if !ok {
+		rooms[c.room] = &room{
+			members: make(map[net.Addr]*client),
+		}
+	}
+
+	rooms[c.room].announce(c, fmt.Sprintf("> %s joined the room", c.name))
+	rooms[c.room].members[c.conn.RemoteAddr()] = c
+
+	c.sendMsgToClient(fmt.Sprintf("welcome to %s", c.room))
+}
+
+func (c *client) say(message string) {
+	if len(c.room) == 0 {
+		c.sendMsgToClient("join a room first to send a message")
+		return
+	}
+
+	rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, message))
+}
+
+func (c *client) quit() {
+	log.Printf("client %s left", c.conn.RemoteAddr())
+
+	c.quitCurrentRoom()
+
+	c.sendMsgToClient("Sad to see you go =(")
+	c.conn.Close()
 }
 
 func (c *client) quitCurrentRoom() {

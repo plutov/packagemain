@@ -65,12 +65,6 @@ Welcome to TelnetChat!
 	c.startChat()
 }
 
-func (c *client) sendMsgToClient(msg string) {
-	if _, err := c.conn.Write([]byte(msg + "\n")); err != nil {
-		log.Printf("unable to send message to a client: %s", err.Error())
-	}
-}
-
 func (c *client) startChat() {
 loop:
 	for {
@@ -124,16 +118,6 @@ loop:
 	}
 }
 
-func (c *client) readClientInput() (string, error) {
-	c.conn.Write([]byte(""))
-	s, err := bufio.NewReader(c.conn).ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Trim(s, "\r\n"), nil
-}
-
 func (c *client) changeNick(name string) {
 	c.name = name
 	c.sendMsgToClient(fmt.Sprintf("all right, I will call you %s", c.name))
@@ -158,10 +142,35 @@ func (c *client) joinRoom(roomName string) {
 	c.sendMsgToClient(fmt.Sprintf("welcome to %s", c.room))
 }
 
+func (c *client) quit() {
+	log.Printf("client %s left", c.conn.RemoteAddr())
+
+	c.quitCurrentRoom()
+
+	c.sendMsgToClient("Sad to see you go =(")
+	c.conn.Close()
+}
+
 func (c *client) quitCurrentRoom() {
 	if len(c.room) > 0 {
 		rooms[c.room].announce(c, fmt.Sprintf("> %s left the room", c.name))
 		delete(rooms[c.room].members, c.conn.RemoteAddr())
+	}
+}
+
+func (c *client) readClientInput() (string, error) {
+	c.conn.Write([]byte(""))
+	s, err := bufio.NewReader(c.conn).ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Trim(s, "\r\n"), nil
+}
+
+func (c *client) sendMsgToClient(msg string) {
+	if _, err := c.conn.Write([]byte(msg + "\n")); err != nil {
+		log.Printf("unable to send message to a client: %s", err.Error())
 	}
 }
 
@@ -171,13 +180,4 @@ func (r *room) announce(from *client, msg string) {
 			c.sendMsgToClient(msg)
 		}
 	}
-}
-
-func (c *client) quit() {
-	log.Printf("client %s left", c.conn.RemoteAddr())
-
-	c.quitCurrentRoom()
-
-	c.sendMsgToClient("Sad to see you go =(")
-	c.conn.Close()
 }

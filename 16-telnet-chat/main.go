@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 )
 
 type client struct {
@@ -19,8 +20,9 @@ type room struct {
 }
 
 var rooms map[string]*room
+var roomsMU *sync.RWMutex
 
-var usage = `
+const usage = `
 /nick <name>: get a name, or stay anonymous
 /join <room>: join a room, if room doesn't exist the new room will be created
 /say <msg>:   send message to everyone in a room
@@ -29,6 +31,7 @@ var usage = `
 
 func main() {
 	rooms = make(map[string]*room)
+	roomsMU = &sync.RWMutex{}
 
 	listener, err := net.Listen("tcp", ":8888")
 	if err != nil {
@@ -113,7 +116,11 @@ loop:
 			}
 
 			message := strings.Join(msgArgs[1:len(msgArgs)], " ")
+
+			roomsMU.Lock()
+			defer roomsMU.Unlock()
 			rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, message))
+
 			break
 		case "/quit":
 			c.quit()
@@ -144,6 +151,9 @@ func (c *client) joinRoom(roomName string) {
 
 	c.room = roomName
 
+	roomsMU.Lock()
+	defer roomsMU.Unlock()
+
 	_, ok := rooms[c.room]
 	// create new room
 	if !ok {
@@ -160,6 +170,9 @@ func (c *client) joinRoom(roomName string) {
 
 func (c *client) quitCurrentRoom() {
 	if len(c.room) > 0 {
+		roomsMU.Lock()
+		defer roomsMU.Unlock()
+
 		rooms[c.room].announce(c, fmt.Sprintf("> %s left the room", c.name))
 		delete(rooms[c.room].members, c.conn.RemoteAddr())
 	}

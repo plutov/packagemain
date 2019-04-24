@@ -4,7 +4,7 @@ Telnet is one of the earliest remote login protocols on the Internet. It was ini
 
 Telnet clients can connect to Telnet server using `telnet <host> <port>` command, for example type `telnet towel.blinkenlights.nl` and watch Star Wars in ASCII.
 
-In this video I will live code a simple Telnet chat server in Go.
+In this video I will live code a simple Telnet chat server in Go, so few people can connect to the same server and exchange messages.
 
 Once user connects to the chat server using Telnet, they can use the following commands to talk to the server:
 
@@ -71,8 +71,9 @@ type room struct {
 }
 
 var rooms map[string]*room
+var roomsMU *sync.RWMutex
 
-var usage = `
+const usage = `
 /nick <name>: get a name, or stay anonymous
 /join <room>: join a room, if room doesn't exist the new room will be created
 /say <msg>:   send message to everyone in a room
@@ -197,6 +198,7 @@ func (c *client) changeNick(name string) {
 ```go
 func main() {
     rooms = make(map[string]*room)
+	roomsMU = &sync.RWMutex{}
 
     // ...
 }
@@ -219,6 +221,9 @@ func (c *client) joinRoom(roomName string) {
 	c.quitCurrentRoom()
 
 	c.room = roomName
+
+	roomsMU.Lock()
+	defer roomsMU.Unlock()
 
 	_, ok := rooms[c.room]
 	// create new room
@@ -264,7 +269,10 @@ case "/say":
         return
     }
 
-    message := strings.Join(msgArgs[1:len(msgArgs)], " ")
+	message := strings.Join(msgArgs[1:len(msgArgs)], " ")
+
+	roomsMU.Lock()
+	defer roomsMU.Unlock()
     rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, message))
     break
 ```

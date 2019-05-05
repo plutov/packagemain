@@ -4,7 +4,7 @@ Hi Gophers, My name is Alex Pliutau.
 
 As we all know, Go is mostly used to build APIs, web backends, CLI tools. But what's interesting is that Go can be used in places we were not expecting to see it.
 
-In this video we will build a Desktop applicaiton with Go and Vue.js using [wails.app](https://wails.app) framework.
+In this video we will build a Desktop applicaiton with Go and Vue.js using [Wails](https://wails.app) framework.
 
 This framework is new and still in beta, but I was surprised how easy it was to develop, build and package an app with it.
 
@@ -42,7 +42,7 @@ Also Wails provides a unified Events system similar to Javascript's native event
 
 ## Backend
 
-Let's develop a backend part first, to get CPU Usage and send it to the frontend using binding or events.
+Let's develop a backend part first, to get CPU Usage and send it to the frontend using `bind` method.
 
 I will create a new package and define a type which I'll expose (bind) to the frontend.
 
@@ -188,6 +188,34 @@ import VueApexCharts from 'vue-apexcharts'
 
 Vue.use(VueApexCharts)
 Vue.component('apexchart', VueApexCharts)
+```
+
+Now we can display our CPU Usage using apexcharts, and update the values of the component by receiving an event from Backend:
+
+```html
+<template>
+  <apexchart type="radialBar" :options="options" :series="series"></apexchart>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      series: [0],
+      options: {
+        labels: ['CPU Usage']
+      }
+    };
+  },
+  mounted: function() {
+    wails.events.on("cpu_usage", cpu_usage => {
+      if (cpu_usage) {
+        this.series = [ cpu_usage.avg ];
+      }
+    });
+  }
+};
+</script>
 ```
 
 To change styles we can directly modify the `src/assets/css/main.css` or define them in components.

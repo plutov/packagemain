@@ -1,4 +1,4 @@
-# packagemain #6: Building Desktop App using Wails
+# packagemain #6: Building Desktop App in Go using Wails
 
 Hi Gophers, My name is Alex Pliutau.
 
@@ -12,14 +12,14 @@ Wails provides the ability to wrap both Go code and a web frontend into a single
 
 ## App
 
-I will build a very simple app to display CPU Usage of my machine in real time. And if you have a time and like Wails, you can come up with something more creative and complex.
+I will build a very simple app to display CPU Usage of my machine in real time. And if you have time and like Wails, you can come up with something more creative and complex.
 
 ## Installation
 
 Wails CLI can be installed with `go get`. After installation, you should set it up using `wails setup` command.
 
 ```
-go get -u github.com/wailsapp/wails/cmd/wails
+go get github.com/wailsapp/wails/cmd/wails
 wails setup
 ```
 

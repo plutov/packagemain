@@ -1,51 +1,55 @@
 package endpoints
 
-import "context"
+import (
+	"context"
 
-import "github.com/go-kit/kit/endpoint"
+	"github.com/go-kit/kit/endpoint"
+	"github.com/plutov/packagemain/drafts/17-go-kit-jwt/service"
+)
 
-import "github.com/plutov/packagemain/drafts/17-go-kit-jwt/service"
-
-type AuthRequest struct {
-	C service.Credentials `json:"credentials"`
-}
-
-type AuthResponse struct {
-	JWT string `json:"jwt"`
-	Err string `json:"err"`
-}
-
-func MakeAuthEndpoint(s service.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AuthRequest)
-		string1, err := s.Auth(ctx, req.C)
-		return AuthResponse{JWT: string1, Err: getErrorMsg(err)}, nil
-	}
-}
-
-type MeRequest struct {
-}
-type MeResponse struct {
-	Me  service.User `json:"me"`
-	Err string       `json:"err"`
-}
-
-func MakeMeEndpoint(s service.Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		U, err := s.Me(ctx)
-		return MeResponse{Me: U, Err: getErrorMsg(err)}, nil
-	}
-}
-
+// Endpoints .
 type Endpoints struct {
 	Auth endpoint.Endpoint
 	Me   endpoint.Endpoint
 }
 
-func getErrorMsg(err error) string {
-	if err == nil {
-		return ""
-	}
+// AuthRequest .
+type AuthRequest struct {
+	Email string `json:"email"`
+	Pass  string `json:"pass"`
+}
 
-	return err.Error()
+// AuthResponse .
+type AuthResponse struct {
+	JWT string `json:"jwt"`
+	Err string `json:"error,omitempty"`
+}
+
+// MakeAuthEndpoint .
+func MakeAuthEndpoint(s service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(AuthRequest)
+		jwt, err := s.Auth(ctx, req.Email, req.Pass)
+		if err != nil {
+			return AuthResponse{Err: err.Error()}, nil
+		}
+		return AuthResponse{JWT: jwt}, nil
+	}
+}
+
+// MeResponse .
+type MeResponse struct {
+	Email string `json:"email"`
+	Err   string `json:"error,omitempty"`
+}
+
+// MakeMeEndpoint .
+func MakeMeEndpoint(s service.AuthService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		email, err := s.Me(ctx)
+		if err != nil {
+			return MeResponse{Err: err.Error()}, nil
+		}
+		return MeResponse{Email: email}, nil
+	}
 }

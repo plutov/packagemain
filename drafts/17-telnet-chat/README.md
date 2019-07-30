@@ -225,9 +225,8 @@ func (c *client) joinRoom(roomName string) {
 	roomsMU.Lock()
 	defer roomsMU.Unlock()
 
-	_, ok := rooms[c.room]
-	// create new room
-	if !ok {
+	if _, ok := rooms[c.room]; !ok {
+		// create new room if doesn't exist
 		rooms[c.room] = &room{
 			members: make(map[net.Addr]*client),
 		}
@@ -241,6 +240,9 @@ func (c *client) joinRoom(roomName string) {
 
 func (c *client) quitCurrentRoom() {
 	if len(c.room) > 0 {
+		roomsMU.Lock()
+		defer roomsMU.Unlock()
+
 		rooms[c.room].announce(c, fmt.Sprintf("> %s left the room", c.name))
 		delete(rooms[c.room].members, c.conn.RemoteAddr())
 	}
@@ -272,8 +274,9 @@ case "/say":
 	message := strings.Join(msgArgs[1:len(msgArgs)], " ")
 
 	roomsMU.Lock()
-	defer roomsMU.Unlock()
-    rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, message))
+	rooms[c.room].announce(c, fmt.Sprintf("> %s says: %s", c.name, message))
+	roomsMU.Unlock()
+
     break
 ```
 

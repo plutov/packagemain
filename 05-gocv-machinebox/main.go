@@ -40,7 +40,7 @@ func main() {
 	defer classifier.Close()
 
 	for {
-		if ok := webcam.Read(img); !ok || img.Empty() {
+		if ok := webcam.Read(&img); !ok || img.Empty() {
 			log.Print("cannot read webcam")
 			continue
 		}
@@ -72,8 +72,8 @@ func main() {
 			// draw rectangle for the face
 			size := gocv.GetTextSize(caption, gocv.FontHersheyPlain, 3, 2)
 			pt := image.Pt(r.Min.X+(r.Min.X/2)-(size.X/2), r.Min.Y-2)
-			gocv.PutText(img, caption, pt, gocv.FontHersheyPlain, 3, blue, 2)
-			gocv.Rectangle(img, r, blue, 3)
+			gocv.PutText(&img, caption, pt, gocv.FontHersheyPlain, 3, blue, 2)
+			gocv.Rectangle(&img, r, blue, 3)
 		}
 
 		// show the image in the window, and wait 100ms

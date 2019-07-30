@@ -27,7 +27,7 @@ Then we need to set some environment variables:
 source $GOPATH/src/gocv.io/x/gocv/env.sh
 ```
 
-To verify that GoCV works fine we can run:
+On https://gocv.io/getting-started/macos/ you can find how to install it on Mac. To verify that GoCV works fine we can run:
 
 ```
 go run $GOPATH/src/gocv.io/x/gocv/cmd/version/main.go

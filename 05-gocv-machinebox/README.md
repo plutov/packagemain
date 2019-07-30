@@ -19,13 +19,15 @@ Now to be able to capture video and recognize faces from the web camera we have 
 brew install opencv3
 ```
 
-Then we need to set someenvironment variables:
+> Edit: As of July 2019, the above brew command installs opencv default version which is OpenCV4. You probably won't need to set the following env variables anymore.
+
+Then we need to set some environment variables:
 
 ```
 source $GOPATH/src/gocv.io/x/gocv/env.sh
 ```
 
-On https://gocv.io/getting-started/osx/ you can find how to install it on Mac. To verify that GoCV works fine we can run:
+To verify that GoCV works fine we can run:
 
 ```
 go run $GOPATH/src/gocv.io/x/gocv/cmd/version/main.go
@@ -65,7 +67,7 @@ func main() {
 	defer window.Close()
 
 	for {
-		if ok := webcam.Read(img); !ok || img.Empty() {
+		if ok := webcam.Read(&img); !ok || img.Empty() {
 			log.Print("cannot read webcam")
 			continue
 		}
@@ -105,8 +107,8 @@ for {
 		// draw rectangle for the face
 		size := gocv.GetTextSize("I don't know you", gocv.FontHersheyPlain, 3, 2)
 		pt := image.Pt(r.Min.X+(r.Min.X/2)-(size.X/2), r.Min.Y-2)
-		gocv.PutText(img, "I don't know you", pt, gocv.FontHersheyPlain, 3, blue, 2)
-		gocv.Rectangle(img, r, blue, 3)
+		gocv.PutText(&img, "I don't know you", pt, gocv.FontHersheyPlain, 3, blue, 2)
+		gocv.Rectangle(&img, r, blue, 3)
 	}
 
 	...

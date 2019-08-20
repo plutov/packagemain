@@ -90,6 +90,8 @@ Example conversation:
 
 > [assistant] Statefulset has been updated. Anything else?
 
+If you have Google Home device you can do same conversation there.
+
 ### Conclusion
 
 I don't suggest to publish this Google Home Action, but rather use it from the single device authenticated with the same user as in Google Assistant. Unless you want to make your Kubernetes cluster public :)

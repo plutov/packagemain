@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/plutov/packagemain/01-grpc/proto"
-	"github.com/plutov/packagemain/01-grpc/server/blockchain"
+	"github.com/plutov/packagemain/00-grpc/proto"
+	"github.com/plutov/packagemain/00-grpc/server/blockchain"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )

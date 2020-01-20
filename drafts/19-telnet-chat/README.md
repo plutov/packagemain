@@ -1,4 +1,4 @@
-# packagemain #17: Creating simple Telnet Chat
+# packagemain #19: Creating simple Telnet Chat in Go
 
 Telnet is one of the earliest remote login protocols on the Internet. It was initally released in the early days of IP networking in 1969, and was for a long time the default way to access remote networked computers.
 

@@ -1,10 +1,10 @@
 ## packagemain #18: Basic CI pipeline for Go project using GitHub Actions
 
-[GitHub Actions](https://github.com/features/actions) gives free CI/CD tools for Open Source projects.
+Today we'll talk about [GitHub Actions](https://github.com/features/actions), which gives free CI/CD tools for Open Source projects.
 
 GitHub Actions are based on the concept of Workflows, that define the execution order and flow.
 
-I case of this video we'll build a dummy Go program with a very basic pipeline that after each Pull Request or push to master will run lint and unit tests.
+In this video we'll build a dummy Go program with a very basic pipeline that after each Pull Request or push to master will run lint and unit tests.
 
 And when new tag is created in the repository, it will create a new GitHub release with artifacts attached.
 
@@ -86,7 +86,7 @@ Here is how our Test workflow looks:
 #### .github/workflows/test.yml
 
 ```yaml
-on: [pull_request, push]
+on: [pull_request]
 name: Test
 jobs:
   test:
@@ -167,4 +167,4 @@ git push --tags
 
 ### Conclusion
 
-That was it for setting up a basic workflows for Go project, but you can do much more with Actions. Check out [Actions Marketplace](https://github.com/marketplace?type=actions), where you can find Actions of your interest.
+That was it for setting up a basic workflows for Go project, but you can do much more with Actions. Check out [Actions Marketplace](https://github.com/marketplace?type=actions), where you can find Actions of your interest, I attached few helpful links below.

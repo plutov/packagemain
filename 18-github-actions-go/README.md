@@ -44,9 +44,11 @@ func TestFibonacci(t *testing.T) {
 	}
 
 	for _, d := range data {
-		if got := Fibonacci(d.n); got != d.want {
-			t.Errorf("Invalid Fibonacci value for N: %d, got: %d, want: %d", d.n, got, d.want)
-		}
+		t.Run("", func(t *testing.T) {
+			if got := Fibonacci(d.n); got != d.want {
+				t.Errorf("Invalid Fibonacci value for N: %d, got: %d, want: %d", d.n, got, d.want)
+			}
+		})
 	}
 }
 ```

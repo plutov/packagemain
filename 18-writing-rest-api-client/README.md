@@ -50,9 +50,9 @@ func NewClient(apiKey string) *Client {
 }
 ```
 
-Now let's move on and implement "Get Faces" endpoint, which returns the list of results and supports pagination, which means our function whould support pagination options as input.
+Now let's move on and implement "Get Faces" endpoint, which returns the list of results and supports pagination, which means our function should support pagination options as input.
 
-As I noticed in API success responses and error responses always follow the same structure, so we can define them separately from data types and don't make them exported since this is not relevant information to the user.
+As I noticed in API, success responses and error responses always follow the same structure, so we can define them separately from data types and don't make them exported since this is not relevant information to the user.
 
 ```go
 type errorResponse struct {
@@ -193,7 +193,7 @@ The next topic is Documentation. Make your SDK self-explanatory with clear types
 
 Compatibility and Versioning.
 
-Version your SDK updates by publishing new semver to your repository. But make sure you're not breaking anything with new minor/patch releases. Usually your SDK library should follow API updates,so if API releases v2, then there should be an SDK v2 release as well.
+Version your SDK updates by publishing new semver to your repository. But make sure you're not breaking anything with new minor/patch releases. Usually your SDK library should follow API updates, so if API releases v2, then there should be an SDK v2 release as well.
 
 ## Conclusion
 

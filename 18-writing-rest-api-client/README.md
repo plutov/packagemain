@@ -15,7 +15,7 @@ Before we begin to write any code, we should study the API to understand the mai
 
 Understanding all of this will help you to put a right structure.
 
-Let's start with the basics. Create a repository, pick a correct name, ideally matching the API service name. Initialize go modules. And create our main struct to hold user-specific information. This struct will contain API endpoints as functions  laters.
+Let's start with the basics. Create a repository, pick a correct name, ideally matching the API service name. Initialize go modules. And create our main struct to hold user-specific information. This struct will contain API endpoints as functions later.
 
 This struct should be flexible but also limited so the user can't see internal fields.
 
@@ -141,6 +141,40 @@ func (c *Client) GetFaces(ctx context.Context, options *FacesListOptions) (*Face
 }
 ```
 
+```go
+// Content-type and body should be already added to req
+func (c *Client) sendRequest(req *http.Request, v interface{}) error {
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Accept", "application/json; charset=utf-8")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
+
+	res, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+		var errRes errorResponse
+		if err = json.NewDecoder(res.Body).Decode(&errRes); err == nil {
+			return errors.New(errRes.Message)
+		}
+
+		return fmt.Errorf("unknown error, status code: %d", res.StatusCode)
+	}
+
+	fullResponse := successResponse{
+		Data: v,
+	}
+	if err = json.NewDecoder(res.Body).Decode(&fullResponse); err != nil {
+		return err
+	}
+
+	return nil
+}
+```
+
 Since all API endpoints act in the same manner, helper function `sendRequest` is created to avoid code duplication. It will set common headers (content type, auth header), make request, check for errors, parse response.
 
 Note that we're considering status codes < 200 and >= 400 as errors and parse response into `errorResponse`. It depends on the API design though, your API may handle errors differently.
@@ -167,6 +201,7 @@ import (
 func TestGetFaces(t *testing.T) {
 	c := NewClient(os.Getenv("FACEST_INTEGRATION_API_KEY"))
 
+	ctx := context.Background()
 	res, err := c.GetFaces(nil)
 
 	assert.Nil(t, err, "expecting nil error")

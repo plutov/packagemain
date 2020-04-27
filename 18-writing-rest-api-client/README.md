@@ -179,11 +179,11 @@ Since all API endpoints act in the same manner, helper function `sendRequest` is
 
 Note that we're considering status codes < 200 and >= 400 as errors and parse response into `errorResponse`. It depends on the API design though, your API may handle errors differently.
 
-## Tips
+## Tests
 
 So now we have SDK with single API endpoint covered, which is enough for this example, but is it enough to be able to ship this to users? Probably yes, but let's focus on few more things.
 
-Tests. Tests are almost required here, and there can be 2 types of them: unit tests and integration tests. For the second one we'll call real API. Let's write a simple test.
+Tests are almost required here, and there can be 2 types of them: unit tests and integration tests. For the second one we'll call real API. Let's write a simple test.
 
 
 ```go
@@ -220,13 +220,15 @@ Note that this test uses env. var where API Key is set. By doing this, we're mak
 
 Also, these tests are separated from unit tests (because they take longer to execute):
 
-```
+```shell
 go test -v -tags=integration
 ```
 
-The next topic is Documentation. Make your SDK self-explanatory with clear types and abstractions, don't expose too much information. Usually, it's enough to provide `godoc` link as main documentation.
+### Documentation.
 
-Compatibility and Versioning.
+Make your SDK self-explanatory with clear types and abstractions, don't expose too much information. Usually, it's enough to provide `godoc` link as main documentation.
+
+### Compatibility and Versioning.
 
 Version your SDK updates by publishing new semver to your repository. But make sure you're not breaking anything with new minor/patch releases. Usually your SDK library should follow API updates, so if API releases v2, then there should be an SDK v2 release as well.
 
@@ -235,7 +237,5 @@ Version your SDK updates by publishing new semver to your repository. But make s
 That's it.
 
 One question though: what are the best API Go clients have you seen so far? Please share them in the comments.
-
-## Additional Info
 
 You can find the full source code [here](https://github.com/facest/facest-go).

@@ -142,7 +142,6 @@ func (c *Client) GetFaces(ctx context.Context, options *FacesListOptions) (*Face
 ```
 
 ```go
-// Content-type and body should be already added to req
 func (c *Client) sendRequest(req *http.Request, v interface{}) error {
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json; charset=utf-8")

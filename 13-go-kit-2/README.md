@@ -62,10 +62,7 @@ type NotificatorService interface {
 type basicNotificatorService struct{}
 
 func (b *basicNotificatorService) SendEmail(ctx context.Context, email string, content string) (string, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
+	id := uuid.NewV4()
 
 	return id.String(), nil
 }

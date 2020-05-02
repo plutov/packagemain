@@ -2,25 +2,35 @@ version: "2"
 services:
     bugs:
         build:
-            context: ./nugs
+            context: ./
+            dockerfile: ./bugs/Dockerfile
         restart: always
         container_name: bugs
         ports:
             - "8800:8081"
+        depends_on:
+            - etcd
     notificator:
         build:
-            context: ./notificator
+            context: ./
+            dockerfile: ./notificator/Dockerfile
         restart: always
         container_name: notificator
         ports:
             - "8801:8082"
+        depends_on:
+            - etcd
     users:
         build:
-            context: ./users
+            context: ./
+            dockerfile: ./users/Dockerfile
         restart: always
         container_name: users
         ports:
             - "8802:8081"
+        depends_on:
+            - etcd
+            - notificator
     etcd:
         image: "quay.io/coreos/etcd:v3.1.7"
         restart: always

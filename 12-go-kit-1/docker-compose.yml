@@ -6,27 +6,27 @@ services:
       dockerfile: bugs/Dockerfile
     container_name: bugs
     ports:
-    - 8800:8081
+      - 8800:8081
     restart: always
     volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
+      - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
   notificator:
     build:
       context: .
       dockerfile: notificator/Dockerfile
     container_name: notificator
     ports:
-    - 8801:8082
+      - 8801:8082
     restart: always
     volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
+      - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
   users:
     build:
       context: .
       dockerfile: users/Dockerfile
     container_name: users
     ports:
-    - 8802:8081
+      - 8802:8081
     restart: always
     volumes:
-    - .:/go/src/github.com/plutov/packagemain/12-go-kit-1
+      - .:/go/src/github.com/plutov/packagemain/12-go-kit-1

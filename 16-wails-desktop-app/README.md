@@ -136,7 +136,7 @@ Let's test if it works by simply displaying the CPU Usage value on the screen:
 
 ```
 wails build -d
-./cpustats
+cpustats
 ```
 
 ## Events
@@ -164,7 +164,7 @@ In Vue.js we can subscribe to this event when component is mounted (or any other
 
 ```js
 mounted: function() {
-    wails.events.on("cpu_usage", cpu_usage => {
+    wails.Events.on("cpu_usage", cpu_usage => {
         if (cpu_usage) {
             console.log(cpu_usage.avg);
         }
@@ -177,6 +177,7 @@ mounted: function() {
 I'd like to display CPU Usage with a gauge bar, so I will include a third party dependency for that, simply by using `npm`:
 
 ```
+cd frontend
 npm install --save apexcharts
 npm install --save vue-apexcharts
 ```
@@ -208,7 +209,7 @@ export default {
     };
   },
   mounted: function() {
-    wails.events.on("cpu_usage", cpu_usage => {
+    wails.Events.on("cpu_usage", cpu_usage => {
       if (cpu_usage) {
         this.series = [ cpu_usage.avg ];
       }
@@ -224,7 +225,7 @@ To change styles we can directly modify the `src/assets/css/main.css` or define 
 
 ```
 wails build -d
-./cpustats
+cpustats
 ```
 
 ## Conclusion

@@ -136,7 +136,7 @@ Let's test if it works by simply displaying the CPU Usage value on the screen:
 
 ```
 wails build -d
-cpustats
+./build/cpustats
 ```
 
 ## Events
@@ -225,7 +225,7 @@ To change styles we can directly modify the `src/assets/css/main.css` or define 
 
 ```
 wails build -d
-cpustats
+./build/cpustats
 ```
 
 ## Conclusion

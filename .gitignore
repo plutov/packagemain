@@ -7,7 +7,6 @@
 09-slack-bot/vendor
 14-go-modules-docker/httpserver/httpserver
 15-google-cloud-functions-in-go/api/vendor
-16-wails-desktop-app/cpustats/build
 
 # Binaries for programs and plugins
 *.exe

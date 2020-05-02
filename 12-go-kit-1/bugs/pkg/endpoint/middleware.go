@@ -3,10 +3,11 @@ package endpoint
 import (
 	"context"
 	"fmt"
+	"time"
+
 	endpoint "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	metrics "github.com/go-kit/kit/metrics"
-	"time"
 )
 
 // InstrumentingMiddleware returns an endpoint middleware that records

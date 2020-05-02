@@ -1,47 +1,38 @@
-version: '2'
+version: "2"
 services:
     bugs:
         build:
-            context: .
-            dockerfile: bugs/Dockerfile
+            context: ./nugs
         restart: always
-        volumes:
-            - '.:/go/src/github.com/plutov/packagemain/13-go-kit-2'
         container_name: bugs
         ports:
-            - '8800:8081'
+            - "8800:8081"
     notificator:
         build:
-            context: .
-            dockerfile: notificator/Dockerfile
+            context: ./notificator
         restart: always
-        volumes:
-            - '.:/go/src/github.com/plutov/packagemain/13-go-kit-2'
         container_name: notificator
         ports:
-            - '8801:8082'
+            - "8801:8082"
     users:
         build:
-            context: .
-            dockerfile: users/Dockerfile
+            context: ./users
         restart: always
-        volumes:
-            - '.:/go/src/github.com/plutov/packagemain/13-go-kit-2'
         container_name: users
         ports:
-            - '8802:8081'
+            - "8802:8081"
     etcd:
-        image: 'quay.io/coreos/etcd:v3.1.7'
+        image: "quay.io/coreos/etcd:v3.1.7"
         restart: always
         ports:
-            - '23791:2379'
-            - '23801:2380'
+            - "23791:2379"
+            - "23801:2380"
         environment:
             ETCD_NAME: infra
-            ETCD_INITIAL_ADVERTISE_PEER_URLS: 'http://etcd:2380'
+            ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd:2380"
             ETCD_INITIAL_CLUSTER: infra=http://etcd:2380
             ETCD_INITIAL_CLUSTER_STATE: new
             ETCD_INITIAL_CLUSTER_TOKEN: secrettoken
-            ETCD_LISTEN_CLIENT_URLS: 'http://etcd:2379,http://localhost:2379'
-            ETCD_LISTEN_PEER_URLS: 'http://etcd:2380'
-            ETCD_ADVERTISE_CLIENT_URLS: 'http://etcd:2379'
+            ETCD_LISTEN_CLIENT_URLS: "http://etcd:2379,http://localhost:2379"
+            ETCD_LISTEN_PEER_URLS: "http://etcd:2380"
+            ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"

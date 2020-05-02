@@ -1,12 +1,11 @@
-FROM golang
+FROM golang:1.13
 
-RUN mkdir -p /go/src/github.com/plutov/packagemain/13-go-kit-2
+ENV GO111MODULE=on
 
-ADD . /go/src/github.com/plutov/packagemain/13-go-kit-2
 WORKDIR /go/src/github.com/plutov/packagemain/13-go-kit-2/bugs
 
-RUN go get -t -v ./...
-RUN go get github.com/canthefason/go-watcher
-RUN go install github.com/canthefason/go-watcher/cmd/watcher
+COPY . .
 
-ENTRYPOINT  watcher -run github.com/plutov/packagemain/13-go-kit-2/bugs/cmd  -watch github.com/plutov/packagemain/13-go-kit-2/bugs
+RUN CGO_ENABLED=0 GOOS=linux go build -mod vendor -o server ./cmd/main.go
+
+CMD [ "./server" ]

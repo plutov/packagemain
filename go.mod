@@ -1,20 +1,22 @@
 module github.com/plutov/packagemain
 
-require (
-	github.com/go-kit/kit v0.10.0
-	github.com/golang/protobuf v1.4.0
-	github.com/leaanthony/mewn v0.10.7
-	github.com/lightstep/lightstep-tracer-go v0.20.0
-	github.com/oklog/oklog v0.3.2
-	github.com/opentracing/opentracing-go v1.1.0
-	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
-	github.com/prometheus/client_golang v1.6.0
-	github.com/satori/go.uuid v1.2.0
-	github.com/shirou/gopsutil v2.20.1+incompatible
-	github.com/wailsapp/wails v0.17.0
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
-	google.golang.org/grpc v1.29.1
-	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
-)
-
 go 1.13
+
+require (
+	cloud.google.com/go v0.56.0
+	github.com/Krognol/go-wolfram v0.0.0-20180610151123-5b91101b92a8
+	github.com/blackjack/webcam v0.0.0-20200313125108-10ed912a8539
+	github.com/christianrondeau/go-wit v0.0.0-20170831224739-d540d3cc2c3d
+	github.com/golang/protobuf v1.4.0
+	github.com/machinebox/sdk-go v0.3.1
+	github.com/nlopes/slack v0.6.0
+	github.com/plutov/htgo-tts v0.0.0-20190202120930-874fa9dd16ff
+	github.com/tensorflow/tensorflow v2.1.0+incompatible
+	gocv.io/x/gocv v0.23.0
+	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	google.golang.org/api v0.22.0
+	google.golang.org/appengine v1.6.6
+	google.golang.org/genproto v0.0.0-20200430143042-b979b6f78d84
+	google.golang.org/grpc v1.29.1
+)

@@ -1,8 +1,12 @@
-package testable
+package testable_test
 
-import "testing"
+import (
+	"testing"
 
-func Test_strInSlice(t *testing.T) {
+	"github.com/plutov/packagemain/drafts/19-testable-go-code/testable"
+)
+
+func TestStrInSlice(t *testing.T) {
 	var tests = []struct {
 		slice []string
 		find  string
@@ -14,7 +18,7 @@ func Test_strInSlice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.find, func(t *testing.T) {
-			got := strInSlice(tt.slice, tt.find)
+			got := testable.StrInSlice(tt.slice, tt.find)
 			if got != tt.want {
 				t.Errorf("expecting %t, got %t", tt.want, got)
 			}
@@ -22,18 +26,18 @@ func Test_strInSlice(t *testing.T) {
 	}
 }
 
-func Test_getAveragePerRepo(t *testing.T) {
+func TestGetAverageStarsPerRepo(t *testing.T) {
 	var tests = []struct {
 		username string
 		want     float64
 	}{
-		{"octocat", 1480.375000},
-		{"plutov", 15.566667},
+		{"octocat", 4},
 	}
 
+	mock := new(testable.Mock)
 	for _, tt := range tests {
 		t.Run(tt.username, func(t *testing.T) {
-			got, err := getAveragePerRepo(tt.username)
+			got, err := testable.GetAverageStarsPerRepo(mock, tt.username)
 			if err != nil {
 				t.Errorf("expecting nil err, got %v", err)
 			}

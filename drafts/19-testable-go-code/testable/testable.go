@@ -1,12 +1,6 @@
 package testable
 
-import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-)
-
-func strInSlice(slice []string, find string) bool {
+func StrInSlice(slice []string, find string) bool {
 	for _, v := range slice {
 		if v == find {
 			return true
@@ -16,18 +10,9 @@ func strInSlice(slice []string, find string) bool {
 	return false
 }
 
-type Repo struct {
-	StargazersCount int `json:"stargazers_count"`
-}
-
-func getAveragePerRepo(username string) (float64, error) {
-	res, err := http.Get(fmt.Sprintf("https://api.github.com/users/%s/repos", username))
+func GetAverageStarsPerRepo(repositoriesAPI RepositoriesAPI, username string) (float64, error) {
+	repos, err := repositoriesAPI.GetRepos(username)
 	if err != nil {
-		return 0, err
-	}
-
-	repos := []Repo{}
-	if err := json.NewDecoder(res.Body).Decode(&repos); err != nil {
 		return 0, err
 	}
 

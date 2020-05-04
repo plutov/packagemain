@@ -35,6 +35,8 @@ func (g *GitHub) GetRepos(username string) ([]Repo, error) {
 		return nil, err
 	}
 
+	defer res.Body.Close()
+
 	repos := []Repo{}
 	if err := json.NewDecoder(res.Body).Decode(&repos); err != nil {
 		return nil, err

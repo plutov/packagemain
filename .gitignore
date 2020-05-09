@@ -8,6 +8,7 @@
 14-go-modules-docker/httpserver/httpserver
 15-google-cloud-functions-in-go/api/vendor
 16-wails-desktop-app/cpustats/build
+20-tcp-chat/chat/chat
 
 # Binaries for programs and plugins
 *.exe

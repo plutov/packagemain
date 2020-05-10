@@ -21,8 +21,6 @@ func newServer() *server {
 
 func (s *server) run() {
 	for cmd := range s.commands {
-		log.Printf("received command %d from %s", cmd.id, cmd.client.conn.RemoteAddr().String())
-
 		switch cmd.id {
 		case CMD_NICK:
 			s.nick(cmd.client, cmd.args[1])

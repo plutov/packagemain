@@ -24,6 +24,14 @@ The whole application will consist of the following parts:
 - server: which manages all incoming connections and commands, as well it stores rooms and clients
 - TCP server itself to accept network connections
 
+### Main types
+
+Let's start by defining main structures of our chat: client, room, command and server:
+
+```go
+
+```
+
 ### TCP Server
 
 In `main` func we initialize TCP listener and start listening for new messages.

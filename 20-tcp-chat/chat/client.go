@@ -28,15 +28,33 @@ func (c *client) readInput() {
 
 		switch cmd {
 		case "/nick":
-			c.changeNick(args)
+			c.commands <- command{
+				id:     CMD_NICK,
+				client: c,
+				args:   args,
+			}
 		case "/join":
-			c.join(args)
+			c.commands <- command{
+				id:     CMD_JOIN,
+				client: c,
+				args:   args,
+			}
 		case "/rooms":
-			c.rooms()
+			c.commands <- command{
+				id:     CMD_ROOMS,
+				client: c,
+			}
 		case "/msg":
-			c.sendRoomMsg(args)
+			c.commands <- command{
+				id:     CMD_MSG,
+				client: c,
+				args:   args,
+			}
 		case "/quit":
-			c.quit()
+			c.commands <- command{
+				id:     CMD_QUIT,
+				client: c,
+			}
 		default:
 			c.err(fmt.Errorf("unknown command: %s", cmd))
 		}
@@ -49,42 +67,4 @@ func (c *client) err(err error) {
 
 func (c *client) msg(msg string) {
 	c.conn.Write([]byte("> " + msg + "\n"))
-}
-
-func (c *client) changeNick(args []string) {
-	c.commands <- command{
-		id:     CMD_NICK,
-		client: c,
-		args:   args,
-	}
-}
-
-func (c *client) join(args []string) {
-	c.commands <- command{
-		id:     CMD_JOIN,
-		client: c,
-		args:   args,
-	}
-}
-
-func (c *client) sendRoomMsg(args []string) {
-	c.commands <- command{
-		id:     CMD_MSG,
-		client: c,
-		args:   args,
-	}
-}
-
-func (c *client) rooms() {
-	c.commands <- command{
-		id:     CMD_ROOMS,
-		client: c,
-	}
-}
-
-func (c *client) quit() {
-	c.commands <- command{
-		id:     CMD_QUIT,
-		client: c,
-	}
 }

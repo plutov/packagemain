@@ -1,4 +1,4 @@
-# packagemain #19: Bulding a TCP Chat in Go
+# packagemain #20: Bulding a TCP Chat in Go
 
 In this video, we'll be building a TCP chat server using Go, which enables clients to communicate with each other. In this live-coding session, we'll be working with Go's `net` package which very well supports TCP, as well we'll be using channels and goroutines.
 
@@ -47,6 +47,10 @@ type command struct {
 	args   []string
 }
 ```
+
+- `id` - unque command type ID
+- `client`- sender of the command
+- `args` - slice of strings from client message
 
 #### Client
 

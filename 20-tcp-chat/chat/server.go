@@ -88,7 +88,7 @@ func (s *server) listRooms(c *client) {
 }
 
 func (s *server) msg(c *client, args []string) {
-	msg := strings.Join(args[1:len(args)], " ")
+	msg := strings.Join(args[1:], " ")
 	c.room.broadcast(c, c.nick+": "+msg)
 }
 

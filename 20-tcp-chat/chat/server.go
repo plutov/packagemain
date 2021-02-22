@@ -23,7 +23,7 @@ func (s *server) run() {
 	for cmd := range s.commands {
 		switch cmd.id {
 		case CMD_NICK:
-			s.nick(cmd.client, cmd.args[1])
+			s.nick(cmd.client, cmd.args)
 		case CMD_JOIN:
 			s.join(cmd.client, cmd.args[1])
 		case CMD_ROOMS:
@@ -48,7 +48,13 @@ func (s *server) newClient(conn net.Conn) {
 	c.readInput()
 }
 
-func (s *server) nick(c *client, nick string) {
+func (s *server) nick(c *client, args []string) {
+	nick := strings.TrimSpace(strings.Join(args[1:], " "))
+	if nick == "" {
+		c.err(fmt.Errorf("you must provide a nickname"))
+
+		return
+	}
 	c.nick = nick
 	c.msg(fmt.Sprintf("all right, I will call you %s", nick))
 }

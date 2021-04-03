@@ -1,0 +1,41 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"os"
+)
+
+func processFile(path string) error {
+	if path == "" {
+		return errors.New("path is empty")
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("unable to open a file: %s", err.Error())
+	}
+
+	if f.Name() != "test.txt" {
+		return fmt.Errorf("invalid filename: %s", f.Name())
+	}
+
+	return nil
+}
+
+func main() {
+	err := processFile("./foo")
+
+	if err != nil {
+		switch err.(type) {
+		case *os.PathError:
+			fmt.Println("file doesn't exist")
+		default:
+			fmt.Printf("unknown error: %+v", err)
+		}
+
+		return
+	}
+
+	fmt.Println("ok")
+}

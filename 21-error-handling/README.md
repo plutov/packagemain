@@ -1,6 +1,8 @@
+Today we're going to talk about error handling in Go and some of its best practices.
+
 ## packagemain #21: Error Handling in Go
 
-Properly handling errors is an essential element of a solid code. Error handling in Go has been the topic for hot discussions a lot due to its unconventional approach, when an error is just a value that a function can return if something unexpected happened, compared to `try...catch` block.
+Proper handling errors is an essential element of a solid code. Error handling in Go has been the topic for hot discussions a lot due to its unconventional approach, when an error is just a value that a function can return if something unexpected happened, compared to `try...catch` block.
 
 I personally like this approach, it reminds me that I should check every single place where an error may occur.
 
@@ -36,14 +38,14 @@ if err != nil {
 // ...
 
 switch err.(type) {
-// this won't work anymore, since wedropped the type
+// this won't work anymore, since we dropped the type
 case *os.PathError:
     fmt.Println("file doesn't exist")
 ```
 
 The stack trace was dropped as well. So what can we do to keep the stack and the type?
 
-There are several packages to resolve the problem. They can replace `errors` package since they are built on top of it, so you won't need to do anny changes in case you used the standard `errors` package.
+There are several packages to resolve the problem. They can replace `errors` package since they are built on top of it, so you won't need to do any changes in case you used the standard `errors` package.
 
 ### github.com/pkg/errors or golang.org/x/xerrors
 
@@ -69,7 +71,7 @@ default:
 
 ### Need something more sophisticated?
 
-Working on distributed systems, there may be additional needs for your error handling mechanism. I enjoyed using `cocroachdb/errors` package with is also compatible with `pkg/errors` or `errors` and adds more features, for example: stripping PII details, supporting Sentry.io format, separating system message vs hint that can be shown to the user.
+Working on distributed systems, there may be additional needs for your error handling mechanism. I enjoyed using `cocroachdb/errors` package which is also compatible with `pkg/errors` or `errors` and adds more features, for example: stripping PII details, supporting Sentry.io format, separating system message vs hint that can be shown to the user.
 
 ### Conclusion
 

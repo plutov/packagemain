@@ -23,9 +23,9 @@ func (s *server) run() {
 	for cmd := range s.commands {
 		switch cmd.id {
 		case CMD_NICK:
-			s.nick(cmd.client, cmd.args[1])
+			s.nick(cmd.client, cmd.args)
 		case CMD_JOIN:
-			s.join(cmd.client, cmd.args[1])
+			s.join(cmd.client, cmd.args)
 		case CMD_ROOMS:
 			s.listRooms(cmd.client)
 		case CMD_MSG:
@@ -48,12 +48,24 @@ func (s *server) newClient(conn net.Conn) {
 	c.readInput()
 }
 
-func (s *server) nick(c *client, nick string) {
-	c.nick = nick
-	c.msg(fmt.Sprintf("all right, I will call you %s", nick))
+func (s *server) nick(c *client, args []string) {
+	if len(args) < 2 {
+		c.msg("nick is required. usage: /nick NAME")
+		return
+	}
+
+	c.nick = args[1]
+	c.msg(fmt.Sprintf("all right, I will call you %s", c.nick))
 }
 
-func (s *server) join(c *client, roomName string) {
+func (s *server) join(c *client, args []string) {
+	if len(args) < 2 {
+		c.msg("room name is required. usage: /join ROOM_NAME")
+		return
+	}
+
+	roomName := args[1]
+
 	r, ok := s.rooms[roomName]
 	if !ok {
 		r = &room{
@@ -82,7 +94,12 @@ func (s *server) listRooms(c *client) {
 }
 
 func (s *server) msg(c *client, args []string) {
-	msg := strings.Join(args[1:len(args)], " ")
+	if len(args) < 2 {
+		c.msg("message is required, usage: /msg MSG")
+		return
+	}
+
+	msg := strings.Join(args[1:], " ")
 	c.room.broadcast(c, c.nick+": "+msg)
 }
 

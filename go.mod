@@ -11,6 +11,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/machinebox/sdk-go v0.3.1
 	github.com/nlopes/slack v0.6.0
+	github.com/pkg/errors v0.9.1
 	github.com/plutov/htgo-tts v0.0.0-20190202120930-874fa9dd16ff
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	gocv.io/x/gocv v0.23.0

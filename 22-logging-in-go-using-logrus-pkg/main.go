@@ -34,7 +34,7 @@ func main() {
 
 		_, err := strconv.Atoi(a)
 		if err != nil {
-			logCtx.Debug("unable to parse a string")
+			logCtx.Error("unable to parse a string")
 			return c.String(http.StatusBadRequest, "")
 		}
 		logCtx.Debug("string is parsed")

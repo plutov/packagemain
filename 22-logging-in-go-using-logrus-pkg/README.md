@@ -1,8 +1,8 @@
-## packagemain #22: Logging in Go using logrus package
+## packagemain #22: Logging in Go using logrus
 
-Logging is very essential part of a large software, it's hard to overstate the importance of logging, be it performance metrics logging, error logging or debug logging for troubleshooting later.
+Logging is a very essential part of large software, it's hard to overstate the importance of logging, be it performance metrics logging, error logging, or debug logging for troubleshooting later.
 
-Go standard library has `log` package, which can print messages, can panic, but feels very limited when working on enterprise-level software, when you need a better control over formatting, structure and distribution. That's why a lot of third-party logging packages were born, for example logrus, oklog, zerolog, etc. They have a lot of similarities so we're not going to review all of them, but can take `logrus` as an example, which I'm currently using a lot. Usually these packages are fully compatible with build-in `log` package, so replacing the log package in your project should not be a problem.
+Go standard library has a `log` package, which can print messages, can panic, but feels very limited when working on enterprise-level software when you need better control over formatting, structure and distribution. That's why a lot of third-party logging packages were born, for example logrus, oklog, zerolog, etc. They have a lot of similarities so we're not going to review all of them, but can take `logrus` as an example, which I'm currently using a lot. Usually these packages are fully compatible with built-in `log` package, so replacing the log package in your project should not be a problem.
 
 Let's talk a bit about what can we log. Actually, you can log so many things, so sometimes it's easier to ask what not to log :)
 
@@ -14,7 +14,7 @@ Some things to log:
 What not to log:
 - In general you shouldn't log PII details, such as email addresses, credit card numbers, etc. But it may depend on your project.
 
-Let's now write simple API service, in which we will call some functions and see what can we log.
+Let's now write a simple API service, in which we will call some functions and see what can we log.
 
 ```go
 func main() {
@@ -35,9 +35,7 @@ func main() {
 }
 ```
 
-As you can see we didn't do anything yet, but we already produced some logs to `stdout` :)
-
-it's very important to understand that logs can be sent not only to `stdout`, but also to files, `stderr` or somewhere else. I'll be using `stdout` only, assuming that later some logs aggregation software will pick up logs from there (for example logstash, fluentd, etc.).
+It's very important to understand that logs can be sent not only to `stdout`, but also to files, `stderr` or somewhere else. I'll be using `stdout` only, assuming that later some logs aggregation software will pick up logs from there (for example logstash, fluentd, etc.).
 
 Using the logrus we can set where we want to send the logs output.
 
@@ -71,7 +69,7 @@ INFO[0001] request details latency_ns=29370 method=GET path=/isInt status=200
 INFO[0002] request details latency_ns=10697 method=GET path=/isInt status=400
 ```
 
-Sometimes your log aggregation tools require logs to be in JSON format which is easier for parsing, for exaample when using Splunk. I feel nowadays it's generally a default practice to log in JSON.
+Sometimes your log aggregation tools require logs to be in JSON format which is easier for parsing, for example when using Splunk. I feel nowadays it's generally a default practice to log in JSON.
 
 ```go
 log.SetFormatter(&log.JSONFormatter{})
@@ -85,10 +83,9 @@ log.SetFormatter(&log.JSONFormatter{})
 So far we logged only Info errors, now let's add some debugging info.
 
 ```go
-log.WithField("s", s).Debug("capitalizing the string")
-// there could be some complex code here in the between
-s = strings.ToUpper(s)
-log.WithField("s", s).Debug("string is capitalized")
+log.WithField("a", a).Debug("parsing the string")
+// ...
+log.WithField("a", a).Debug("string is parsed")
 ```
 
 Unfortunately when I run the code now, I don't see these logs in the stdout. That's because the default log level is set to Info, which means the logs of level Info or higher severity are only printed. To change this, we can configure our program to accept LOG_LEVEL environment variable for example, so we can have `LOG_LEVEL=debug` in dev environment, or `LOG_LEVEL=info` in production. I will also move logrus set up code into `init()` function.
@@ -113,7 +110,7 @@ LOG_LEVEL=debug go run main.go
 {"a":"10","level":"debug","msg":"string is parsed","time":"2021-04-08T13:12:02+02:00"}
 ```
 
-Sometimes multiple log messages use the same context, in our debug case it is `log.WithField("s", s)`, which can be stored separately and passed between functions even.
+Sometimes multiple log messages use the same context, in our debug case it is `log.WithField("a", a)`, which can be stored separately and passed between functions even.
 
 ```go
 logCtx := log.WithField("a", a)
@@ -135,6 +132,6 @@ There are multiple other helper functions in `logrus`, but you can check them on
 
 Ok, what do we do now with all these gigabytes of logs we collected? Ideally, you use some tools behind it, which can collect and segment your logs, store them with some defined retention policy.
 
-I use logs as well to build some metrics charts, for example GCP calls it log-based metris, where you can define how to parse your log messages for specific fields and display them. For example in our example we logged `latency_ns` which can be parsed by log server and displayed as chart by applying some aggregation function to it, so we can monitor the avg/max/... latency for your services.
+I use logs as well to build some metrics charts, for example using log-based metrics from Google Cloud Logging, where you can define how to parse your log messages for specific fields and display them. For example in our example we logged `latency_ns` which can be parsed by log server and displayed as a chart by applying some aggregation function to it, so we can monitor the avg/max/... latency for your services.
 
 That's it for today, logging world is quite diverse, there are many packages, tools and ideas. Let me know how you log in Go in the comments below.

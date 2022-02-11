@@ -1,6 +1,6 @@
 module github.com/plutov/packagemain
 
-go 1.13
+go 1.17
 
 require (
 	cloud.google.com/go v0.56.0

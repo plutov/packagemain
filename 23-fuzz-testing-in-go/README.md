@@ -2,15 +2,15 @@
 
 ### What is fuzzing
 
-Fuzzing, or sometimes called fuzz testing is a method of giving random unexpected input to your programs to test for possible crashes or edge cases. Fuzzing can shed a light on some logical bugs or performance problems, so it's always worth to add to a code where stability and performance matter.
+Fuzzing, or sometimes called fuzz testing is a method of giving random unexpected input to your programs to test for possible crashes or edge cases. Fuzzing can shed a light on some logical bugs or performance problems, so it's always worth adding to a code where stability and performance matter.
 
 ### Go projects for fuzzing
 
-Currently there are few well supported projects to do fuzzing in go:
+Currently, there are few well-supported projects to do fuzzing in go:
 - [go-fuzz](https://github.com/dvyukov/go-fuzz)
 - and [gofuzz](https://github.com/google/gofuzz)
 
-But we're not going to review them in this video since we have some great news, as Go team has accepted a proposal to add fuzz testing support to the language. It will be available in standard toolchain in Go 1.18 - [docs](https://go.dev/doc/fuzz/).
+But we're not going to review them in this video since we have some great news, as Go team has accepted a proposal to add fuzz testing support to the language. It will be available in the standard toolchain in Go 1.18 - [docs](https://go.dev/doc/fuzz/).
 
 ### Install Go 1.18
 
@@ -67,7 +67,7 @@ ok github.com/plutov/packagemain/23-fuzz-testing-in-go	0.922s
 
 The test works but it checks only a simple use case, and as you probably already noticed our function has some edge cases. Let's try to uncover them by writing a fuzz test.
 
-Fuzz tests can be included into your regular `_test.go` files using the functions that start with `Fuzz` that accept new type `*testing.F`.
+Fuzz tests can be included in your regular `_test.go` files using the functions that start with `Fuzz` that accept new type `*testing.F`.
 
 ```go
 func FuzzEqual(f *testing.F) {
@@ -80,7 +80,7 @@ func FuzzEqual(f *testing.F) {
 
 Note: There can be only one target per test.
 
-To enable fuzzing, we have to run go test with the `-fuzz` flag:
+To enable fuzzing, we have to run `go test` with the `-fuzz` flag:
 
 ```
 gotip test -fuzz .
@@ -124,7 +124,7 @@ fuzz: elapsed: 6s, execs: 1035678 (164216/sec), new interesting: 0 (total: 11)
 ...
 ```
 
-It is up to you to decide how long to run fuzzing. It is very possible that an execution of fuzzing could run indefinitely if it doesn’t find any errors, like in our case. We can add `-fuzztime` argument, that tells how many iterations to run.
+It is up to you to decide how long to run fuzzing. It is very possible that execution of fuzzing could run indefinitely if it doesn’t find any errors, like in our case. We can add `-fuzztime` argument, that tells how many iterations to run.
 
 ```
 gotip test -fuzz=. -fuzztime=5s .

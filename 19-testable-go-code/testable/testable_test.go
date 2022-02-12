@@ -3,7 +3,7 @@ package testable_test
 import (
 	"testing"
 
-	"github.com/plutov/packagemain/drafts/19-testable-go-code/testable"
+	"github.com/plutov/packagemain/19-testable-go-code/testable"
 )
 
 func TestStrInSlice(t *testing.T) {

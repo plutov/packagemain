@@ -2,7 +2,7 @@
 
 ### What is fuzzing
 
-Fuzzing, or sometimes called fuzz testing is a method of giving random unexpected input to your programs to test for possible crashes or edge cases. Fuzzing can shed a light on some logical bugs or performance problems, so it's always worth adding to a code where stability and performance matter.
+Fuzzing or fuzz testing is a method of giving random unexpected input to your programs to test for possible crashes or edge cases. Fuzzing can shed a light on some logical bugs or performance problems, so it's always worth adding to a code where stability and performance matter.
 
 ### Go projects for fuzzing
 
@@ -45,7 +45,7 @@ func Equal(a []byte, b []byte) bool {
 
 ### Writing fuzz test
 
-1. Create a file `equal_test.go`
+1. Create a file `equal_test.go` (as you can see, fuzz test. go into the same file with your unit tests)
 2. Let's include a simple regular test
 
 ```go

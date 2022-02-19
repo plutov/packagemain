@@ -45,7 +45,7 @@ func Equal(a []byte, b []byte) bool {
 
 ### Writing fuzz test
 
-1. Create a file `equal_test.go` (as you can see, fuzz test. go into the same file with your unit tests)
+1. Create a file `equal_test.go`
 2. Let's include a simple regular test
 
 ```go
@@ -72,6 +72,7 @@ Fuzz tests can be included in your regular `_test.go` files using the functions 
 ```go
 func FuzzEqual(f *testing.F) {
     // target, can be only one per test
+	// values of a and b will be auto-generated
 	f.Fuzz(func(t *testing.T, a []byte, b []byte) {
 		Equal(a, b)
 	})

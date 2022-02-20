@@ -36,16 +36,14 @@ func (s *server) run() {
 	}
 }
 
-func (s *server) newClient(conn net.Conn) {
+func (s *server) newClient(conn net.Conn) *client {
 	log.Printf("new client has joined: %s", conn.RemoteAddr().String())
 
-	c := &client{
+	return &client{
 		conn:     conn,
 		nick:     "anonymous",
 		commands: s.commands,
 	}
-
-	c.readInput()
 }
 
 func (s *server) nick(c *client, args []string) {

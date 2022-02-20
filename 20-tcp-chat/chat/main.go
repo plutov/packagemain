@@ -24,6 +24,7 @@ func main() {
 			continue
 		}
 
-		go s.newClient(conn)
+		c := s.newClient(conn)
+		go c.readInput()
 	}
 }

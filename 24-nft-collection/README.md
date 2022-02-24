@@ -91,6 +91,108 @@ func addLayer(prevImages []*image.RGBA, layer *Layer) ([]*image.RGBA, error) {
 		}
 	}
 
+    // add next layer to all current images
 	return addLayer(newImages, layer.NextLayer)
 }
 ```
+
+Now we can call the `addLayer` function in our `main` function. To do so we'll create a base image container.
+
+```go
+func main() {
+    // base image container with defined size
+    baseImage := image.NewRGBA(image.Rect(0, 0, 1024, 1024))
+    collection, err := addLayer([]*image.RGBA{baseImage}, &backgroundLayer)
+    if err != nil {
+        fmt.Println(err.Error())
+        os.Exit(1)
+    }
+
+    // just for the debugging, we should get 1000 final images
+    fmt.Println(len(collection))
+}
+```
+
+### Getting all images from the layout folder
+
+Let's go back to `addLayer` function and implement missing pieces.
+
+```go
+// get all images from layer folder
+layerImages := []image.Image{}
+err := filepath.Walk(layer.AssetsFolder, func(path string, info os.FileInfo, err error) error {
+    // skip directories
+    if info.IsDir() {
+        return nil
+    }
+
+    file, err := os.Open(path)
+    if err != nil {
+        return errors.Wrap(err, "unable to open file")
+    }
+
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        return errors.Wrap(err, fmt.Sprintf("unable to decode image, path: %s", path))
+    }
+
+    layerImages = append(layerImages, img)
+
+    return nil
+})
+```
+
+### Blending layers
+
+To add image on top of the other image we'll use `image/draw` package. First of all we have to clone the previous image so we don't mutate it, and then add new layer on top.
+
+```go
+// clone image into new variable dst
+dst := image.NewRGBA(prevImage.Bounds())
+draw.Draw(dst, prevImage.Bounds(), prevImage, image.Point{}, draw.Over)
+
+// add new layer
+draw.Draw(dst, layerImage.Bounds().Add(layer.Position), layerImage, image.Point{}, draw.Over)
+
+newImages = append(newImages, dst)
+```
+
+### Saving final images into a folder
+
+Now our images is ready, but they stay only in memory, let's put them on disc:
+
+```go
+for i, img := range collection {
+    // use random unique name for images
+    out, err := os.Create(fmt.Sprintf("./collection/%s.png", uuid.NewString()))
+    if err != nil {
+        fmt.Printf("unable to create a file: %s", err.Error())
+        os.Exit(1)
+    }
+
+    if err := png.Encode(out, img); err != nil {
+        fmt.Printf("unable to encode an image: %s", err.Error())
+        os.Exit(1)
+    }
+}
+```
+
+### Results
+
+Looks like everything is ready to run our program.
+
+```
+go run main.go
+```
+
+It will take few seconds to execute it, since png.Encode can take some time for 1000 files.
+
+Now we can open our `./collection` folder to see what we've got. Some images look pretty funny IMO :)
+
+<!-- Add examples -->
+
+### What's next?
+
+All right, we learned a bit how to generate images from layers in Go. What can we do with that? Like I said, if the audience is insterested about NFT topic in Go and I become more familiar with it as well, we can use this collection as our sample for "minting".

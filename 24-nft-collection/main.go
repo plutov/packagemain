@@ -11,6 +11,7 @@ import (
 	"image/png"
 	_ "image/png"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -21,9 +22,6 @@ type Layer struct {
 }
 
 func main() {
-	width := 1024
-	height := 1024
-
 	quoteLayer := Layer{
 		AssetsFolder: "./quotes",
 		Position:     image.Point{668, 100},
@@ -40,15 +38,15 @@ func main() {
 	}
 
 	// base image container with defined size
-	baseImage := image.NewRGBA(image.Rect(0, 0, width, height))
-	collection, err := addLayer([]*image.RGBA{baseImage}, backgroundLayer)
+	baseImage := image.NewRGBA(image.Rect(0, 0, 1024, 1024))
+	collection, err := addLayer([]*image.RGBA{baseImage}, &backgroundLayer)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	for i, img := range collection {
-		out, err := os.Create(fmt.Sprintf("./collection/%d.png", i+1))
+	for _, img := range collection {
+		out, err := os.Create(fmt.Sprintf("./collection/%s.png", uuid.NewString()))
 		if err != nil {
 			fmt.Printf("unable to create a file: %s", err.Error())
 			os.Exit(1)
@@ -69,6 +67,7 @@ func addLayer(prevImages []*image.RGBA, layer *Layer) ([]*image.RGBA, error) {
 	// get all images from layer folder
 	layerImages := []image.Image{}
 	err := filepath.Walk(layer.AssetsFolder, func(path string, info os.FileInfo, err error) error {
+		// skip directories
 		if info.IsDir() {
 			return nil
 		}

@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"image/draw"
 	_ "image/jpeg"
+	"image/png"
 	_ "image/png"
 
 	"github.com/pkg/errors"
@@ -27,32 +29,43 @@ func main() {
 		Position:     image.Point{0, 0},
 		NextLayer: &Layer{
 			AssetsFolder: "./gophers",
-			Position:     image.Point{0, 0},
+			Position:     image.Point{256, 256},
 			NextLayer: &Layer{
 				AssetsFolder: "./quotes",
-				Position:     image.Point{0, 0},
+				Position:     image.Point{668, 100},
 			},
 		},
 	}
 
+	// base image container with defined size
 	baseImage := image.NewRGBA(image.Rect(0, 0, width, height))
-	generatedImages, err := addLayer([]image.Image{baseImage}, layers)
+	collection, err := addLayer([]*image.RGBA{baseImage}, layers)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Println(len(generatedImages))
+	for i, img := range collection {
+		out, err := os.Create(fmt.Sprintf("./collection/%d.png", i+1))
+		if err != nil {
+			fmt.Printf("unable to create a file: %s", err.Error())
+			os.Exit(1)
+		}
+
+		if err := png.Encode(out, img); err != nil {
+			fmt.Printf("unable to encode an image: %s", err.Error())
+			os.Exit(1)
+		}
+	}
 }
 
-func addLayer(prevImages []image.Image, layer *Layer) ([]image.Image, error) {
+func addLayer(prevImages []*image.RGBA, layer *Layer) ([]*image.RGBA, error) {
 	if layer == nil {
 		return prevImages, nil
 	}
 
-	layerImages := []image.Image{}
-
 	// get all images from layer folder
+	layerImages := []image.Image{}
 	err := filepath.Walk(layer.AssetsFolder, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -76,13 +89,20 @@ func addLayer(prevImages []image.Image, layer *Layer) ([]image.Image, error) {
 	})
 
 	if err != nil {
-		return []image.Image{}, err
+		return []*image.RGBA{}, err
 	}
 
-	newImages := []image.Image{}
-	for range prevImages {
+	newImages := []*image.RGBA{}
+	for _, prevImage := range prevImages {
 		for _, layerImage := range layerImages {
-			newImages = append(newImages, layerImage)
+			// clone image into new variable dst
+			dst := image.NewRGBA(prevImage.Bounds())
+			draw.Draw(dst, prevImage.Bounds(), prevImage, image.Point{}, draw.Over)
+
+			// add new layer
+			draw.Draw(dst, layerImage.Bounds().Add(layer.Position), layerImage, image.Point{}, draw.Over)
+
+			newImages = append(newImages, dst)
 		}
 	}
 

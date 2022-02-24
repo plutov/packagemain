@@ -24,22 +24,24 @@ func main() {
 	width := 1024
 	height := 1024
 
-	layers := &Layer{
+	quoteLayer := Layer{
+		AssetsFolder: "./quotes",
+		Position:     image.Point{668, 100},
+	}
+	gopherLayer := Layer{
+		AssetsFolder: "./gophers",
+		Position:     image.Point{256, 256},
+		NextLayer:    &quoteLayer,
+	}
+	backgroundLayer := Layer{
 		AssetsFolder: "./backgrounds",
 		Position:     image.Point{0, 0},
-		NextLayer: &Layer{
-			AssetsFolder: "./gophers",
-			Position:     image.Point{256, 256},
-			NextLayer: &Layer{
-				AssetsFolder: "./quotes",
-				Position:     image.Point{668, 100},
-			},
-		},
+		NextLayer:    &gopherLayer,
 	}
 
 	// base image container with defined size
 	baseImage := image.NewRGBA(image.Rect(0, 0, width, height))
-	collection, err := addLayer([]*image.RGBA{baseImage}, layers)
+	collection, err := addLayer([]*image.RGBA{baseImage}, backgroundLayer)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

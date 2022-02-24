@@ -10,6 +10,7 @@
 16-wails-desktop-app/cpustats/build
 20-tcp-chat/chat/chat
 23-fuzz-testing-in-go/testdata
+24-nft-collection/collection/*.png
 
 # Binaries for programs and plugins
 *.exe

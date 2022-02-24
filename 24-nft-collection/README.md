@@ -191,7 +191,7 @@ It will take few seconds to execute it, since png.Encode can take some time for 
 
 Now we can open our `./collection` folder to see what we've got. Some images look pretty funny IMO :)
 
-<!-- Add examples -->
+![output.png](https://raw.githubusercontent.com/plutov/packagemain/master/24-nft-collection/output.png)
 
 ### What's next?
 

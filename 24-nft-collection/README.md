@@ -176,6 +176,8 @@ for i, img := range collection {
         fmt.Printf("unable to encode an image: %s", err.Error())
         os.Exit(1)
     }
+
+    out.Close()
 }
 ```
 

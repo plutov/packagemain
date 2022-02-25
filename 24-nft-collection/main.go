@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 
 	"image/draw"
-	_ "image/jpeg"
 	"image/png"
-	_ "image/png"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -56,6 +54,8 @@ func main() {
 			fmt.Printf("unable to encode an image: %s", err.Error())
 			os.Exit(1)
 		}
+
+		out.Close()
 	}
 }
 

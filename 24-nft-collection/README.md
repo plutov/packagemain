@@ -121,21 +121,25 @@ Let's go back to `addLayer` function and implement missing pieces.
 // get all images from layer folder
 layerImages := []image.Image{}
 err := filepath.Walk(layer.AssetsFolder, func(path string, info os.FileInfo, err error) error {
+    if err != nil {
+        return err
+    }
+
     // skip directories
     if info.IsDir() {
         return nil
     }
 
-    file, err := os.Open(path)
-    if err != nil {
-        return errors.Wrap(err, "unable to open file")
+    file, fileErr := os.Open(path)
+    if fileErr != nil {
+        return errors.Wrap(fileErr, "unable to open file")
     }
 
     defer file.Close()
 
-    img, _, err := image.Decode(file)
-    if err != nil {
-        return errors.Wrap(err, fmt.Sprintf("unable to decode image, path: %s", path))
+    img, _, decodeErr := image.Decode(file)
+    if decodeErr != nil {
+        return errors.Wrap(decodeErr, fmt.Sprintf("unable to decode image, path: %s", path))
     }
 
     layerImages = append(layerImages, img)

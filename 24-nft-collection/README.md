@@ -9,7 +9,7 @@ To generate the images for a collection, we'll be using mutiple types of layers 
 - 10 gophers
 - 10 quotes that gophers say
 
-This will allow us to create 1000 unique images for our collection. Each emage will contain only 1 background, 1 gopher and 1 quote.
+This will allow us to create 1000 unique images for our collection. Each image will contain only 1 background, 1 gopher and 1 quote.
 
 I am not an artist, so I had to find some assets to do this video. I want to expect the authors' licenses, so I carefully selected few assets that we can legally use here.
 
@@ -17,11 +17,11 @@ I am not an artist, so I had to find some assets to do this video. I want to exp
 - Gophers: https://github.com/MariaLetta/free-gophers-pack (license: https://github.com/MariaLetta/free-gophers-pack/blob/master/LICENSE)
 - Quotes: I generated myself 10 simple quotes
 
-I already uploaded all images that we'll use into the separate folders.
+I already uploaded all the images that we'll use into the separate folders.
 
 ### What the program will do
 
-Before writing the program, let's define what it'll do. We will build an executable program in which we'll define where to find layers' images. The prohram then will blend all unique combinations programmatically, and store them into a separate folder.
+Before writing the program, let's define what it'll do. We will build an executable program in which we'll define where to find layers' images. The program then will blend all unique combinations programmatically, and store them into a separate folder.
 
 This program will rely a lot on [image](https://pkg.go.dev/image) package.
 
@@ -60,7 +60,7 @@ backgroundLayer := Layer{
 }
 ```
 
-Our final image will be 1024x1024 as the size of my background images, and the `Position` you see above was approximately colculated by, so the Gopher goes into the middle of the final image and quote goes to the top-right corner.
+Our final image will be 1024x1024 as the size of my background images, and the `Position` you see above was approximately colculated by me, so the Gopher goes into the middle of the final image and quote goes to the top-right corner.
 
 ### Write a recursive function to iterate over layers and images
 
@@ -165,7 +165,7 @@ newImages = append(newImages, dst)
 
 ### Saving final images into a folder
 
-Now our images is ready, but they stay only in memory, let's put them on disc:
+Now our images are ready, but they stay only in memory, let's put them on disc:
 
 ```go
 for i, img := range collection {

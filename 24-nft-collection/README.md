@@ -11,7 +11,7 @@ To generate the images for a collection, we'll be using mutiple types of layers 
 
 This will allow us to create 1000 unique images for our collection. Each image will contain only 1 background, 1 gopher and 1 quote.
 
-I am not an artist, so I had to find some assets to do this video. I want to expect the authors' licenses, so I carefully selected few assets that we can legally use here.
+I am not an artist, so I had to find some assets to do this video. I want to respect the authors' licenses, so I carefully selected few assets that we can legally use here.
 
 - Backgrounds: https://unsplash.com/@cocoloris (license: https://unsplash.com/license)
 - Gophers: https://github.com/MariaLetta/free-gophers-pack (license: https://github.com/MariaLetta/free-gophers-pack/blob/master/LICENSE)

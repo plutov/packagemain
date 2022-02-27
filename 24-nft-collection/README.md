@@ -13,8 +13,8 @@ This will allow us to create 1000 unique images for our collection. Each image w
 
 I am not an artist, so I had to find some assets to do this video. I want to respect the authors' licenses, so I carefully selected few assets that we can legally use here.
 
-- Backgrounds: https://unsplash.com/@cocoloris (license: https://unsplash.com/license)
-- Gophers: https://github.com/MariaLetta/free-gophers-pack (license: https://github.com/MariaLetta/free-gophers-pack/blob/master/LICENSE)
+- Backgrounds: https://unsplash.com/@cocoloris
+- Gophers: https://github.com/MariaLetta/free-gophers-pack
 - Quotes: I generated myself 10 simple quotes
 
 I already uploaded all the images that we'll use into the separate folders.

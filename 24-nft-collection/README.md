@@ -4,7 +4,7 @@ Nowadays almost any conversation will inevitably end up with discussing NFTs or 
 
 ### How the images will be generated?
 
-To generate the images for a collection, we'll be using mutiple types of layers and blend them programmatically. For this example I decided to use the following 3 layers:
+To generate the images for a collection, we'll be using multiple types of layers and blend them programmatically. For this example I decided to use the following 3 layers:
 - 10 background images
 - 10 gophers
 - 10 quotes that gophers say

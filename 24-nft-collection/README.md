@@ -23,7 +23,7 @@ I already uploaded all the images that we'll use into the separate folders.
 
 Before writing the program, let's define what it'll do. We will build an executable program in which we'll define where to find layers' images. The program then will blend all unique combinations programmatically, and store them into a separate folder.
 
-This program will rely a lot on [image](https://pkg.go.dev/image) package.
+As you can already imagine, this program will rely a lot on [image](https://pkg.go.dev/image) package.
 
 ### Define the Layer type
 

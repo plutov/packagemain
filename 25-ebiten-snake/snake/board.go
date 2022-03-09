@@ -2,17 +2,18 @@ package snake
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"time"
 )
 
 // Board represents the game board.
 type Board struct {
-	rows  int
-	cols  int
-	food  *Food
-	snake *Snake
+	rows     int
+	cols     int
+	food     *Food
+	snake    *Snake
+	points   int
+	gameOver bool
 }
 
 // NewBoard generates a new Board with giving a size.
@@ -32,8 +33,12 @@ func NewBoard(rows int, cols int) *Board {
 
 // Update updates the board state.
 func (b *Board) Update(input *Input) error {
-	if dir, ok := input.Dir(); ok {
-		fmt.Println(dir)
+	if b.gameOver {
+		return nil
+	}
+
+	if newDir, ok := input.Dir(); ok {
+		b.snake.ChangeDirection(newDir)
 	}
 	return nil
 }
@@ -58,15 +63,16 @@ func (b *Board) moveSnake() error {
 	// remove tail first, add 1 in front
 	b.snake.Move()
 
-	// todo: or hits itself
 	if b.snakeLeftBoard() || b.snake.HeadHitsBody() {
 		return errors.New("game over")
 	}
 
 	if b.snake.HeadHits(b.food.x, b.food.y) {
-		// todo: add points
-		// todo: grow snake
+		// so the next move the snake grows
+		b.snake.justAte = true
+
 		b.placeFood()
+		b.points++
 	}
 
 	return nil

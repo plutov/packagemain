@@ -5,16 +5,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-// Dir represents a direction.
-type Dir int
-
-const (
-	DirUp Dir = iota
-	DirRight
-	DirDown
-	DirLeft
-)
-
 // Input represents the current key states.
 type Input struct{}
 
@@ -25,18 +15,18 @@ func NewInput() *Input {
 
 // Dir returns a currently pressed direction.
 // Dir returns false if no direction key is pressed.
-func (i *Input) Dir() (Dir, bool) {
+func (i *Input) Dir() (ebiten.Key, bool) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		return DirUp, true
+		return ebiten.KeyArrowUp, true
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-		return DirLeft, true
+		return ebiten.KeyArrowLeft, true
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-		return DirRight, true
+		return ebiten.KeyArrowRight, true
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		return DirDown, true
+		return ebiten.KeyArrowDown, true
 	}
 
 	return 0, false

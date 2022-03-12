@@ -21,13 +21,11 @@ var (
 	foodColor       = color.RGBA{200, 200, 50, 150}
 )
 
-// Game represents a game state.
 type Game struct {
 	input *Input
 	board *Board
 }
 
-// NewGame generates a new Game object.
 func NewGame() *Game {
 	return &Game{
 		input: NewInput(),
@@ -35,17 +33,14 @@ func NewGame() *Game {
 	}
 }
 
-// Layout implements ebiten.Game's Layout.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return ScreenWidth, ScreenHeight
 }
 
-// Update updates the current game state.
 func (g *Game) Update() error {
 	return g.board.Update(g.input)
 }
 
-// Draw draws the current game to the given screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	if g.board.gameOver {

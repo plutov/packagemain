@@ -3,9 +3,10 @@ package snake
 import (
 	"math/rand"
 	"time"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Board represents the game board.
 type Board struct {
 	rows     int
 	cols     int
@@ -16,7 +17,6 @@ type Board struct {
 	timer    time.Time
 }
 
-// NewBoard generates a new Board with giving a size.
 func NewBoard(rows int, cols int) *Board {
 	rand.Seed(time.Now().UnixNano())
 
@@ -26,13 +26,12 @@ func NewBoard(rows int, cols int) *Board {
 		timer: time.Now(),
 	}
 	// start in top-left corner
-	board.snake = NewSnake([]Coord{{0, 0}, {0, 1}, {0, 2}, {0, 3}}, DirRight)
+	board.snake = NewSnake([]Coord{{0, 0}, {0, 1}, {0, 2}, {0, 3}}, ebiten.KeyArrowRight)
 	board.placeFood()
 
 	return board
 }
 
-// Update updates the board state.
 func (b *Board) Update(input *Input) error {
 	if b.gameOver {
 		return nil
@@ -87,7 +86,7 @@ func (b *Board) moveSnake() error {
 	}
 
 	if b.snake.HeadHits(b.food.x, b.food.y) {
-		// so the next move the snake grows
+		// the snake grows on the next move
 		b.snake.justAte = true
 
 		b.placeFood()

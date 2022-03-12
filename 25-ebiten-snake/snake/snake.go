@@ -1,16 +1,18 @@
 package snake
 
+import "github.com/hajimehoshi/ebiten/v2"
+
 type Coord struct {
 	x, y int
 }
 
 type Snake struct {
 	body      []Coord
-	direction Dir
+	direction ebiten.Key
 	justAte   bool
 }
 
-func NewSnake(body []Coord, direction Dir) *Snake {
+func NewSnake(body []Coord, direction ebiten.Key) *Snake {
 	return &Snake{
 		body:      body,
 		direction: direction,
@@ -21,12 +23,12 @@ func (s *Snake) Head() Coord {
 	return s.body[len(s.body)-1]
 }
 
-func (s *Snake) ChangeDirection(newDir Dir) {
-	opposites := map[Dir]Dir{
-		DirUp:    DirDown,
-		DirRight: DirLeft,
-		DirDown:  DirUp,
-		DirLeft:  DirRight,
+func (s *Snake) ChangeDirection(newDir ebiten.Key) {
+	opposites := map[ebiten.Key]ebiten.Key{
+		ebiten.KeyArrowUp:    ebiten.KeyArrowDown,
+		ebiten.KeyArrowRight: ebiten.KeyArrowLeft,
+		ebiten.KeyArrowDown:  ebiten.KeyArrowUp,
+		ebiten.KeyArrowLeft:  ebiten.KeyArrowRight,
 	}
 
 	// don't allow changing direction to opposite
@@ -59,13 +61,13 @@ func (s *Snake) Move() {
 	newHead := Coord{x: h.x, y: h.y}
 
 	switch s.direction {
-	case DirUp:
+	case ebiten.KeyArrowUp:
 		newHead.x--
-	case DirRight:
+	case ebiten.KeyArrowRight:
 		newHead.y++
-	case DirDown:
+	case ebiten.KeyArrowDown:
 		newHead.x++
-	case DirLeft:
+	case ebiten.KeyArrowLeft:
 		newHead.y--
 	}
 

@@ -10,10 +10,10 @@ type Snake struct {
 	justAte   bool
 }
 
-func NewSnake(body []Coord) *Snake {
+func NewSnake(body []Coord, direction Dir) *Snake {
 	return &Snake{
 		body:      body,
-		direction: DirRight,
+		direction: direction,
 	}
 }
 

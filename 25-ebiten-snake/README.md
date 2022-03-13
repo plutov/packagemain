@@ -6,7 +6,7 @@ In this video we'll give it a try and create a Snake game in Go, which we'll run
 
 ### Ebiten API
 
-~[overview](https://ebiten.org/images/overview2.2.png)
+![overview](https://ebiten.org/images/overview2.2.png)
 
 To create a new game we have to implement an `ebiten.Game` interface which consist of the following functions as it shown on the image above:
 - `Update()` - update the logical state

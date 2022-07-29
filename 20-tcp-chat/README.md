@@ -82,7 +82,7 @@ type room struct {
 ```
 
 - `name` - room required name
-- `members` - we use client remove address as their unique key, but that may be not the optimal solution
+- `members` - we use client remote address as their unique key, but that may be not the optimal solution
 
 #### Server
 

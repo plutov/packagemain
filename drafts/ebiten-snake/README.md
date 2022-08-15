@@ -68,7 +68,7 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/plutov/packagemain/25-ebiten-snake/snake"
+	"github.com/plutov/packagemain/drafts/ebiten-snake/snake"
 )
 
 func main() {
@@ -410,4 +410,4 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 Repeat `wasmserve .` or just refresh the page and you'll be able to play the game.
 
-![screenshot.png](https://raw.githubusercontent.com/plutov/packagemain/master/25-ebiten-snake/screenshot.png)
+![screenshot.png](https://raw.githubusercontent.com/plutov/packagemain/master/drafts/ebiten-snake/screenshot.png)

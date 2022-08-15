@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/plutov/packagemain/25-ebiten-snake/snake"
+	"github.com/plutov/packagemain/drafts/ebiten-snake/snake"
 )
 
 func main() {

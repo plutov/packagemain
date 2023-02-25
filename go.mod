@@ -8,10 +8,9 @@ require (
 	github.com/blackjack/webcam v0.0.0-20200313125108-10ed912a8539
 	github.com/christianrondeau/go-wit v0.0.0-20170831224739-d540d3cc2c3d
 	github.com/golang/protobuf v1.4.2
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.0 // indirect
-	github.com/hajimehoshi/ebiten v1.12.12 // indirect
-	github.com/hajimehoshi/ebiten/v2 v2.2.5 // indirect
+	github.com/hajimehoshi/ebiten/v2 v2.2.5
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/machinebox/sdk-go v0.3.1
@@ -21,10 +20,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	gocv.io/x/gocv v0.23.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	golang.org/x/net v0.7.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.22.0
 	google.golang.org/appengine v1.6.6
 	google.golang.org/genproto v0.0.0-20200430143042-b979b6f78d84

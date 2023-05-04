@@ -9,7 +9,7 @@ require (
 	github.com/christianrondeau/go-wit v0.0.0-20170831224739-d540d3cc2c3d
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/websocket v1.4.0 // indirect
+	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hajimehoshi/ebiten/v2 v2.2.5
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect

@@ -20,8 +20,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tensorflow/tensorflow v2.1.0+incompatible
 	gocv.io/x/gocv v0.23.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/net v0.1.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.22.0
 	google.golang.org/appengine v1.6.6

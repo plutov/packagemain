@@ -7,40 +7,38 @@ package impl
 import (
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"hash/crc32"
 	"math"
 	"reflect"
 
 	"google.golang.org/protobuf/internal/errors"
-	pref "google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	piface "google.golang.org/protobuf/runtime/protoiface"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/runtime/protoiface"
 )
 
 // These functions exist to support exported APIs in generated protobufs.
 // While these are deprecated, they cannot be removed for compatibility reasons.
 
 // LegacyEnumName returns the name of enums used in legacy code.
-func (Export) LegacyEnumName(ed pref.EnumDescriptor) string {
+func (Export) LegacyEnumName(ed protoreflect.EnumDescriptor) string {
 	return legacyEnumName(ed)
 }
 
 // LegacyMessageTypeOf returns the protoreflect.MessageType for m,
 // with name used as the message name if necessary.
-func (Export) LegacyMessageTypeOf(m piface.MessageV1, name pref.FullName) pref.MessageType {
+func (Export) LegacyMessageTypeOf(m protoiface.MessageV1, name protoreflect.FullName) protoreflect.MessageType {
 	if mv := (Export{}).protoMessageV2Of(m); mv != nil {
 		return mv.ProtoReflect().Type()
 	}
-	return legacyLoadMessageInfo(reflect.TypeOf(m), name)
+	return legacyLoadMessageType(reflect.TypeOf(m), name)
 }
 
 // UnmarshalJSONEnum unmarshals an enum from a JSON-encoded input.
 // The input can either be a string representing the enum value by name,
 // or a number representing the enum number itself.
-func (Export) UnmarshalJSONEnum(ed pref.EnumDescriptor, b []byte) (pref.EnumNumber, error) {
+func (Export) UnmarshalJSONEnum(ed protoreflect.EnumDescriptor, b []byte) (protoreflect.EnumNumber, error) {
 	if b[0] == '"' {
-		var name pref.Name
+		var name protoreflect.Name
 		if err := json.Unmarshal(b, &name); err != nil {
 			return 0, errors.New("invalid input for enum %v: %s", ed.FullName(), b)
 		}
@@ -50,7 +48,7 @@ func (Export) UnmarshalJSONEnum(ed pref.EnumDescriptor, b []byte) (pref.EnumNumb
 		}
 		return ev.Number(), nil
 	} else {
-		var num pref.EnumNumber
+		var num protoreflect.EnumNumber
 		if err := json.Unmarshal(b, &num); err != nil {
 			return 0, errors.New("invalid input for enum %v: %s", ed.FullName(), b)
 		}
@@ -83,22 +81,12 @@ func (Export) CompressGZIP(in []byte) (out []byte) {
 			blockHeader[0] = 0x01 // final bit per RFC 1951, section 3.2.3.
 			blockSize = len(in)
 		}
-		binary.LittleEndian.PutUint16(blockHeader[1:3], uint16(blockSize)^0x0000)
-		binary.LittleEndian.PutUint16(blockHeader[3:5], uint16(blockSize)^0xffff)
+		binary.LittleEndian.PutUint16(blockHeader[1:3], uint16(blockSize))
+		binary.LittleEndian.PutUint16(blockHeader[3:5], ^uint16(blockSize))
 		out = append(out, blockHeader[:]...)
 		out = append(out, in[:blockSize]...)
 		in = in[blockSize:]
 	}
 	out = append(out, gzipFooter[:]...)
 	return out
-}
-
-// WeakNil returns a typed nil pointer to a concrete message.
-// It panics if the message is not linked into the binary.
-func (Export) WeakNil(s pref.FullName) piface.MessageV1 {
-	mt, err := protoregistry.GlobalTypes.FindMessageByName(s)
-	if err != nil {
-		panic(fmt.Sprintf("weak message %v is not linked in", s))
-	}
-	return mt.Zero().Interface().(piface.MessageV1)
 }

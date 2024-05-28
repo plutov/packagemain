@@ -8,9 +8,6 @@ on:
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./25-docker-scout
 
     steps:
       - name: Checkout repository
@@ -20,7 +17,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4.0.0
         with:
-          context: .
+          context: ./25-docker-scout
           push: false
           tags: ${{ steps.meta.outputs.tags }}
       - name: Docker Scout

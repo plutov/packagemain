@@ -2,6 +2,14 @@
 
 <!-- INTRO COVER IMAGE -->
 
+Hi, my name is Alex Pliutau and welcome to package main, your one-stop shop for mastering Go, but also Backend and DevOps in general.
+
+First, small announcement: me and my friend Julien are starting a ["package main "Newsletter on Substack](https://packagemain.substack.com/) as we believe we can create more content which is easier to digest.
+
+But today let's talk about identifying container image vulnerabilities with Docker Scout. Let's get started.
+
+<!-- INTRO SOUND -->
+
 We all know, that Docker technology is great and brings us many advantages, but also, unfortunately, Docker images include many attack surfaces on different layers.
 
 Every day, there are new vulnerabilities discovered in open source projects and maintainers are tasked with patching their software. [~30k new vulnerabilities discovered in 2023 alone](https://www.cvedetails.com/).
@@ -50,6 +58,7 @@ docker run goapp
 If you're using a recent version of Docker Desktop, you might already have the Docker Scout command line tool available. While this guide won't endorse any specific tool, Docker Scout can be a handy starting point for this demonstration.
 
 Some notes on Docker Scout:
+
 - You need to have a Docker Hub account to run it
 - [Free version has limitations](https://www.docker.com/products/docker-scout/) for remote images
 - Not many registries are available, for example Google Cloud Container Registry is not available yet
@@ -60,11 +69,12 @@ docker scout enroll ORG_NAME
 ```
 
 There are a few commands available:
+
 - `quickview`: get a quick overview of an image, base image and available recommendations
 - `compare`: compare an image to a second one (for instance to latest)
 - `cves`: display vulnerabilities of an image
 - `recommendations`: display available base image updates and remediation recommendations
-- `sbom`: generate the SBOM of the image
+- `sbom`: generate the SBOM (Software Bill of Materials) of the image
 
 We can use them to scan our already built image. Which resulted in...
 
@@ -133,13 +143,13 @@ While manual scanning is valuable, integrating vulnerability checks into your CI
 
 Docker Scout has a [GitHub Action](https://github.com/docker/scout-action) to run the Docker Scout CLI as part of your workflows.
 
-Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every push and reports only Critical and High vulnerabilities as a comment to a PR. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.
+Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every pull request and reports only Critical and High vulnerabilities as a comment to a PR. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.
 
 ```yaml
-name: Docker
+name: Docker Scout
 
 on:
-  push:
+  pull_request:
     branches:
       - "*"
 
@@ -156,24 +166,26 @@ jobs:
         uses: docker/build-push-action@v4.0.0
         with:
           context: ./25-docker-scout
-          push: false
+          push: false # note: we don't push it and just scan image locally
           load: true
           tags: ${{ github.event.repository.name }}
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }} # has to be added to secrets
+          password: ${{ secrets.DOCKERHUB_TOKEN }} # has to be added to secrets
       - name: Docker Scout
         id: docker-scout
         uses: docker/scout-action@v1
         with:
-          command: cves
+          command: cves # other scout commands can be specified here
           image: ${{ github.event.repository.name }}
           ignore-unchanged: true
           only-severities: critical,high
           write-comment: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+That's it for today.
 
 Incorporating these practices into your workflow empowers developers to streamline vulnerability management and maintain a more secure containerized ecosystem.

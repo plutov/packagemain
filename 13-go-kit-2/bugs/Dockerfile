@@ -1,11 +1,9 @@
-FROM golang:1.13
+FROM golang:1.20
 
-ENV GO111MODULE=on
-
-WORKDIR /go/src/github.com/plutov/packagemain/13-go-kit-2
+WORKDIR /go/src/github.com/plutov/packagemain/13-go-kit-2/bugs
 
 COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -mod vendor -o server ./bugs/cmd/main.go
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/main.go
 
 CMD [ "./server" ]

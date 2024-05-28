@@ -46,7 +46,7 @@ There is a `kitgen` command line tool to generate a service from template which 
 
 ### go-kit CLI
 
-2020 Update: "github.com/kujtimiihoxha/kit" is not supported anymore.
+2020 Update: https://github.com/kujtimiihoxha/kit is not supported anymore.
 
 There is a separate package to create a service from template:
 

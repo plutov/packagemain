@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb;
+
+service Notificator {
+	rpc SendEmail (SendEmailRequest) returns (SendEmailReply);
+}
+
+message SendEmailRequest {
+	string email = 1;
+	string content = 2;
+}
+
+message SendEmailReply {
+	string id = 1;
+}

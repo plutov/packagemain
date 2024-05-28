@@ -5,7 +5,7 @@ import (
 	"log"
 
 	sdetcd "github.com/go-kit/kit/sd/etcd"
-	"github.com/plutov/packagemain/13-go-kit-2/notificator/pkg/grpc/pb"
+	"github.com/plutov/packagemain/13-go-kit-2/users/pkg/notificator/pb"
 	"google.golang.org/grpc"
 )
 

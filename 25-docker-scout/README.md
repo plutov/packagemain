@@ -144,4 +144,45 @@ Docker Scout has a [GitHub Action](https://github.com/docker/scout-action) to ru
 
 Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every push and reports only Critical and High vulnerabilities as a comment to a PR. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.
 
+```yaml
+name: Docker
+
+on:
+  push:
+    branches:
+      - "*"
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: ./25-docker-scout
+          push: false
+          load: true
+          tags: ${{ github.event.repository.name }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker Scout
+        id: docker-scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ github.event.repository.name }}
+          ignore-unchanged: true
+          only-severities: critical,high
+          write-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
 Incorporating these practices into your workflow empowers developers to streamline vulnerability management and maintain a more secure containerized ecosystem.

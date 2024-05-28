@@ -1,25 +1,36 @@
 package main
 
 import (
-	"github.com/leaanthony/mewn"
-	"github.com/plutov/packagemain/16-wails-desktop-app/cpustats/pkg/sys"
-	"github.com/wailsapp/wails"
+	"embed"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
+//go:embed all:frontend/dist
+var assets embed.FS
+
 func main() {
-	js := mewn.String("./frontend/dist/app.js")
-	css := mewn.String("./frontend/dist/app.css")
+	// Create an instance of the app structure
+	app := NewApp()
 
-	stats := &sys.Stats{}
-
-	app := wails.CreateApp(&wails.AppConfig{
-		Width:  512,
-		Height: 512,
-		Title:  "CPU Usage",
-		JS:     js,
-		CSS:    css,
-		Colour: "#131313",
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "cpustats",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		Bind: []interface{}{
+			app,
+		},
 	})
-	app.Bind(stats)
-	app.Run()
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
 }

@@ -1,3 +1,5 @@
+Note: the original code doesn't work with newer version of Wails, so the code was removed.
+
 # packagemain #6: Building Desktop App in Go using Wails
 
 Hi Gophers, My name is Alex Pliutau.
@@ -16,21 +18,15 @@ I will build a very simple app to display CPU Usage of my machine in real time. 
 
 ## Installation
 
-Wails CLI can be installed with `go get`. After installation, you should set it up using `wails setup` command.
-
-```
-go get github.com/wailsapp/wails/cmd/wails
-wails setup
-```
+https://wails.io/docs/gettingstarted/installation/
 
 Then let's bootstrap our project with the name `cpustats`:
 
 ```
-wails init
-cd cpustats
+wails init -n cpustats -t react
 ```
 
-Our project consists of Go backend and Vue.js frontend. `main.go` will be our entrypoint, in which we can include any other dependencies, there is also `go.mod` file to manage them. `frontend` folder contains Vue.js components, webpack and CSS.
+Our project consists of Go backend and React frontend.
 
 ## Concepts
 

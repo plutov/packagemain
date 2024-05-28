@@ -142,4 +142,4 @@ While manual scanning is valuable, integrating vulnerability checks into your CI
 
 Docker Scout has a [GitHub Action](https://github.com/docker/scout-action) to run the Docker Scout CLI as part of your workflows.
 
-Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every push and reports only Critical and High vulnerabilities as a comment to a PR.
+Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every push and reports only Critical and High vulnerabilities as a comment to a PR. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.

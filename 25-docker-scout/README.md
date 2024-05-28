@@ -1,19 +1,10 @@
 ## packagemain #25: Identifying Container Image vulnerabilities with Docker Scout
 
-<!-- Outline:
-- Intro and Why
-- Enable Docker Scout
-- Run locally
-- Fix some issues
-- Automate with Github Actions -->
-
-<!-- INTRO IMAGE -->
+<!-- INTRO COVER IMAGE -->
 
 We all know, that Docker technology is great and brings us many advantages, but also, unfortunately, Docker images include many attack surfaces on different layers.
 
 Every day, there are new vulnerabilities discovered in open source projects and maintainers are tasked with patching their software. [~30k new vulnerabilities discovered in 2023 alone](https://www.cvedetails.com/).
-
-<!-- GRAPH IMAGE -->
 
 So how can we mitigate this risk? One solution is vulnerability scanning and its integration into your development lifecycle.
 

@@ -1,0 +1,149 @@
+name: kubernetes-preview
+on:
+  workflow_call:
+    secrets:
+      k8s-sa:
+        required: true
+        description: GCP Service Account with kubernetes permissions
+    inputs:
+      target:
+        required: true
+        type: string
+        description: K8s deployment name that will be used to copy configuration from
+      docker-tag:
+        required: true
+        type: string
+        description: Docker tag to deploy
+      cluster:
+        required: true
+        type: string
+        description: Cluster name 
+      zone:
+        type: string
+        description: Cluster zone
+        default: us-west1-c
+      expiration:
+        type: string
+        description: Number of days after which the preview expires and is removed
+        default: "5"
+      comment:
+        type: string
+        description: environment variables to change
+        default: ""
+      namespace:
+        type: string
+        description: namespace of your deployment
+        default: default
+jobs:
+  preview-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: gcp-auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.k8s-sa-json }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
+      - name: "Connect to cluster"
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ inputs.cluster }}
+          location: ${{ inputs.zone }}
+          project_id: ${{ secrets.gcp-project-id }}
+      - name: Get PR number
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            export JSON_RESP=`curl -s --request GET --url "${{ github.event.issue.pull_request.url }}" --header "Authorization: Bearer ${{ env.GH_TOKEN }}"`
+            echo "pr-number=`echo $JSON_RESP | jq -r .number`" >> $GITHUB_OUTPUT
+          else
+            echo "pr-number=`echo ${{ github.event.issue.pull_request.number }}`" >> $GITHUB_OUTPUT
+          fi
+      - name: Get deployment-name
+        id: deployment-name
+        run: |
+          echo "name=${{ inputs.target }}-${{ steps.pr.outputs.pr-number }}" >> $GITHUB_OUTPUT
+      - name: Get expiration timestamp
+        id: expiration-ts
+        run: |
+          expiration=${{ inputs.expiration}}
+          if [[ ${{ inputs.expiration }} -gt 8 ]] || [[ ${{ inputs.expiration }} -lt 1 ]]; then
+            expiration=5
+          fi
+          t=`date -d "+$expiration day" +"%s"`
+          echo "timestamp=$t" >> $GITHUB_OUTPUT
+          echo "date-end=`date -ud @$t`" >> $GITHUB_OUTPUT
+      - name: Create Deployment
+        id: kubernetes-deployment
+        run: |
+          kubectl delete deployment ${{ steps.deployment-name.outputs.name }} || true
+          kubectl get deployment ${{ inputs.target }} -o yaml > /tmp/deployment.yaml
+          yq 'del(.spec.template.spec.initContainers)' -i /tmp/deployment.yaml
+          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/deployment.yaml
+          yq '.spec.template.spec.containers.[].name += "-${{ steps.pr.outputs.pr-number }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/deployment.yaml
+          yq '.metadata.labels.pr-number="${{ steps.pr.outputs.pr-number }}"' -i /tmp/deployment.yaml
+          yq '(..|select(has("image")).["image"]) |= sub(":[a-zA-Z0-9]+", ":${{ inputs.docker-tag }}")' -i /tmp/deployment.yaml
+          VARS=`echo "${{ inputs.comment }}" | sed "s/#preview//" | sed '/^[[:blank:]]*$/ d'`
+          echo $VARS
+          while IFS= read -r line; do
+            NAME=`echo $line | cut -d "=" -s -f 1 | tr -d '\r'`
+            VALUE=`echo $line | cut -d "=" -s -f 2 | tr -d '\r'`
+            if [[ -z "$NAME" ]] || [[ -z "$VALUE" ]]; then
+              continue
+            fi
+            yq ".spec.template.spec.containers.[0].env |= map(select(.name == \"$NAME\") |= del(.valueFrom))" -i /tmp/deployment.yaml
+            yq ".spec.template.spec.containers.[0].env |= map(select(.name == \"$NAME\").value=\"$VALUE\")" -i /tmp/deployment.yaml
+          done <<< "$VARS"
+          cat /tmp/deployment.yaml
+          kubectl apply -f /tmp/deployment.yaml
+      - name: Create service
+        id: kubernetes-service
+        run: |
+          kubectl delete service ${{ steps.deployment-name.outputs.name }} || true
+          kubectl get service ${{ inputs.target }} -o yaml > /tmp/service.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
+          yq '(..|select(has("app.kubernetes.io/name")).["app.kubernetes.io/name"]) |= "${{ steps.deployment-name.outputs.name }}"' -i /tmp/service.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/service.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/service.yaml
+          yq '.metadata.labels.pr-number="${{ steps.pr.outputs.pr-number }}"' -i /tmp/service.yaml
+          PORT=`cat /tmp/service.yaml | yq '.spec.ports.[0].port'`
+          echo "service-addr=${{ steps.deployment-name.outputs.name }}.${{ inputs.namespace }}:$PORT" >> $GITHUB_OUTPUT
+          cat /tmp/service.yaml
+          kubectl apply -f /tmp/service.yaml
+      - name: Create ingress
+        id: kubernetes-ingress
+        continue-on-error: true
+        run: |
+          kubectl delete ingress ${{ steps.deployment-name.outputs.name }}-ingress || true
+          kubectl get ingress ${{ inputs.target}}-ingress -o yaml > /tmp/ingress.yaml
+          yq '.metadata.name="${{ steps.deployment-name.outputs.name }}-ingress"' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].backend.service.name="${{ steps.deployment-name.outputs.name }}"' -i /tmp/ingress.yaml
+          yq '.spec.rules[].http.paths.[0].path|="/previews/${{ steps.pr.outputs.pr-number }}"+.' -i /tmp/ingress.yaml
+          yq '.metadata.labels.preview="true"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.expiration="${{ steps.expiration-ts.outputs.timestamp }}"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.pr-number="${{ steps.pr.outputs.pr-number }}"' -i /tmp/ingress.yaml
+          yq '.metadata.labels.repo="${{ github.event.repository.name }}"' -i /tmp/ingress.yaml
+          HOST=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].host'`
+          ROUTE=`cat /tmp/ingress.yaml | yq '.spec.rules.[0].http.paths.[0].path'`
+          echo "external-url=${HOST}$ROUTE" >> $GITHUB_OUTPUT
+          cat /tmp/ingress.yaml 
+          kubectl apply -f /tmp/ingress.yaml
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            **${{ inputs.target }}** Preview deployed.
+            Valid until **${{ steps.expiration-ts.outputs.date-end }}**.
+            Deployment's name: **${{ steps.deployment-name.outputs.name }}**.
+            Internal address: **${{ steps.kubernetes-service.outputs.service-addr }}**
+            External address: **${{ steps.kubernetes-ingress.outputs.external-url }}**
+
+

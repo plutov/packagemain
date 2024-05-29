@@ -1,0 +1,45 @@
+name: substack01-backend-previews
+on:
+  pull_request:
+    paths:
+      - 'substack/01-backend-previews/**'
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created, edited]
+  workflow_dispatch:
+
+jobs:
+  comments:
+    runs-on: ubuntu-latest
+    outputs:
+      preview-triggered: ${{ steps.check-preview.outputs.triggered }}
+      preview-comment: ${{ steps.check-preview.outputs.comment_body }}
+    steps:
+      - uses: khan/pull-request-comment-trigger@v1.1.0
+        id: check-preview
+        with:
+          trigger: '#preview'
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  build:
+    uses: .github/workflows/substack01-build.yaml@master
+    needs: [comments]
+    if: needs.comments.outputs.preview-triggered == 'true'
+    secrets:
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
+      dh-username: ${{ DOCKERHUB_USERNAME }}
+      dh-token: ${{ DOCKERHUB_TOKEN }}
+    with:
+      repository-base-name: substack-01-backend-previews
+  preview:
+    uses: .github/workflows/substack01-preview.yaml@master
+    needs: [comments, build]
+    if: needs.comments.outputs.preview-triggered == 'true'
+    secrets:
+      k8s-sa: ${{ secrets.K8S_SERVICE_ACCOUNT }}
+    with:
+      deployment-target: 
+      docker-tag: ${{ needs.docker-build-push.outputs.sha-short }}
+      cluster: staging
+      expiration: 3
+      comment: ${{ needs.comments.outputs.preview-comment }}

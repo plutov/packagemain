@@ -1,15 +1,5 @@
 ## packagemain #25: Identifying Container Image vulnerabilities with Docker Scout
 
-<!-- INTRO COVER IMAGE -->
-
-Hi, my name is Alex Pliutau and welcome to package main, your one-stop shop for mastering Go, but also Backend and DevOps in general.
-
-First, small announcement: me and my friend Julien are starting a ["package main "Newsletter on Substack](https://packagemain.substack.com/) as we believe we can create more content which is easier to digest.
-
-But today let's talk about identifying container image vulnerabilities with Docker Scout. Let's get started.
-
-<!-- INTRO SOUND -->
-
 We all know, that Docker technology is great and brings us many advantages, but also, unfortunately, Docker images include many attack surfaces on different layers.
 
 Every day, there are new vulnerabilities discovered in open source projects and maintainers are tasked with patching their software. [~30k new vulnerabilities discovered in 2023 alone](https://www.cvedetails.com/).
@@ -20,10 +10,9 @@ There are many free, open-source or paid tools for Docker vulnerability scanning
 
 - Docker Scout
 - Aqua Security Trivy
-- Clair
-- Anchore Engine
 - Snyk
 - tenable.io
+- and many others
 
 They all have their advantages and differences, but still share the main goal: identify unpatched vulnerabilities.
 
@@ -31,7 +20,7 @@ Let's take a deep dive into the Docker vulnerability scanning and see it in acti
 
 - Craft a sample Dockerfile as a foundation for our exploration.
 - Scan for vulnerabilities with Docker Scout.
-- Explore resolution options.
+- Explore some resolution options.
 - Set up a simple CI/CD pipeline to automate continuous scanning/reporting.
 
 Our Dockerfile will use `golang:1.19` as a base image, which is not the latest version, but not so old either, and I believe many projects still use it.
@@ -66,6 +55,7 @@ Some notes on Docker Scout:
 ```bash
 docker login
 docker scout enroll ORG_NAME
+docker scout help
 ```
 
 There are a few commands available:
@@ -74,7 +64,6 @@ There are a few commands available:
 - `compare`: compare an image to a second one (for instance to latest)
 - `cves`: display vulnerabilities of an image
 - `recommendations`: display available base image updates and remediation recommendations
-- `sbom`: generate the SBOM (Software Bill of Materials) of the image
 
 We can use them to scan our already built image. Which resulted in...
 
@@ -143,13 +132,13 @@ While manual scanning is valuable, integrating vulnerability checks into your CI
 
 Docker Scout has a [GitHub Action](https://github.com/docker/scout-action) to run the Docker Scout CLI as part of your workflows.
 
-Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every pull request and reports only Critical and High vulnerabilities as a comment to a PR. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.
+Here is an example workflow (`.github/workflows/docker-scout.yaml`) which runs Docker Scout on every push and reports only Critical and High vulnerabilities as a comment. This actions requires authentication to Docker Hub, so we should add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to secrets.
 
 ```yaml
 name: Docker Scout
 
 on:
-  pull_request:
+  push:
     branches:
       - "*"
 
@@ -165,20 +154,20 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v4.0.0
         with:
-          context: ./25-docker-scout
-          push: false # note: we don't push it and just scan image locally
+          context: .
+          push: false
           load: true
           tags: ${{ github.event.repository.name }}
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }} # has to be added to secrets
-          password: ${{ secrets.DOCKERHUB_TOKEN }} # has to be added to secrets
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Docker Scout
         id: docker-scout
         uses: docker/scout-action@v1
         with:
-          command: cves # other scout commands can be specified here
+          command: cves
           image: ${{ github.event.repository.name }}
           ignore-unchanged: true
           only-severities: critical,high

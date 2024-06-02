@@ -1,1 +1,4 @@
-![package main](https://raw.githubusercontent.com/plutov/packagemain/master/logo.png)
+Materials for:
+
+- [Youtube channel](https://www.youtube.com/c/packagemain)
+- [packagemain.tech](https://packagemain.tech)

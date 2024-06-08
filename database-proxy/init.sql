@@ -1,0 +1,8 @@
+CREATE DATABASE IF NOT EXISTS packagemain CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS packagemain.orders_v1 (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO packagemain.orders_v1 (name) VALUES ('order1');

@@ -1,0 +1,24 @@
+services:
+  proxy:
+    restart: always
+    build:
+      context: .
+    ports:
+      - 3307:3307
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+    links:
+      - mysql
+
+  mysql:
+    restart: always
+    image: mysql:5.7
+    platform: linux/amd64
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./init.sql:/data/application/init.sql

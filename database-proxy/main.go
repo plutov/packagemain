@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -37,24 +38,16 @@ func transport(conn net.Conn) {
 		return
 	}
 
-	readChan := make(chan int64)
-	writeChan := make(chan int64)
-	var readBytes, writeBytes int64
-
 	// from proxy to mysql
 	go pipe(mysqlConn, conn, true)
 	// from mysql to proxy
-	go pipe(conn, mysqlConn, false)
-
-	readBytes = <-readChan
-	writeBytes = <-writeChan
-
-	log.Printf("connection closed. read bytes: %d, write bytes: %d", readBytes, writeBytes)
+	pipe(conn, mysqlConn, false)
 }
 
-func pipe(dst, src net.Conn, send bool) {
+func pipe(dst net.Conn, src net.Conn, send bool) {
 	if send {
 		intercept(src, dst)
+		return
 	}
 
 	_, err := io.Copy(dst, src)
@@ -63,14 +56,37 @@ func pipe(dst, src net.Conn, send bool) {
 	}
 }
 
+const COM_QUERY = byte(0x03)
+
 func intercept(src, dst net.Conn) {
 	buffer := make([]byte, 4096)
 
 	for {
 		n, _ := src.Read(buffer)
 		if n > 5 {
-			fmt.Println(string(buffer[:n]))
+			switch buffer[4] {
+			case COM_QUERY:
+				clientQuery := string(buffer[5:n])
+				newQuery := rewriteQuery(clientQuery)
+				fmt.Printf("client query: %s\n", clientQuery)
+				fmt.Printf("server query: %s\n", newQuery)
+
+				writeModifiedPacket(dst, buffer[:5], newQuery)
+				continue
+			}
+
 		}
 		dst.Write(buffer[0:n])
 	}
+}
+
+func rewriteQuery(query string) string {
+	return strings.NewReplacer("from orders_v1", "from orders_v2").Replace(strings.ToLower(query))
+}
+
+func writeModifiedPacket(dst net.Conn, header []byte, query string) {
+	newBuffer := make([]byte, 5+len(query))
+	copy(newBuffer, header)
+	copy(newBuffer[5:], []byte(query))
+	dst.Write(newBuffer)
 }

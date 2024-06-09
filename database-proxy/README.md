@@ -4,10 +4,10 @@ This proxy solves a very simple use case: intercept SQL query and rewrite table 
 
 ```sql
 -- Application-generated query
-SELECT * FROM orders;
+SELECT * FROM table1;
 
 -- Rewritten query
-SELECT * FROM orders_v1;
+SELECT * FROM table2;
 ```
 
 ## run locally with Docker Compose
@@ -19,5 +19,5 @@ docker-compose up --build
 ## connect to proxy
 
 ```
-mysql
+mysql -uroot -P 3307 -h 127.0.0.1 -proot --ssl-mode=disable
 ```

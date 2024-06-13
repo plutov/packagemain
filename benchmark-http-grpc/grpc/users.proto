@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "grpc/gen";
+
+service Users {
+  rpc CreateUser(User) returns (CreateUserResponse) {}
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+}
+
+message CreateUserResponse {
+  string message = 1;
+  uint64 code = 2;
+  User user = 3;
+}

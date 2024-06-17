@@ -3,9 +3,7 @@
 ## Generate unimplemented server gRPC client stub
 
 ```
-protoc -I./grpc  --go_out=. --go-grpc_out=. \
---go-grpc_opt=require_unimplemented_servers=true  \
---validate_out="lang=go:." users.proto
+protoc -I./grpc --go_out=. --go-grpc_out=. users.proto
 ```
 
 ## Run benchmarks

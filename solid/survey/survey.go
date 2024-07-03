@@ -53,7 +53,7 @@ func (e *GCSExporter) Export(survey *Survey) error {
 	return nil
 }
 
-func (s *Survey) Export(exporter Exporter) error {
+func ExportSurvey(s *Survey, exporter Exporter) error {
 	return exporter.Export(s)
 }
 

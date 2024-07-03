@@ -18,6 +18,7 @@ func (s *Survey) Validate() bool {
 	return len(s.Questions) > 0
 }
 
+// Repository is an interface that defines the methods that a concrete repository must implement
 type Repository interface {
 	Save(survey *Survey) error
 }
@@ -31,6 +32,7 @@ func (r *InMemoryRepository) Save(survey *Survey) error {
 	return nil
 }
 
+// Decouple the SaveSurvey function from the concrete Repository implementation
 func SaveSurvey(survey *Survey, repo Repository) error {
 	return repo.Save(survey)
 }
@@ -55,6 +57,7 @@ func (s *Survey) Export(exporter Exporter) error {
 	return exporter.Export(s)
 }
 
+// Use generic io.Writer instead of a concrete struct/file/etc.
 func (s *Survey) Write(writer io.Writer) (int, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
@@ -64,11 +67,12 @@ func (s *Survey) Write(writer io.Writer) (int, error) {
 	return writer.Write(b)
 }
 
+// Base interface
 type Question interface {
 	SetTitle()
-	AddOption()
 }
 
+// Has addtional method AddOption
 type QuestionWithOptions interface {
 	Question
 	AddOption()
@@ -99,6 +103,7 @@ type SurveyManager struct {
 	store Repository
 }
 
+// Pass the Repository interface instead of the concrete InMemoryRepository
 func NewSurveyManager(store Repository) *SurveyManager {
 	return &SurveyManager{
 		store: store,

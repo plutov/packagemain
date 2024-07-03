@@ -58,7 +58,7 @@ func ExportSurvey(s *Survey, exporter Exporter) error {
 }
 
 // Use generic io.Writer instead of a concrete struct/file/etc.
-func (s *Survey) Write(writer io.Writer) (int, error) {
+func WriteSurvey(s *Survey, writer io.Writer) (int, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return 0, err

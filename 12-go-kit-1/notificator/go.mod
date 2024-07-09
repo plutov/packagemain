@@ -9,8 +9,8 @@ require (
 	github.com/oklog/oklog v0.3.2
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/prometheus/client_golang v1.11.1
-	golang.org/x/net v0.25.0
-	google.golang.org/grpc v1.64.0
+	golang.org/x/net v0.26.0
+	google.golang.org/grpc v1.64.1
 	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
 )
 
@@ -29,8 +29,8 @@ require (
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/shirou/gopsutil v2.20.1+incompatible // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 )

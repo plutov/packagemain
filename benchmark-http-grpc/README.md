@@ -1,5 +1,7 @@
 # Performance Benchmarking: gRPC+Protobuf vs. HTTP+JSON
 
+[Read the full article on packagemain.tech](https://packagemain.tech/p/protobuf-grpc-vs-json-http)
+
 ## Generate unimplemented server gRPC client stub
 
 ```

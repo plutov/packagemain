@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hard-shutdown
+  labels:
+    app.kubernetes.io/name: hard-shutdown
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hard-shutdown
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hard-shutdown
+    spec:
+      containers:
+        - name: hard-shutdown
+          image: hard-shutdown
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: REDIS_ADDR
+              value: redis-master.redis.svc.cluster.local:6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hard-shutdown
+  labels:
+    app.kubernetes.io/name: hard-shutdown
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+      nodePort: 30001
+  selector:
+    app.kubernetes.io/name: hard-shutdown
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graceful-shutdown
+  labels:
+    app.kubernetes.io/name: graceful-shutdown
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: graceful-shutdown
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: graceful-shutdown
+    spec:
+      containers:
+        - name: graceful-shutdown
+          image: graceful-shutdown
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: REDIS_ADDR
+              value: redis-master.redis.svc.cluster.local:6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: graceful-shutdown
+  labels:
+    app.kubernetes.io/name: graceful-shutdown
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+      nodePort: 30002
+  selector:
+    app.kubernetes.io/name: graceful-shutdown

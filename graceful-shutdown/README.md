@@ -1,10 +1,12 @@
-[Read the full article on packagemain.tech]()
+[Read the full article on packagemain.tech](https://packagemain.tech/p/graceful-shutdowns-k8s-go)
 
-## Build applications
+## Build Docker Images
+
+We use 2 tags (v1 and v2) to initiate a Rolling Update later.
 
 ```
-docker build -t hard-shutdown ./hard-shutdown
-docker build -t graceful-shutdown ./graceful-shutdown
+docker build -t hard-shutdown:v1 -t hard-shutdown:v2 ./hard-shutdown
+docker build -t graceful-shutdown:v1 -t graceful-shutdown:v2 ./graceful-shutdown
 ```
 
 ## Deploy Redis to k8s
@@ -34,20 +36,21 @@ graceful-shutdown:
 echo "GET http://localhost:30002/incr" | vegeta attack -duration=40s -rate=25 -http2=false | vegeta report
 ```
 
-## Test with Kubernetes Termination
+## Test with Kubernetes Rolling Update
 
-While vegeta is running init the Kubernetes Termination process.
+While vegeta is running we can initiate a Rolling Update in Kubernetes by changing the image tag.
 
 ```
-kubectl delete pods --all
+kubectl set image deployment hard-shutdown hard-shutdown=hard-shutdown:v2
+kubectl set image deployment graceful-shutdown graceful-shutdown=graceful-shutdown:v2
 ```
 
 ## Verify counter in Redis
 
+It should "1000".
+
 ```
-kubectl exec -it redis-master-0 -n redis -- redis-cli
-127.0.0.1:6379> get counter
-"1000"
+kubectl exec -it redis-master-0 -n redis -- redis-cli get counter
 ```
 
 ## Clean up

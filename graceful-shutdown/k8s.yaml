@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: hard-shutdown
-          image: hard-shutdown
+          image: hard-shutdown:v1
           imagePullPolicy: Never
           ports:
             - name: http
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
         - name: graceful-shutdown
-          image: graceful-shutdown
+          image: graceful-shutdown:v1
           imagePullPolicy: Never
           ports:
             - name: http

@@ -47,7 +47,7 @@ kubectl set image deployment graceful-shutdown graceful-shutdown=graceful-shutdo
 
 ## Verify counter in Redis
 
-It should "1000".
+It should be "1000".
 
 ```
 kubectl exec -it redis-master-0 -n redis -- redis-cli get counter

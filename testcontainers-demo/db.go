@@ -21,7 +21,7 @@ type MongoDB struct {
 }
 
 func (m *MongoDB) Init() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	var err error
@@ -32,7 +32,7 @@ func (m *MongoDB) Init() error {
 func (m *MongoDB) StoreURL(url string, key string) error {
 	collection := m.client.Database("db").Collection("urls")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	_, err := collection.InsertOne(ctx, bson.D{{"url", url}, {"key", key}})
@@ -42,7 +42,7 @@ func (m *MongoDB) StoreURL(url string, key string) error {
 func (m *MongoDB) GetURL(key string) (string, error) {
 	collection := m.client.Database("db").Collection("urls")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	var result struct {

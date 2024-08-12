@@ -10,16 +10,11 @@ It has 2 dependencies:
 
 ### Run unit tests
 
-```bash
-go test -v ./...
-```
-
-### Generate mocks for unit tests
-
-Make sure to install [mockery](https://github.com/vektra/mockery) first.
+Uses mocks created with [mockery](https://github.com/vektra/mockery) as dependencies.
 
 ```bash
 mockery --all --with-expecter
+go test -v ./...
 ```
 
 ### Run integration tests using Testcontainers

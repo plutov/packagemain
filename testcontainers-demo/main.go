@@ -19,15 +19,17 @@ func (r *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(key))
 	case "/get":
 		key := req.URL.Query().Get("key")
 		url, err := GetURL(r.DB, r.Cache, key)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(url))
 	}
 }

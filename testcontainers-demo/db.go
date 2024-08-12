@@ -1,20 +1,56 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"os"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type DB interface {
 	Init() error
+	StoreURL(url string, key string) error
+	GetURL(key string) (string, error)
 }
 
-type Postgres struct {
-    conn *sql.DB
+type MongoDB struct {
+	client *mongo.Client
 }
 
-func (p *Postgres) Init() error {
+func (m *MongoDB) Init() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	var err error
-	p.conn, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	m.client, err = mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	return err
+}
+
+func (m *MongoDB) StoreURL(url string, key string) error {
+	collection := m.client.Database("db").Collection("urls")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, bson.D{{"url", url}, {"key", key}})
+	return err
+}
+
+func (m *MongoDB) GetURL(key string) (string, error) {
+	collection := m.client.Database("db").Collection("urls")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var result struct {
+		URL string
+	}
+	if err := collection.FindOne(ctx, bson.D{{"key", key}}).Decode(&result); err != nil {
+		return "", err
+	}
+
+	return result.URL, nil
 }

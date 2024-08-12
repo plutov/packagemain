@@ -1,11 +1,35 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
-type server struct{}
+type server struct {
+	DB    DB
+	Cache Cache
+}
 
 func (r *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Hello, world!"))
+	switch req.URL.Path {
+	case "/create":
+		url := req.URL.Query().Get("url")
+		key, err := StoreURL(r.DB, url)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(key))
+	case "/get":
+		key := req.URL.Query().Get("key")
+		url, err := GetURL(r.DB, r.Cache, key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(url))
+	}
 }
 
 func main() {

@@ -1,14 +1,12 @@
 services:
-  postgres:
-    image: postgres:16.0-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0-ubi8
+    restart: always
     ports:
-      - "5432:5432"
+      - "27017:27017"
 
   redis:
     image: redis:7.4-alpine
+    restart: always
     ports:
       - "6379:6379"

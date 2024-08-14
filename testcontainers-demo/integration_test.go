@@ -1,5 +1,5 @@
-//go:build testcont
-// +build testcont
+//go:build integration
+// +build integration
 
 package main
 

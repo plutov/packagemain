@@ -21,12 +21,12 @@ go test -v ./...
 
 ### Run integration tests using Testcontainers
 
-See `testcont_test.go` file for more implementation.
+See `integration_test.go` file for more implementation.
 
 The first run may take a while to download the images. But the subsequent runs are almost instant.
 
 ```bash
-go test -tags=testcont -v ./...
+go test -tags=integration -v ./...
 ```
 
 ### Run integration tests with real dependencies

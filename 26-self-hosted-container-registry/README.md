@@ -102,7 +102,7 @@ services:
       - 5000
 ```
 
-The password file is used to authenticate users when they push or pull images from the registry. You can create a password file using the `htpasswd` command. We also should create a folder for storing the images.
+The password file is used to authenticate users when they push or pull images from the registry. We should create a password file using the `htpasswd` command. We also should create a folder for storing the images.
 
 ```bash
 cd ~
@@ -110,7 +110,8 @@ mkdir -p ./registry/data
 
 # install htpasswd
 sudo apt install apache2-utils
-# create a password file
+
+# create a password file. username: busy, password: bee
 htpasswd -Bbn busy bee > ./registry/registry.password
 ```
 
@@ -125,7 +126,7 @@ docker-compose up
 
 ## SSL Certificates and Nginx
 
-As mentioned earlier, we can use Nginx to handle TLS and forward requests to the registry container. The Docker Registry requires a valid SSL certificate to work. You can use Let's Encrypt or obtain them manually. Make sure you have a domain name pointing to your server (**registry.pliutau.com** in my case). For this demo I already obtained the certificates using certbot and put them in the **./nginx/certs** directory.
+As mentioned earlier, we can use Nginx to handle TLS and forward requests to the registry container. The Docker Registry requires a valid SSL certificate to work. You can use Let's Encrypt or obtain it manually. Make sure you have a domain name pointing to your server (**registry.pliutau.com** in my case). For this demo I already obtained the certificates using certbot and put it in the **./nginx/certs** directory.
 
 Since we're running our Docker Registry in a container, we can run Nginx in a container as well by adding the following service to the **compose.yaml** file.
 
@@ -145,7 +146,7 @@ services:
       - "443:443"
 ```
 
-The **nginx.conf** file could look like this:
+Our **nginx.conf** file could look like this:
 
 ```ini
 worker_processes auto;
@@ -188,7 +189,7 @@ After these steps we can run our registry and Nginx containers.
 docker-compose up
 ```
 
-Now, on the client side, you can push and pull images from your registry. But first we need to login to the registry.
+Now, on the client side, you can push and pull the images from your registry. But first we need to login to the registry.
 
 ```bash
 docker login registry.pliutau.com

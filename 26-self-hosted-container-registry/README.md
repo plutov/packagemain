@@ -148,7 +148,7 @@ services:
 
 Our **nginx.conf** file could look like this:
 
-```ini
+```bash
 worker_processes auto;
 
 events {

@@ -7,10 +7,10 @@ services:
       REGISTRY_AUTH_HTPASSWD_PATH: /auth/registry.password
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
     volumes:
-      # Mount the password file
+      # mount the password file
       - ./registry/registry.password:/auth/registry.password
-      # Mount the data directory
-      - ./registry/data:/data
+      # mount the data directory
+      - ./registry/data/:/data
     ports:
       - 5000
   nginx:
@@ -19,6 +19,7 @@ services:
       - registry
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      # mount the certificates obtained from Let's Encrypt
       - ./nginx/certs:/etc/nginx/certs
     ports:
       - "443:443"

@@ -2,7 +2,7 @@
 
 ## What is a Container Image?
 
-Before we talk about container registries, let's first understand what a container image is. In a nutshell a container image is a package that includes all of the files, libraries, and configurations to run a container. They are composed of [layers](https://docs.docker.com/get-started/docker-concepts/building-images/understanding-image-layers/). Each layer represents a set of file system changes that add, remove, or modify files.
+Before we talk about container registries, let's first understand what a container image is. In a nutshell a container image is a package that includes all of the files, libraries, and configurations to run a container. They are composed of [layers](https://docs.docker.com/get-started/docker-concepts/building-images/understanding-image-layers/) where each layer represents a set of file system changes that add, remove, or modify files.
 
 The most common way to create a container image is to use a `Dockerfile`.
 
@@ -23,7 +23,7 @@ A container registry is a storage catalog where you can push and pull container 
 
 Some registries are public, meaning that the images hosted on them are accessible to anyone on the Internet. Public registries such as [Docker Hub](https://hub.docker.com) are good option to host open-source projects.
 
-On the other hand private registries provide a way to incorporate security and privacy into enterprise container image storage, either hosted in cloud or on-premises. These private registries often come with advanced security features and technical support. There is a growing list of private registries available such as [Amazon ECR](https://aws.amazon.com/ecr/), [GCP Artifact Registry](https://cloud.google.com/artifact-registry/docs), [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry), also Docker Hub offers a private repository feature.
+On the other hand private registries provide a way to incorporate security and privacy into enterprise container image storage, either hosted in cloud or on-premises. These private registries often come with advanced security features and technical support. There is a growing list of private registries available such as [Amazon ECR](https://aws.amazon.com/ecr/), [GCP Artifact Registry](https://cloud.google.com/artifact-registry/docs), [GitHub Container Registry](https://github.com/features/packages), also Docker Hub offers a private repository feature.
 
 As developer you interact with a container registry when using the `docker push` and `docker pull` commands.
 
@@ -47,36 +47,37 @@ docker pull docker.io/pliutau/hello-world:v0@sha256:dc11b2...
 
 Sometimes, instead of relying on a provider, like AWS or GCP, you might want to host your images yourself. This keeps your infrastructure internal and makes you less reliant on external vendors. In some heavily regulated industries, this is even a requirement.
 
-A self-hosted registry runs on your own servers, giving you more control over how the registry is configured and where the container images are hosted.
+A self-hosted registry runs on your own servers, giving you more control over how the registry is configured and where the container images are hosted. At the same time it comes with a cost of maintaining and securing the registry.
 
 ## How to self-host a Container Registry?
 
 There are several open-source container registry solutions available. The most popular one is officially supported by Docker, called [registry](https://hub.docker.com/_/registry) with its implementation for storing and distributing of container images and artifacts. Which means that you can run your own registry inside a container.
 
 Here are the main steps to run a registry on a server:
+
 - Install Docker and Docker Compose on the server
 - Configure and run the **registry** container
-- Run **Nginx** for handling TLS and forwarding requests to the registry container
-- Setup certificates and configure a domain
+- Run **nginx** for handling TLS and forwarding requests to the registry container
+- Setup SSL certificates and configure a domain
 
 ## Server
 
-You can use any server that supports Docker. For example, you can use a DigitalOcean Droplet with Ubuntu 20.04. For this demo I assume that you already have a server. I used Google Cloud Compute to create a VM with Ubuntu.
+You can use any server that supports Docker. For example, you can use a DigitalOcean Droplet with Ubuntu. For this demo I used Google Cloud Compute to create a VM with Ubuntu.
+
+```bash
+neofetch
+# OS: Ubuntu 20.04.6 LTS x86_64
+# CPU: Intel Xeon (2) @ 2.200GHz
+# Memory: 3908MiB
+```
 
 Once we're inside our VM we should install Docker and Docker Compose. Docker Compose is optional, but it makes it easier to manage multi-container applications.
 
 ```bash
-
-```bash
-# install docker engine
-sudo apt install docker.io
-sudo docker --version
-
-# install docker-compose
-# look here for the latest version and arch - https://github.com/docker/compose/releases
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-aarch64" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo docker-compose --version
+# install docker engine and docker-compose
+sudo snap install docker
+docker --version
+docker-compose --version
 ```
 
 ## Registry Configuration
@@ -107,8 +108,9 @@ The password file is used to authenticate users when they push or pull images fr
 cd ~
 mkdir -p ./registry/data
 
+# install htpasswd
+sudo apt install apache2-utils
 # create a password file
-mkdir registry
 htpasswd -Bbn busy bee > ./registry/registry.password
 ```
 
@@ -121,9 +123,11 @@ docker-compose up
 # registry | level=info msg="listening on [::]:5000"
 ```
 
-## Nginx
+## SSL Certificates and Nginx
 
-As mentioned earlier, we can use Nginx to handle TLS and forward requests to the registry container. We can add nginx service to our **compose.yaml** file.
+As mentioned earlier, we can use Nginx to handle TLS and forward requests to the registry container. The Docker Registry requires a valid SSL certificate to work. You can use Let's Encrypt or obtain them manually. Make sure you have a domain name pointing to your server (**registry.pliutau.com** in my case). For this demo I already obtained the certificates using certbot and put them in the **./nginx/certs** directory.
+
+Since we're running our Docker Registry in a container, we can run Nginx in a container as well by adding the following service to the **compose.yaml** file.
 
 ```yaml
 services:
@@ -135,6 +139,7 @@ services:
       - registry
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      # mount the certificates obtained from Let's Encrypt
       - ./nginx/certs:/etc/nginx/certs
     ports:
       - "443:443"
@@ -143,7 +148,67 @@ services:
 The **nginx.conf** file could look like this:
 
 ```ini
+worker_processes auto;
 
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream registry {
+        server registry:5000;
+    }
+
+    server {
+        server_name registry.pliutau.com;
+        listen 443 ssl;
+
+        ssl_certificate /etc/nginx/certs/fullchain.pem;
+        ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+        location / {
+            # important setting for large images
+            client_max_body_size                1000m;
+            proxy_pass                          http://registry;
+            proxy_set_header  Host              $http_host;
+            proxy_set_header  X-Real-IP         $remote_addr;
+            proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header  X-Forwarded-Proto $scheme;
+            proxy_read_timeout                  900;
+        }
+    }
+}
+```
+
+## Ready to go!
+
+After these steps we can run our registry and Nginx containers.
+
+```bash
+docker-compose up
+```
+
+Now, on the client side, you can push and pull images from your registry. But first we need to login to the registry.
+
+```bash
+docker login registry.pliutau.com
+# Username: busy
+# Password:
+# Login Succeeded
+```
+
+Time to build and push our image to our self-hosted registry!
+
+```bash
+docker build -t registry.pliutau.com/pliutau/hello-world:v0 .
+docker push registry.pliutau.com/pliutau/hello-world:v0
+# v0: digest: sha256:a56ea441009933553f60b0fc9dcaf9aa47d064b6da720c28df1549ddfa10ffb6 size: 738
+```
+
+On your server you can check the images in the data folder.
+
+```bash
+ls -la registry/data/docker/registry/v2/repositories/pliutau/hello-world/
 ```
 
 ## Other options
@@ -154,6 +219,8 @@ Also, if you want to have a UI for your self-hosted registry you could use a pro
 
 ## Conclusion
 
-Self-hosted Container Registries allow you to have complete control over your registry and the way it's deployed.
+Self-hosted Container Registries allow you to have complete control over your registry and the way it's deployed. At the same time it comes with a cost of maintaining and securing the registry.
 
 Whatever your reasons for running a self-hosted registry, you now know how it's done. From here you can compare the different options and choose the one that best fits your needs.
+
+You can find the full source code for this demo on [GitHub](https://github.com/plutov/packagemain/tree/master/26-self-hosted-container-registry)

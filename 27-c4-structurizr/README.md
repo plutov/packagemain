@@ -15,3 +15,12 @@ Write simple DSL - compile - serve
 Write full DSL - compile - serve
 
 Deploy with Github actions
+
+```
+mkdir ./build
+structurizr-site-generatr generate-site --workspace-file diagram.dsl -o ./build
+
+cd build
+npm install -g serve
+serve
+```

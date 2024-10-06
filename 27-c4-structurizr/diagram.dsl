@@ -1,46 +1,44 @@
-workspace {
-
+workspace "formulosity" "Surveys as Code" {
     model {
-        customer = person "Customer" "" "person"
-        admin = person "Admin User" "" "person"
+        user = person "Responder" "Survey User" "user"
+        admin = person "Admin User" "Console Admin" "user"
 
-        emailSystem = softwareSystem "Email System" "Mailgun" "external"
-        calendarSystem = softwareSystem "Calendar System" "Calendly" "external"
+        vcsSystem = softwareSystem "Github" "Survey configuration repositories" "external"
 
-        taskManagementSystem  = softwareSystem "Task Management System"{
-            webContainer = container "User Web UI" "" "" "frontend"
-            adminContainer = container "Admin Web UI" "" "" "frontend"
-            dbContainer = container "Database" "PostgreSQL" "" "database"
-            apiContainer = container "API" "Go" {
-                authComp = component "Authentication"
-                crudComp = component "CRUD"
+        # Internal system
+        surveysSystem  = softwareSystem "Formulosity Software" "Surveys as Code Platform" {
+            surveyUIContainer = container "Survey UI" "Public survey pages" "Next.js" "frontend"
+            adminUIContainer = container "Admin Console UI" "UI to manage surveys" "Next.js" "frontend"
+            dbContainer = container "Database" "Surveys/Responses storage" "SQLite"
+            apiContainer = container "API" "REST API" "Golang" {
+                parserComp = component "Parser" "Parse surveys configurations"
+                adminAPIComp = component "Admin API" "Endpoints to manage surveys"
+                userAPIComp = component "User API" "Endpoints to answer surveys"
             }
         }
 
         # Relationships between people and software systems
-        customer -> webContainer "Manages tasks"
-        admin -> adminContainer "Manages users"
-        apiContainer -> emailSystem "Sends emails"
-        apiContainer -> calendarSystem "Creates tasks in Calendar"
+        user -> surveyUIContainer "Load surveys and answer them"
+        admin -> adminUIContainer "Manages surveys"
 
         # Relationships between containers
-        webContainer -> apiContainer "Uses"
-        adminContainer -> apiContainer "Uses"
+        surveyUIContainer -> apiContainer "Uses"
+        adminUIContainer -> apiContainer "Uses"
         apiContainer -> dbContainer "Persists data"
 
         # Relationships to/from components
-        crudComp -> dbContainer "Reads from and writes to"
-        webContainer -> authComp "Authenticates using"
-        adminContainer -> authComp "Authenticates using"
+        adminUIContainer -> adminAPIComp "Manages surveys"
+        surveyUIContainer -> userAPIComp "Answers surveys"
+        vcsSystem -> parserComp "Fetches surveys configurations"
     }
 
     views {
-        systemContext taskManagementSystem {
+        systemContext surveysSystem {
             include *
             autolayout
         }
 
-        container taskManagementSystem {
+        container surveysSystem {
             include *
             autolayout
         }
@@ -51,36 +49,11 @@ workspace {
         }
 
         # Dynamic diagram can be used to showcase a specific feature or process
-        dynamic taskManagementSystem "LoginFlow" {
-            webContainer -> apiContainer "Sends login request with username and password"
-            apiContainer -> webContainer "Returns JWT token"
-            webContainer -> customer "Persists JWT token in local storage"
+        dynamic surveysSystem "SurveysParser" {
+            vcsSystem -> apiContainer  "Fetches surveys configurations"
+            apiContainer -> dbContainer "Persists parsed surveys"
+            apiContainer -> surveyUIContainer "Load parsed surveys"
             autolayout
-        }
-
-        styles {
-            element "Software System" {
-                background #1168bd
-                color #ffffff
-            }
-
-            element "person" {
-                shape Person
-            }
-
-            element "external" {
-                background #eeeeee
-                border dashed
-                color #000000
-            }
-
-            element "frontend" {
-                shape WebBrowser
-            }
-
-            element "database" {
-                shape Cylinder
-            }
         }
     }
 }

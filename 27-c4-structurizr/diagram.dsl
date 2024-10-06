@@ -10,7 +10,7 @@ workspace "formulosity" "Surveys as Code" {
             surveyUIContainer = container "Survey UI" "Public survey pages" "Next.js" "frontend"
             adminUIContainer = container "Admin Console UI" "UI to manage surveys" "Next.js" "frontend"
             dbContainer = container "Database" "Surveys/Responses storage" "SQLite"
-            apiContainer = container "API" "REST API" "Golang" {
+            backendContainer = container "Backend Service" "REST API" "Golang" {
                 parserComp = component "Parser" "Parse surveys configurations"
                 adminAPIComp = component "Admin API" "Endpoints to manage surveys"
                 userAPIComp = component "User API" "Endpoints to answer surveys"
@@ -22,9 +22,9 @@ workspace "formulosity" "Surveys as Code" {
         admin -> adminUIContainer "Manages surveys"
 
         # Relationships between containers
-        surveyUIContainer -> apiContainer "Uses"
-        adminUIContainer -> apiContainer "Uses"
-        apiContainer -> dbContainer "Persists data"
+        surveyUIContainer -> backendContainer "Uses"
+        adminUIContainer -> backendContainer "Uses"
+        backendContainer -> dbContainer "Persists data"
 
         # Relationships to/from components
         adminUIContainer -> adminAPIComp "Manages surveys"
@@ -43,16 +43,16 @@ workspace "formulosity" "Surveys as Code" {
             autolayout
         }
 
-        component apiContainer {
+        component backendContainer {
             include *
             autolayout
         }
 
         # Dynamic diagram can be used to showcase a specific feature or process
         dynamic surveysSystem "SurveysParser" {
-            vcsSystem -> apiContainer  "Fetches surveys configurations"
-            apiContainer -> dbContainer "Persists parsed surveys"
-            apiContainer -> surveyUIContainer "Load parsed surveys"
+            vcsSystem -> backendContainer  "Fetches surveys configurations"
+            backendContainer -> dbContainer "Persists parsed surveys"
+            backendContainer -> surveyUIContainer "Load parsed surveys"
             autolayout
         }
     }

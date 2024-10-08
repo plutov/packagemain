@@ -1,35 +1,37 @@
 workspace "formulosity" "Surveys as Code" {
     model {
-        user = person "Responder" "Survey User" "user"
-        admin = person "Admin User" "Console Admin" "user"
+        # Actors
+        user = person "User" "Survey User" "user"
+        admin = person "Admin" "Console Admin" "user"
 
-        vcsSystem = softwareSystem "Github" "Survey configuration repositories" "external"
+        # External systems
+        githubSystem = softwareSystem "GitHub" "Survey configurations" "external"
 
         # Internal system
-        surveysSystem  = softwareSystem "Formulosity Software" "Surveys as Code Platform" {
-            surveyUIContainer = container "Survey UI" "Public survey pages" "Next.js" "frontend"
-            adminUIContainer = container "Admin Console UI" "UI to manage surveys" "Next.js" "frontend"
-            dbContainer = container "Database" "Surveys/Responses storage" "SQLite"
-            backendContainer = container "Backend Service" "REST API" "Golang" {
-                parserComp = component "Parser" "Parse surveys configurations"
-                adminAPIComp = component "Admin API" "Endpoints to manage surveys"
-                userAPIComp = component "User API" "Endpoints to answer surveys"
+        surveysSystem = softwareSystem "Formulosity" "Surveys as code" {
+            surveyUIContainer = container "Survey UI" "Survey web pages" "Next.js" "frontend"
+            consoleUIContainer = container "Console UI" "Survey management page" "Next.js" "frontend"
+            dbContainer = container "Database" "Survey storage" "SQLite" "database"
+            apiContainer = container "API" "REST API" "Go" {
+                parserComp = component "Parser" "Parse/validate surveys"
+                userAPIComp = component "User API" "Public user API"
+                adminAPIComp = component "Admin API" "Private admin API"
             }
         }
 
-        # Relationships between people and software systems
-        user -> surveyUIContainer "Load surveys and answer them"
-        admin -> adminUIContainer "Manages surveys"
+        # Relationships
+        user -> surveyUIContainer "Uses"
+        admin -> consoleUIContainer "Uses"
 
-        # Relationships between containers
-        surveyUIContainer -> backendContainer "Uses"
-        adminUIContainer -> backendContainer "Uses"
-        backendContainer -> dbContainer "Persists data"
+        # Containers
+        apiContainer -> dbContainer "Stores surveys in"
+        surveyUIContainer -> apiContainer "Calls"
+        consoleUIContainer -> apiContainer "Calls"
 
-        # Relationships to/from components
-        adminUIContainer -> adminAPIComp "Manages surveys"
-        surveyUIContainer -> userAPIComp "Answers surveys"
-        vcsSystem -> parserComp "Fetches surveys configurations"
+        # Components
+        surveyUIContainer -> userAPIComp "Calls"
+        consoleUIContainer -> adminAPIComp "Calls"
+        parserComp -> githubSystem "Fetches surveys config"
     }
 
     views {
@@ -43,16 +45,15 @@ workspace "formulosity" "Surveys as Code" {
             autolayout
         }
 
-        component backendContainer {
+        component apiContainer {
             include *
             autolayout
         }
 
-        # Dynamic diagram can be used to showcase a specific feature or process
-        dynamic surveysSystem "SurveysParser" {
-            vcsSystem -> backendContainer  "Fetches surveys configurations"
-            backendContainer -> dbContainer "Persists parsed surveys"
-            backendContainer -> surveyUIContainer "Load parsed surveys"
+        dynamic surveysSystem "SurveyParser" {
+            apiContainer -> githubSystem "Fetches the surveys"
+            apiContainer -> dbContainer "Stores the surveys in"
+            surveyUIContainer -> apiContainer "Displays available surveys"
             autolayout
         }
     }

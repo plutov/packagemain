@@ -57,8 +57,8 @@ func callback(w http.ResponseWriter, r *http.Request) {
 func getOAuthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		// TODO: use env vars instead
-		ClientID:     "Ov23li3gjjflBbmZ9pv5",
-		ClientSecret: "b9b47f092559a756154d50be302170aed0a6bcaa",
+		ClientID:     "",
+		ClientSecret: "",
 		Scopes:       []string{"user:email", "repo:public_repo"},
 		Endpoint:     github.Endpoint,
 	}

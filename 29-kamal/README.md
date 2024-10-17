@@ -1,1 +1,1 @@
-## 29: How to deploy applications with Kamal 2
+https://www.youtube.com/watch?v=ImqznBAzr_k

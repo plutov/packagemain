@@ -12,7 +12,6 @@ import (
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
-	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	endpoint "github.com/plutov/packagemain/13-go-kit-2/users/pkg/endpoint"
@@ -20,8 +19,6 @@ import (
 	service "github.com/plutov/packagemain/13-go-kit-2/users/pkg/service"
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
-	appdash "sourcegraph.com/sourcegraph/appdash"
-	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 )
 
 var tracer opentracinggo.Tracer
@@ -48,21 +45,8 @@ func Run() {
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
-	//  Determine which tracer to use. We'll pass the tracer to all the
-	// components that use it, as a dependency
-	if *lightstepToken != "" {
-		logger.Log("tracer", "LightStep")
-		tracer = lightsteptracergo.NewTracer(lightsteptracergo.Options{AccessToken: *lightstepToken})
-		defer lightsteptracergo.FlushLightStepTracer(tracer)
-	} else if *appdashAddr != "" {
-		logger.Log("tracer", "Appdash", "addr", *appdashAddr)
-		collector := appdash.NewRemoteCollector(*appdashAddr)
-		tracer = opentracing.NewTracer(collector)
-		defer collector.Close()
-	} else {
-		logger.Log("tracer", "none")
-		tracer = opentracinggo.GlobalTracer()
-	}
+	logger.Log("tracer", "none")
+	tracer = opentracinggo.GlobalTracer()
 
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))

@@ -1,4 +1,4 @@
-FROM golang:1.20
+FROM golang:1.21
 
 WORKDIR /go/src/github.com/plutov/packagemain/12-go-kit-1/notificator
 

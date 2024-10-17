@@ -12,7 +12,6 @@ import (
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
-	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	endpoint "github.com/plutov/packagemain/12-go-kit-1/bugs/pkg/endpoint"
@@ -20,8 +19,6 @@ import (
 	service "github.com/plutov/packagemain/12-go-kit-1/bugs/pkg/service"
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
-	appdash "sourcegraph.com/sourcegraph/appdash"
-	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 )
 
 var tracer opentracinggo.Tracer
@@ -38,7 +35,6 @@ var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, js
 var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
 var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
-var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
 
 func Run() {
 	fs.Parse(os.Args[1:])
@@ -48,19 +44,7 @@ func Run() {
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
-	if *lightstepToken != "" {
-		logger.Log("tracer", "LightStep")
-		tracer = lightsteptracergo.NewTracer(lightsteptracergo.Options{AccessToken: *lightstepToken})
-		defer lightsteptracergo.FlushLightStepTracer(tracer)
-	} else if *appdashAddr != "" {
-		logger.Log("tracer", "Appdash", "addr", *appdashAddr)
-		collector := appdash.NewRemoteCollector(*appdashAddr)
-		tracer = opentracing.NewTracer(collector)
-		defer collector.Close()
-	} else {
-		logger.Log("tracer", "none")
-		tracer = opentracinggo.GlobalTracer()
-	}
+	tracer = opentracinggo.GlobalTracer()
 
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))

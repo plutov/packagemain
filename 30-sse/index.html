@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+	<body>
+		<ul id="list"></ul>
+	</body>
+
+	<script type="text/javascript">
+		const eventSrc = new EventSource("http://127.0.0.1:8080/events");
+
+		const list = document.getElementById("list");
+
+		eventSrc.onmessage = (event) => {
+			const li = document.createElement("li");
+			li.textContent = `id: ${event.lastEventId}, message: ${event.data}`;
+
+			list.appendChild(li);
+		};
+
+		eventSrc.addEventListener("ping", (event) => {
+			const li = document.createElement("li");
+			li.textContent = `PING. id: ${event.lastEventId}, message: ${event.data}`;
+
+			list.appendChild(li);
+		});
+
+		eventSrc.addEventListener("data", (event) => {
+			const li = document.createElement("li");
+			li.textContent = `DATA. id: ${event.lastEventId}, message: ${event.data}`;
+
+			list.appendChild(li);
+		});
+
+		eventSrc.onerror = (err) => {
+			console.error(`error: ${err}`);
+		};
+	</script>
+</html>

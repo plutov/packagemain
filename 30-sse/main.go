@@ -10,6 +10,14 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
+func main() {
+	http.HandleFunc("/events", sseHandler)
+	fmt.Println("server is running on :8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("unable to start the server: %s", err.Error())
+	}
+}
+
 func sseHandler(w http.ResponseWriter, r *http.Request) {
 	// Set http headers required for SSE
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -64,13 +72,5 @@ func sseHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}
-}
-
-func main() {
-	http.HandleFunc("/events", sseHandler)
-	fmt.Println("server is running on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("unable to start the server: %s", err.Error())
 	}
 }

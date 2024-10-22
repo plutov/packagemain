@@ -1,33 +1,22 @@
 <!doctype html>
 <html>
 	<body>
-		<ul id="list"></ul>
+		mem: <span id="mem"></span><br />
+		cpu: <span id="cpu"></span>
 	</body>
 
 	<script type="text/javascript">
 		const eventSrc = new EventSource("http://127.0.0.1:8080/events");
 
-		const list = document.getElementById("list");
+		const mem = document.getElementById("mem");
+		const cpu = document.getElementById("cpu");
 
-		eventSrc.onmessage = (event) => {
-			const li = document.createElement("li");
-			li.textContent = `id: ${event.lastEventId}, message: ${event.data}`;
-
-			list.appendChild(li);
-		};
-
-		eventSrc.addEventListener("ping", (event) => {
-			const li = document.createElement("li");
-			li.textContent = `PING. id: ${event.lastEventId}, message: ${event.data}`;
-
-			list.appendChild(li);
+		eventSrc.addEventListener("mem", (event) => {
+			mem.textContent = event.data;
 		});
 
-		eventSrc.addEventListener("data", (event) => {
-			const li = document.createElement("li");
-			li.textContent = `DATA. id: ${event.lastEventId}, message: ${event.data}`;
-
-			list.appendChild(li);
+		eventSrc.addEventListener("cpu", (event) => {
+			cpu.textContent = event.data;
 		});
 
 		eventSrc.onerror = (err) => {

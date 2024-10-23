@@ -1,8 +1,8 @@
 <!doctype html>
 <html>
 	<body>
-		mem: <span id="mem"></span><br />
-		cpu: <span id="cpu"></span>
+		Mem: <span id="mem"></span><br />
+		CPU: <span id="cpu"></span>
 	</body>
 
 	<script type="text/javascript">
@@ -20,7 +20,7 @@
 		});
 
 		eventSrc.onerror = (err) => {
-			console.error(`error: ${err}`);
+			console.log("sse error", err);
 		};
 	</script>
 </html>

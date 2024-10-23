@@ -12,65 +12,59 @@ import (
 
 func main() {
 	http.HandleFunc("/events", sseHandler)
-	fmt.Println("server is running on :8080")
+
 	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("unable to start the server: %s", err.Error())
+		log.Fatalf("unable to start server: %s", err.Error())
 	}
 }
 
 func sseHandler(w http.ResponseWriter, r *http.Request) {
-	// Set http headers required for SSE
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	// You may need this locally for CORS requests
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// Create a channel for client disconnection
+	memT := time.NewTicker(time.Second)
+	defer memT.Stop()
+
+	cpuT := time.NewTicker(time.Second)
+	defer cpuT.Stop()
+
 	clientGone := r.Context().Done()
 
 	rc := http.NewResponseController(w)
 
-	memTicker := time.NewTicker(time.Second)
-	defer memTicker.Stop()
-
-	cpuTicker := time.NewTicker(time.Second)
-	defer cpuTicker.Stop()
-
 	for {
 		select {
 		case <-clientGone:
-			fmt.Println("client disconnected")
-			return
-		case <-memTicker.C:
-			v, err := mem.VirtualMemory()
+			fmt.Println("client has disconnected")
+		case <-memT.C:
+			m, err := mem.VirtualMemory()
 			if err != nil {
+				log.Printf("unable to get mem: %s", err.Error())
 				return
 			}
 
-			// Send an event to the client
-			if _, err := fmt.Fprintf(w, "event:mem\ndata:%s\n\n", fmt.Sprintf("Total: %v, Free: %v, Used: %.2f%%\n", v.Total, v.Free, v.UsedPercent)); err != nil {
+			if _, err := fmt.Fprintf(w, "event:mem\ndata:Total: %d, Used: %d, Perc: %.2f%%\n\n", m.Total, m.Used, m.UsedPercent); err != nil {
+				log.Printf("unable to write: %s", err.Error())
 				return
 			}
 
-			if err := rc.Flush(); err != nil {
-				return
-			}
-		case <-cpuTicker.C:
+			rc.Flush()
+		case <-cpuT.C:
 			c, err := cpu.Times(false)
-			if err != nil || len(c) == 0 {
+			if err != nil {
+				log.Printf("unable to get cpu: %s", err.Error())
 				return
 			}
 
-			// Send an event to the client
-			if _, err := fmt.Fprintf(w, "event:cpu\ndata:%s\n\n", fmt.Sprintf("User: %.2f, Sys: %.2f, Idle: %.2f\n", c[0].User, c[0].System, c[0].Idle)); err != nil {
+			if _, err := fmt.Fprintf(w, "event:cpu\ndata:User: %.2f, Sys: %.2f, Idle: %.2f\n\n", c[0].User, c[0].System, c[0].Idle); err != nil {
+				log.Printf("unable to write: %s", err.Error())
 				return
 			}
 
-			if err := rc.Flush(); err != nil {
-				return
-			}
+			rc.Flush()
 		}
 	}
 }

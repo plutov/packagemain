@@ -31,7 +31,6 @@ func ProcessRequest(w http.ResponseWriter, r *http.Request) {
 	if req.Offset < 0 {
 		req.Offset = 0
 	}
-
 	start := req.Offset
 	end := req.Offset + req.Limit
 	all := make([]int, 1000)

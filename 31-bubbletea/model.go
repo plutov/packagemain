@@ -18,8 +18,11 @@ type model struct {
 }
 
 func NewModel() model {
+	ta := textarea.New()
+	ta.Blur()
+
 	return model{
-		textarea: GetTextareaModel(),
+		textarea: ta,
 		state:    listView,
 	}
 }

@@ -1,0 +1,35 @@
+service: gitprint-api
+image: pliutau/gitprint-api
+servers:
+  web:
+    - 195.195.112.112
+proxy:
+  ssl: true
+  host: api.gitprint.me
+  app_port: 8080
+  healthcheck:
+    path: /
+registry:
+  username: pliutau
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+builder:
+  arch: amd64
+env:
+  clear:
+    ENV: local
+    LOG_LEVEL: debug
+    GITHUB_CLIENT_ID: fxgh123g
+    GITHUB_REPOS_DIR: /root/data
+    GOTENBERG_ADDR: http://gitprint-api-gotenberg:3000
+  secret:
+    - JWT_SECRET
+    - GITHUB_CLIENT_SECRET
+volumes:
+  - /root/data:/root/data:rw
+accessories:
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    roles:
+      - web
+    port: "3000:3000"

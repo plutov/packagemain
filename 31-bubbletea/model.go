@@ -13,15 +13,17 @@ const (
 )
 
 type model struct {
+	store    Store
 	textarea textarea.Model
 	state    sessionState
 }
 
-func NewModel() model {
+func NewModel(store Store) model {
 	ta := textarea.New()
 	ta.Blur()
 
 	return model{
+		store:    store,
 		textarea: ta,
 		state:    listView,
 	}

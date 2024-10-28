@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	m := NewModel()
+	s := new(InMemStore)
+	m := NewModel(s)
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("unable to run: %v", err)

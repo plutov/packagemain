@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -14,16 +13,14 @@ const (
 )
 
 type model struct {
-	textarea  textarea.Model
-	textinput textinput.Model
-	state     sessionState
+	textarea textarea.Model
+	state    sessionState
 }
 
 func NewModel() model {
 	return model{
-		textarea:  GetTextareaModel(),
-		textinput: GetInputModel(),
-		state:     listView,
+		textarea: GetTextareaModel(),
+		state:    listView,
 	}
 }
 
@@ -33,19 +30,21 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+
 	var cmd tea.Cmd
-
 	m.textarea, cmd = m.textarea.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.textinput, cmd = m.textinput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "ctrl+c", "q":
+		case "n":
+			m.textarea.SetValue("")
+			m.textarea.Focus()
+			m.textarea.CursorEnd()
+			m.state = editView
+		case "q":
 			return m, tea.Quit
 		case "esc":
 			if m.state == editView {

@@ -28,32 +28,15 @@ var listItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Margin
 var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("250")).Faint(true)
 
 func (m model) View() string {
-	s := appNameStyle.Render("ultrafocus") + faint.Render(" - Reclaim your time.") + "\n\n"
-	s += statusStyle.Render("STATUS") + errorInfoStyle.Render("TODO") + "\n\n"
-
+	s := ""
 	if m.state == editView {
-		s += "Edit/add domains:\n\n" + m.textarea.View() + "\n\n"
-		s += "press Esc to save.\n"
+		s += m.textarea.View() + "\n\n"
+		s += "ctrl+s - save • esc - discard • q - quit\n"
 	}
 
-	// if m.state == menuView {
-	// 	commands := m.getCommandsList()
-
-	// 	l := list.New().Enumerator(func(items list.Items, i int) string {
-	// 		if i == m.commandsListSelection {
-	// 			return "→"
-	// 		}
-	// 		return " "
-	// 	}).
-	// 		EnumeratorStyle(listEnumeratorStyle).
-	// 		ItemStyle(listItemStyle)
-	// 	for _, c := range commands {
-	// 		l.Item(c.Name + faint.Render(" - "+c.Desc))
-	// 	}
-	// 	s += l.String() + "\n\n"
-	// }
-
-	s += "press q to quit.\n"
+	if m.state == listView {
+		s += "n - new note • q - quit\n"
+	}
 
 	return s
 }

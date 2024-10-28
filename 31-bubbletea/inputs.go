@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -30,15 +29,6 @@ func GetTextareaModel() textarea.Model {
 	}
 	ti.FocusedStyle = tiFocusedStyle
 	ti.BlurredStyle = tiBlurredStyle
-	ti.Blur()
-
-	return ti
-}
-
-func GetInputModel() textinput.Model {
-	ti := textinput.New()
-	ti.CharLimit = 3
-	ti.Width = 20
 	ti.Blur()
 
 	return ti

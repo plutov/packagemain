@@ -49,6 +49,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = editView
 		case "q":
 			return m, tea.Quit
+		case "ctrl+s":
+			if m.state == editView {
+				m.textarea.Blur()
+			}
 		case "esc":
 			if m.state == editView {
 				m.textarea.Blur()

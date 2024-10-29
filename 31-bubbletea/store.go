@@ -27,6 +27,7 @@ func (s *InMemStore) SaveNote(note Note) error {
 		}
 	}
 
+	note.ID = uint(len(s.notes) + 1)
 	s.notes = append(s.notes, note)
 	return nil
 }

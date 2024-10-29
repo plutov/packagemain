@@ -1,18 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	s := new(InMemStore)
-	m := NewModel(s)
+	store := new(InMemStore)
+	m := NewModel(store)
+
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("unable to run: %v", err)
-		os.Exit(1)
+		log.Fatalf("unable to run tui: %v", err)
 	}
 }

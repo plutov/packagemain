@@ -1,25 +1,45 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
 var appNameStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("#000000")).
-	Background(lipgloss.Color("86")).
+	Foreground(lipgloss.Color("255")).
+	Background(lipgloss.Color("99")).
 	Padding(0, 1)
 
-var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("250")).Faint(true)
+var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
+
+var listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
 
 func (m model) View() string {
-	s := appNameStyle.Render("Notes App") + "\n\n"
+	s := appNameStyle.Render("NOTES APP") + "\n\n"
 
-	if m.state == editView {
-		s += m.textarea.View() + "\n\n"
-		s += faint.Render("ctrl+s - save • esc - discard • q - quit")
+	if m.state == titleView {
+		s += "Note title:\n\n"
+		s += m.textinput.View() + "\n\n"
+		s += faint.Render("enter - save • esc - discard")
 	}
-
+	if m.state == bodyView {
+		s += "Note:\n\n"
+		s += m.textarea.View() + "\n\n"
+		s += faint.Render("ctrl+s - save • esc - discard")
+	}
 	if m.state == listView {
+		for i, n := range m.notes {
+			prefix := " "
+			if i == m.listIndex {
+				prefix = ">"
+			}
+			shortBody := strings.ReplaceAll(n.Body, "\n", " ")
+			if len(shortBody) > 32 {
+				shortBody = shortBody[:32]
+			}
+			s += listEnumeratorStyle.Render(prefix) + n.Title + " | " + faint.Render(shortBody) + "\n\n"
+		}
 		s += faint.Render("n - new note • q - quit")
 	}
 

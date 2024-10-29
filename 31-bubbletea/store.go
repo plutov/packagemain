@@ -20,6 +20,13 @@ func (s *InMemStore) GetNotes() ([]Note, error) {
 }
 
 func (s *InMemStore) SaveNote(note Note) error {
+	for i, n := range s.notes {
+		if n.ID == note.ID {
+			s.notes[i] = note
+			return nil
+		}
+	}
+
 	s.notes = append(s.notes, note)
 	return nil
 }

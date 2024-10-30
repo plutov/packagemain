@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,19 +25,16 @@ type model struct {
 }
 
 func NewModel(store Store) model {
-	ta := textarea.New()
-	ta.Blur()
-
-	ti := textinput.New()
-	ti.Blur()
-
-	notes, _ := store.GetNotes()
+	notes, err := store.GetNotes()
+	if err != nil {
+		log.Fatalf("unable to get notes: %v", err)
+	}
 
 	return model{
 		store:     store,
 		state:     listView,
-		textarea:  ta,
-		textinput: ti,
+		textarea:  textarea.New(),
+		textinput: textinput.New(),
 		notes:     notes,
 	}
 }
@@ -45,9 +44,11 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	var (
+		cmds []tea.Cmd
+		cmd  tea.Cmd
+	)
 
-	var cmd tea.Cmd
 	m.textarea, cmd = m.textarea.Update(msg)
 	cmds = append(cmds, cmd)
 
@@ -55,6 +56,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
+	// handle key strokes
 	case tea.KeyMsg:
 		key := msg.String()
 		switch m.state {
@@ -88,9 +90,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case titleView:
 			switch key {
 			case "enter":
-				if m.textinput.Value() != "" {
-					m.currNote.Title = m.textinput.Value()
-					m.textinput.Blur()
+				title := m.textinput.Value()
+				if title != "" {
+					m.currNote.Title = title
 
 					m.state = bodyView
 					m.textarea.SetValue("")
@@ -98,7 +100,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.textarea.CursorEnd()
 				}
 			case "esc":
-				m.textinput.Blur()
 				m.state = listView
 			}
 
@@ -107,18 +108,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch key {
 			case "ctrl+s":
 				m.currNote.Body = m.textarea.Value()
-				m.textarea.Blur()
 
-				m.store.SaveNote(m.currNote)
 				var err error
+				if err = m.store.SaveNote(m.currNote); err != nil {
+					// TODO: handle error instead of quitting
+					return m, tea.Quit
+				}
+
 				m.notes, err = m.store.GetNotes()
 				if err != nil {
+					// TODO: handle error instead of quitting
 					return m, tea.Quit
 				}
 
 				m.state = listView
 			case "esc":
-				m.textarea.Blur()
 				m.state = listView
 			}
 		}

@@ -6,14 +6,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var appNameStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("255")).
-	Background(lipgloss.Color("99")).
-	Padding(0, 1)
+var (
+	appNameStyle = lipgloss.NewStyle().Background(lipgloss.Color("99")).Padding(0, 1)
 
-var faint = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
+	faint = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
 
-var listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
+	listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
+)
 
 func (m model) View() string {
 	s := appNameStyle.Render("NOTES APP") + "\n\n"
@@ -23,11 +22,13 @@ func (m model) View() string {
 		s += m.textinput.View() + "\n\n"
 		s += faint.Render("enter - save • esc - discard")
 	}
+
 	if m.state == bodyView {
 		s += "Note:\n\n"
 		s += m.textarea.View() + "\n\n"
 		s += faint.Render("ctrl+s - save • esc - discard")
 	}
+
 	if m.state == listView {
 		for i, n := range m.notes {
 			prefix := " "
@@ -35,8 +36,8 @@ func (m model) View() string {
 				prefix = ">"
 			}
 			shortBody := strings.ReplaceAll(n.Body, "\n", " ")
-			if len(shortBody) > 32 {
-				shortBody = shortBody[:32]
+			if len(shortBody) > 30 {
+				shortBody = shortBody[:30]
 			}
 			s += listEnumeratorStyle.Render(prefix) + n.Title + " | " + faint.Render(shortBody) + "\n\n"
 		}

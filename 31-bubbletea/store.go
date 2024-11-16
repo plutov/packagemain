@@ -13,17 +13,11 @@ type Note struct {
 	Body  string
 }
 
-type Store interface {
-	Init() error
-	GetNotes() ([]Note, error)
-	SaveNote(note Note) error
-}
-
-type SQLiteStore struct {
+type Store struct {
 	conn *sql.DB
 }
 
-func (s *SQLiteStore) Init() error {
+func (s *Store) Init() error {
 	var err error
 	s.conn, err = sql.Open("sqlite3", "./notes.db")
 	if err != nil {
@@ -43,7 +37,7 @@ func (s *SQLiteStore) Init() error {
 	return nil
 }
 
-func (s *SQLiteStore) GetNotes() ([]Note, error) {
+func (s *Store) GetNotes() ([]Note, error) {
 	rows, err := s.conn.Query("SELECT * FROM notes")
 	if err != nil {
 		return nil, err
@@ -60,7 +54,7 @@ func (s *SQLiteStore) GetNotes() ([]Note, error) {
 	return notes, nil
 }
 
-func (s *SQLiteStore) SaveNote(note Note) error {
+func (s *Store) SaveNote(note Note) error {
 	if note.ID == 0 {
 		// pseudo-unique id
 		note.ID = time.Now().UTC().Unix()

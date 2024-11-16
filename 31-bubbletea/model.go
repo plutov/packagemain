@@ -15,7 +15,7 @@ const (
 )
 
 type model struct {
-	store     Store
+	store     *Store
 	state     uint
 	textarea  textarea.Model
 	textinput textinput.Model
@@ -24,7 +24,7 @@ type model struct {
 	listIndex int
 }
 
-func NewModel(store Store) model {
+func NewModel(store *Store) model {
 	notes, err := store.GetNotes()
 	if err != nil {
 		log.Fatalf("unable to get notes: %v", err)

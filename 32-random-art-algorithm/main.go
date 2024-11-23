@@ -12,12 +12,17 @@ import (
 )
 
 type Operation interface {
+	// a number of leaves which produce inputs for this operation
 	InputsCount() uint8
 	// always returns 3 elements for RGB
 	Eval(x float64, y float64) []float64
 }
 
 type OpVarX struct{}
+type OpVarY struct{}
+type OpConstant struct {
+	constant float64
+}
 
 func (o *OpVarX) InputsCount() uint8 {
 	return 0
@@ -26,8 +31,6 @@ func (o *OpVarX) Eval(x float64, y float64) []float64 {
 	return []float64{x, x, x}
 }
 
-type OpVarY struct{}
-
 func (o *OpVarY) InputsCount() uint8 {
 	return 0
 }
@@ -35,11 +38,12 @@ func (o *OpVarY) Eval(x float64, y float64) []float64 {
 	return []float64{y, y, y}
 }
 
-// operations without inputs
-var leaves = []Operation{&OpVarX{}, &OpVarY{}}
-
-// operations with inputs
-var ops = []Operation{}
+func (o *OpConstant) InputsCount() uint8 {
+	return 0
+}
+func (o *OpConstant) Eval(x float64, y float64) []float64 {
+	return []float64{o.constant, o.constant, o.constant}
+}
 
 func main() {
 	var phrase string
@@ -52,6 +56,12 @@ func main() {
 	// this seed is not ideal, as it takes only the first 8 bytes. check out Mersenne-Twister algorithm
 	seed := binary.BigEndian.Uint64(h.Sum(nil))
 	r := rand.New(rand.NewSource(int64(seed)))
+
+	// operations without inputs
+	var leaves = []Operation{&OpVarX{}, &OpVarY{}, &OpConstant{r.Float64()}}
+
+	// operations with inputs
+	// var ops = []Operation{}
 
 	width := 100
 	height := 100

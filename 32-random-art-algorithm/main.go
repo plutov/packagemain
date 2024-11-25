@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -118,6 +119,101 @@ func (o *OpInverse) Eval(x float64, y float64) []float64 {
 	return []float64{1 - v[0], 1 - v[1], 1 - v[2]}
 }
 
+// OpSum
+type OpSum struct {
+	inputs []Operation
+}
+
+func (o *OpSum) InputsCount() uint8 {
+	return 2
+}
+
+func (o *OpSum) SetInputs(inputs []Operation) {
+	o.inputs = inputs
+}
+
+func (o *OpSum) Eval(x float64, y float64) []float64 {
+	a := o.inputs[0].Eval(x, y)
+	b := o.inputs[0].Eval(x, y)
+	return []float64{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
+}
+
+// OpProduct
+type OpProduct struct {
+	inputs []Operation
+}
+
+func (o *OpProduct) InputsCount() uint8 {
+	return 2
+}
+
+func (o *OpProduct) SetInputs(inputs []Operation) {
+	o.inputs = inputs
+}
+
+func (o *OpProduct) Eval(x float64, y float64) []float64 {
+	a := o.inputs[0].Eval(x, y)
+	b := o.inputs[1].Eval(x, y)
+	return []float64{a[0] * b[0], a[1] * b[1], a[2] * b[2]}
+}
+
+// OpMod
+type OpMod struct {
+	inputs []Operation
+}
+
+func (o *OpMod) InputsCount() uint8 {
+	return 2
+}
+
+func (o *OpMod) SetInputs(inputs []Operation) {
+	o.inputs = inputs
+}
+
+func (o *OpMod) Eval(x float64, y float64) []float64 {
+	a := o.inputs[0].Eval(x, y)
+	b := o.inputs[1].Eval(x, y)
+	return []float64{math.Mod(a[0], b[0]), math.Mod(a[1], b[1]), math.Mod(a[2], b[2])}
+}
+
+// OpPerChannelMask
+type OpPerChannelMask struct {
+	inputs   []Operation
+	constant float64
+}
+
+func (o *OpPerChannelMask) InputsCount() uint8 {
+	return 3
+}
+
+func (o *OpPerChannelMask) SetInputs(inputs []Operation) {
+	o.inputs = inputs
+}
+
+func (o *OpPerChannelMask) Eval(x float64, y float64) []float64 {
+	a := o.inputs[0].Eval(x, y)
+	b := o.inputs[1].Eval(x, y)
+	c := o.inputs[2].Eval(x, y)
+
+	var aa, bb, cc float64
+	if a[0] > o.constant {
+		aa = b[0]
+	} else {
+		aa = c[0]
+	}
+	if a[0] > o.constant {
+		bb = b[1]
+	} else {
+		bb = c[1]
+	}
+	if a[0] > o.constant {
+		cc = b[2]
+	} else {
+		cc = c[2]
+	}
+	return []float64{aa, bb, cc}
+}
+
 func main() {
 	var (
 		phrase string
@@ -128,23 +224,13 @@ func main() {
 	flag.IntVar(&depth, "depth", 3, "depth of graph")
 	flag.Parse()
 
-	h := md5.New()
-	h.Write([]byte(phrase))
-	// this seed is not ideal, as it takes only the first 8 bytes. check out Mersenne-Twister algorithm
-	seed := binary.BigEndian.Uint64(h.Sum(nil))
-	r := rand.New(rand.NewSource(int64(seed)))
-
-	// operations with inputs
-	opsWithLeaves := []Operation{&OpColorMix{}, &OpInverse{}}
-
-	// operations without inputs
-	opsNoLeaves := []Operation{&OpVarX{}, &OpVarY{}, &OpConstant{r.Float64()}, &OpCircle{r.Float64(), r.Float64()}}
+	prng := getPRNG(phrase)
 
 	root := &OpColorMix{}
-	root.SetInputs(generateNodeChildren(root.InputsCount(), depth, r, opsWithLeaves, opsNoLeaves))
+	root.SetInputs(generateNodeChildren(root.InputsCount(), depth, prng))
 
-	width := 100
-	height := 100
+	width := 1000
+	height := 1000
 
 	upLeft := image.Point{0, 0}
 	bottomRight := image.Point{width, height}
@@ -157,9 +243,9 @@ func main() {
 			yInit := float64(y) / float64(height)
 
 			rgba := root.Eval(xInit, yInit)
-			r := uint8(rgba[0] * 0xff)
-			g := uint8(rgba[1] * 0xff)
-			b := uint8(rgba[2] * 0xff)
+			r := uint8(rgba[0]*0xff) % 0xff
+			g := uint8(rgba[1]*0xff) % 0xff
+			b := uint8(rgba[2]*0xff) % 0xff
 			img.Set(x, y, color.RGBA{r, g, b, 0xff})
 		}
 	}
@@ -169,24 +255,66 @@ func main() {
 	png.Encode(f, img)
 }
 
+// Pseudo Random Number Generator with md5 phrase as a seed
+func getPRNG(phrase string) *rand.Rand {
+	h := md5.New()
+	h.Write([]byte(phrase))
+	// this seed is not ideal, as it takes only the first 8 bytes. check out Mersenne-Twister algorithm
+	seed := binary.BigEndian.Uint64(h.Sum(nil))
+	return rand.New(rand.NewSource(int64(seed)))
+}
+
+// operations factory
+func pickOperation(prng *rand.Rand, depth int) Operation {
+	opsNoLeaves := []string{"x", "y", "const", "circle"}
+	opsWithLeaves := []string{"colormix", "inverse", "sum", "product", "mod", "perchanmask"}
+
+	var opID string
+	if depth > 1 {
+		i := prng.Intn(len(opsWithLeaves) - 1)
+		opID = opsWithLeaves[i]
+	} else {
+		i := prng.Intn(len(opsNoLeaves) - 1)
+		opID = opsNoLeaves[i]
+	}
+
+	switch opID {
+	case "x":
+		return &OpVarX{}
+	case "y":
+		return &OpVarY{}
+	case "const":
+		return &OpConstant{constant: prng.Float64()}
+	case "circle":
+		return &OpCircle{centerX: prng.Float64(), centerY: prng.Float64()}
+	case "colormix":
+		return &OpColorMix{}
+	case "inverse":
+		return &OpInverse{}
+	case "sum":
+		return &OpSum{}
+	case "product":
+		return &OpProduct{}
+	case "mod":
+		return &OpMod{}
+	case "perchanmask":
+		return &OpPerChannelMask{constant: prng.Float64()}
+	default:
+		log.Fatalf("operation id %s is not valid", opID)
+		return nil
+	}
+}
+
 // Given an expected children count and current depth generate the list of inputs
-func generateNodeChildren(count uint8, depth int, r *rand.Rand, opsWithLeaves []Operation, opsNoLeaves []Operation) []Operation {
+func generateNodeChildren(count uint8, depth int, prng *rand.Rand) []Operation {
 	if count == 0 {
 		return []Operation{}
 	}
 
 	ops := []Operation{}
 	for i := 0; i < int(count); i++ {
-		var op Operation
-		if depth > 1 {
-			i := r.Intn(len(opsWithLeaves) - 1)
-			op = opsWithLeaves[i]
-		} else {
-			i := r.Intn(len(opsNoLeaves) - 1)
-			op = opsNoLeaves[i]
-		}
-
-		op.SetInputs(generateNodeChildren(op.InputsCount(), depth-1, r, opsWithLeaves, opsNoLeaves))
+		op := pickOperation(prng, depth)
+		op.SetInputs(generateNodeChildren(op.InputsCount(), depth-1, prng))
 		ops = append(ops, op)
 	}
 

@@ -1,5 +1,11 @@
 ## Random Art Algorithm
 
+### Run
+
 ```
-o run *.go --phrase "what a nice day" --depth 5
+go run *.go --phrase "what a nice day" --depth 5
 ```
+
+### Graph example
+
+See graph.png

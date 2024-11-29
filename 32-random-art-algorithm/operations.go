@@ -91,6 +91,7 @@ func (o *OpCircle) InputsCount() uint8 {
 func (o *OpCircle) SetInputs(inputs []Operation) {}
 
 func (o *OpCircle) Eval(x float64, y float64) []float64 {
+	// calculates the Euclidean distance between the point (x, y) and the center (o.centerX, o.centerY)
 	h := math.Hypot(x-o.centerX, y-o.centerY)
 	return []float64{h, h, h}
 }
@@ -167,43 +168,44 @@ func (o *OpMod) SetInputs(inputs []Operation) {
 func (o *OpMod) Eval(x float64, y float64) []float64 {
 	a := o.inputs[0].Eval(x, y)
 	b := o.inputs[1].Eval(x, y)
+	// Mod returns the floating-point remainder of x/y
 	return []float64{math.Mod(a[0], b[0]), math.Mod(a[1], b[1]), math.Mod(a[2], b[2])}
 }
 
-// OpPerChannelMask
-type OpPerChannelMask struct {
-	inputs   []Operation
-	constant float64
+// OpThreshold
+type OpThreshold struct {
+	inputs    []Operation
+	threshold float64
 }
 
-func (o *OpPerChannelMask) InputsCount() uint8 {
+func (o *OpThreshold) InputsCount() uint8 {
 	return 3
 }
 
-func (o *OpPerChannelMask) SetInputs(inputs []Operation) {
+func (o *OpThreshold) SetInputs(inputs []Operation) {
 	o.inputs = inputs
 }
 
-func (o *OpPerChannelMask) Eval(x float64, y float64) []float64 {
-	a := o.inputs[0].Eval(x, y)
-	b := o.inputs[1].Eval(x, y)
-	c := o.inputs[2].Eval(x, y)
+func (o *OpThreshold) Eval(x float64, y float64) []float64 {
+	in := o.inputs[0].Eval(x, y)
+	a := o.inputs[1].Eval(x, y)
+	b := o.inputs[2].Eval(x, y)
 
 	var aa, bb, cc float64
-	if a[0] > o.constant {
+	if in[0] > o.threshold {
+		aa = a[0]
+	} else {
 		aa = b[0]
-	} else {
-		aa = c[0]
 	}
-	if a[0] > o.constant {
+	if in[1] > o.threshold {
+		bb = a[1]
+	} else {
 		bb = b[1]
-	} else {
-		bb = c[1]
 	}
-	if a[0] > o.constant {
-		cc = b[2]
+	if in[2] > o.threshold {
+		cc = a[2]
 	} else {
-		cc = c[2]
+		cc = b[2]
 	}
 	return []float64{aa, bb, cc}
 }
@@ -211,7 +213,7 @@ func (o *OpPerChannelMask) Eval(x float64, y float64) []float64 {
 // OpBinaryMask
 type OpBinaryMask struct {
 	inputs   []Operation
-	constant float64
+	treshold float64
 }
 
 func (o *OpBinaryMask) InputsCount() uint8 {
@@ -222,6 +224,7 @@ func (o *OpBinaryMask) SetInputs(inputs []Operation) {
 	o.inputs = inputs
 }
 
+// Euclidean length (or magnitude) of a vector
 func length(in []float64) float64 {
 	var sum float64 = 0
 	for _, v := range in {
@@ -235,39 +238,11 @@ func (o *OpBinaryMask) Eval(x float64, y float64) []float64 {
 	a := o.inputs[1].Eval(x, y)
 	b := o.inputs[2].Eval(x, y)
 
-	if length(in) > o.constant {
+	if length(in) > o.treshold {
 		return a
 	}
 
 	return b
-}
-
-// OpSmoothMix
-type OpSmoothMix struct {
-	inputs   []Operation
-	constant float64
-}
-
-func (o *OpSmoothMix) InputsCount() uint8 {
-	return 3
-}
-
-func (o *OpSmoothMix) SetInputs(inputs []Operation) {
-	o.inputs = inputs
-}
-
-func smooth(length float64, a float64, b float64) float64 {
-	return length*a + (1-length)*b
-}
-
-func (o *OpSmoothMix) Eval(x float64, y float64) []float64 {
-	in := o.inputs[0].Eval(x, y)
-	a := o.inputs[1].Eval(x, y)
-	b := o.inputs[2].Eval(x, y)
-
-	l := length(in)
-
-	return []float64{smooth(l, a[0], b[0]), smooth(l, a[1], b[1]), smooth(l, a[2], b[2])}
 }
 
 // OpWell
@@ -319,7 +294,7 @@ func (o *OpTent) Eval(x float64, y float64) []float64 {
 // operations factory
 func pickOperation(prng *rand.Rand, depth int) Operation {
 	opsNoLeaves := []string{"x", "y", "const", "circle"}
-	opsWithLeaves := []string{"colormix", "inverse", "sum", "product", "mod", "perchanmask", "binarymask", "smoothmix", "well", "tent"}
+	opsWithLeaves := []string{"colormix", "inverse", "sum", "product", "mod", "treshold", "binarymask", "well", "tent"}
 
 	var opID string
 	if depth > 1 {
@@ -349,12 +324,10 @@ func pickOperation(prng *rand.Rand, depth int) Operation {
 		return &OpProduct{}
 	case "mod":
 		return &OpMod{}
-	case "perchanmask":
-		return &OpPerChannelMask{constant: prng.Float64()}
+	case "treshold":
+		return &OpThreshold{threshold: prng.Float64()}
 	case "binarymask":
-		return &OpBinaryMask{constant: prng.Float64()}
-	case "smoothmix":
-		return &OpSmoothMix{constant: prng.Float64()}
+		return &OpBinaryMask{treshold: prng.Float64()}
 	case "well":
 		return &OpWell{}
 	case "tent":

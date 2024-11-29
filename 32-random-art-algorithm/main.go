@@ -25,6 +25,7 @@ func main() {
 
 	// graph root
 	root := &OpColorMix{}
+
 	// populate the graph
 	root.SetInputs(generateGraphNodes(root.InputsCount(), depth, prng))
 
@@ -64,7 +65,7 @@ func getPRNG(phrase string) *rand.Rand {
 	return rand.New(rand.NewSource(int64(seed)))
 }
 
-// Given an expected children count and current depth generate the list of inputs
+// Given an expected children count and current depth generate the list of children nodes
 // Recursive
 func generateGraphNodes(count uint8, depth int, prng *rand.Rand) []Operation {
 	if count == 0 {

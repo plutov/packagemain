@@ -293,16 +293,16 @@ func (o *OpTent) Eval(x float64, y float64) []float64 {
 
 // operations factory
 func pickOperation(prng *rand.Rand, depth int) Operation {
-	opsNoLeaves := []string{"x", "y", "const", "circle"}
-	opsWithLeaves := []string{"colormix", "inverse", "sum", "product", "mod", "treshold", "binarymask", "well", "tent"}
+	terminalOps := []string{"x", "y", "const", "circle"}
+	allOps := []string{"x", "y", "const", "circle", "colormix", "inverse", "sum", "product", "mod", "treshold", "binarymask", "well", "tent"}
 
 	var opID string
 	if depth > 1 {
-		i := prng.Intn(len(opsWithLeaves) - 1)
-		opID = opsWithLeaves[i]
+		i := prng.Intn(len(allOps))
+		opID = allOps[i]
 	} else {
-		i := prng.Intn(len(opsNoLeaves) - 1)
-		opID = opsNoLeaves[i]
+		i := prng.Intn(len(terminalOps))
+		opID = terminalOps[i]
 	}
 
 	switch opID {

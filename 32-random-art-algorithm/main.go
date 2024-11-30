@@ -29,8 +29,8 @@ func main() {
 	// populate the graph
 	root.SetInputs(generateGraphNodes(root.InputsCount(), depth, prng))
 
-	width := 1000
-	height := 1000
+	width := 600
+	height := 600
 
 	upLeft := image.Point{0, 0}
 	bottomRight := image.Point{width, height}

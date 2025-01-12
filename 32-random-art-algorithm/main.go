@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/binary"
 	"flag"
-	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -23,9 +22,6 @@ func main() {
 
 	// seeded pseudo-random number generator
 	prng := getPRNG(phrase)
-	fmt.Println(prng.Intn(10))
-	fmt.Println(prng.Intn(10))
-	fmt.Println(prng.Intn(10))
 
 	// graph root
 	root := &OpColorMix{}

@@ -1,3 +1,5 @@
+Video: https://youtu.be/TgftD-xrNeo
+
 ## Random Art Algorithm
 
 ### Run

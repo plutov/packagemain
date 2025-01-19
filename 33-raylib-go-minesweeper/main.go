@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -18,12 +19,13 @@ const (
 )
 
 type state struct {
-	menu     bool
-	gameOver bool
-	won      bool
-	rows     int32
-	cols     int32
-	mines    int32
+	menu      bool
+	gameOver  bool
+	gameWon   bool
+	startedAt time.Time
+	rows      int32
+	cols      int32
+	mines     int32
 	// [x][y]
 	field [][]point
 }
@@ -35,25 +37,27 @@ type point struct {
 	neighbours int
 }
 
-// buttons and paddings
 func (s *state) getWidth() int32 {
+	// buttons, paddings
 	return size*s.cols + 2*padding
 }
 
 func (s *state) getHeight() int32 {
-	// with status bar
+	// buttons, paddings, status bar
 	return size*s.rows + 2*padding + size
 }
 
 func (s *state) getStatus() string {
 	fps := rl.GetFPS()
+	elapsed := time.Since(s.startedAt)
 
-	return fmt.Sprintf("FPS: %d", fps)
+	return fmt.Sprintf("FPS: %d, TIME: %d", fps, int(elapsed.Seconds()))
 }
 
 func (s *state) reset() {
 	s.gameOver = false
-	s.won = false
+	s.gameWon = false
+	s.startedAt = time.Now()
 	s.menu = true
 	s.rows = 9
 	s.cols = 9
@@ -61,6 +65,7 @@ func (s *state) reset() {
 }
 
 func (s *state) start() {
+	// Build grid
 	s.field = make([][]point, s.rows)
 	for x := range s.rows {
 		s.field[x] = make([]point, s.cols)
@@ -69,7 +74,7 @@ func (s *state) start() {
 		}
 	}
 
-	// plant mines
+	// Plant mines
 	m := s.mines
 	for m > 0 {
 		x, y := rand.Intn(int(s.rows)), rand.Intn(int(s.cols))
@@ -105,24 +110,72 @@ func (s *state) doForNeighbours(x, y int, do func(x, y int)) {
 	}
 }
 
+func (s *state) checkIfGameWon() bool {
+	open := 0
+	total := int(s.rows * s.cols)
+
+	for x := 0; x < int(s.rows); x++ {
+		for y := 0; y < int(s.cols); y++ {
+			if s.field[x][y].open {
+				open++
+			}
+		}
+	}
+
+	return open == total-int(s.mines)
+}
+
+func (s *state) revealTile(x, y int) {
+	if s.field[x][y].open {
+		return
+	}
+
+	if s.field[x][y].hasMine {
+		s.gameOver = true
+		return
+	}
+
+	s.field[x][y].open = true
+	s.gameWon = s.checkIfGameWon()
+
+	// No neighbors, reveal all adjacent tiles recursively.
+	if s.field[x][y].neighbours == 0 {
+		s.doForNeighbours(x, y, func(nx, ny int) {
+			s.revealTile(nx, ny)
+		})
+	}
+}
+
 func (s *state) drawMenu() {
 	w, h := defaultWinWidth, defaultWinHeight
 	colw := float32(w / 2)
-	var lineHeight int32 = 50
+	var rowh float32 = 50
 	rl.SetWindowSize(w, h)
 
-	rl.DrawText("ROWS:", padding, lineHeight, size, rl.White)
-	s.rows = gui.Spinner(rl.NewRectangle(colw, float32(lineHeight), float32(colw-padding), size), "", &s.rows, minRowsCols, maxRowsCols, true)
+	rl.DrawText("ROWS:", padding, int32(rowh), size, rl.White)
+	s.rows = gui.Spinner(rl.NewRectangle(colw, rowh, float32(colw-padding), size), "", &s.rows, minRowsCols, maxRowsCols, true)
 
-	rl.DrawText("COLS:", padding, 2*lineHeight, size, rl.White)
-	s.cols = gui.Spinner(rl.NewRectangle(colw, float32(2*lineHeight), float32(colw-padding), size), "", &s.cols, minRowsCols, maxRowsCols, true)
+	rl.DrawText("COLS:", padding, 2*int32(rowh), size, rl.White)
+	s.cols = gui.Spinner(rl.NewRectangle(colw, 2*rowh, float32(colw-padding), size), "", &s.cols, minRowsCols, maxRowsCols, true)
 
-	rl.DrawText("MINES:", padding, 3*lineHeight, size, rl.White)
-	s.mines = gui.Spinner(rl.NewRectangle(colw, float32(3*lineHeight), float32(colw-padding), size), "", &s.mines, minRowsCols, maxRowsCols, true)
+	rl.DrawText("MINES:", padding, 3*int32(rowh), size, rl.White)
+	s.mines = gui.Spinner(rl.NewRectangle(colw, 3*rowh, float32(colw-padding), size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
 
-	clicked := gui.Button(rl.NewRectangle(padding, float32(4*lineHeight), float32(w-2*padding), size), "START")
-	if clicked {
+	if clicked := gui.Button(rl.NewRectangle(padding, 4*rowh, float32(w-2*padding), size), "START"); clicked {
 		s.start()
+	}
+}
+
+func getTextColor(neighbors int) rl.Color {
+	switch neighbors {
+	case 1:
+		return rl.Blue
+	case 2:
+		return rl.Green
+	case 3:
+		return rl.Red
+	default:
+		return rl.Black
 	}
 }
 
@@ -135,16 +188,30 @@ func (s *state) drawField() {
 
 	for x := range s.field {
 		for y := range s.field[x] {
-			if s.field[x][y].open {
-				rl.DrawRectangle(padding+int32(x)*size, padding+int32(y)*size, size, size, rl.Gray)
-				if s.field[x][y].hasMine {
-					gui.DrawIcon(gui.ICON_STAR, 5+padding+int32(x)*size, 5+padding+int32(y)*size, 1, rl.Red)
-					s.gameOver = true
-				} else {
-					rl.DrawText(fmt.Sprintf("%d", s.field[x][y].neighbours), 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, rl.DarkGreen)
+			rect := rl.NewRectangle(float32(padding+x*size), float32(padding+y*size), size, size)
+
+			// Mark on right mouse button
+			if rl.IsMouseButtonPressed(rl.MouseButtonRight) {
+				if rl.CheckCollisionPointRec(rl.GetMousePosition(), rect) {
+					if !s.field[x][y].open {
+						s.field[x][y].marked = !s.field[x][y].marked
+					}
 				}
+			}
+
+			if s.field[x][y].marked {
+				rl.DrawText("M", 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, rl.Violet)
+			} else if s.field[x][y].open {
+				text := ""
+				if s.field[x][y].neighbours > 0 {
+					text = fmt.Sprintf("%d", s.field[x][y].neighbours)
+				}
+
+				rl.DrawText(text, 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
 			} else {
-				s.field[x][y].open = gui.Button(rl.NewRectangle(float32(padding+x*size), float32(padding+y*size), size, size), "")
+				if open := gui.Button(rect, ""); open {
+					s.revealTile(x, y)
+				}
 			}
 		}
 	}
@@ -158,7 +225,7 @@ func (s *state) drawMessageWithRestart() {
 	if s.gameOver {
 		rl.DrawText("GAME OVER :(", padding, lineHeight, size, rl.White)
 	}
-	if s.won {
+	if s.gameWon {
 		rl.DrawText("WELL DONE !", padding, lineHeight, size, rl.White)
 	}
 
@@ -180,7 +247,7 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.DarkGray)
 
-		if game.gameOver {
+		if game.gameOver || game.gameWon {
 			game.drawMessageWithRestart()
 		} else if game.menu {
 			game.drawMenu()

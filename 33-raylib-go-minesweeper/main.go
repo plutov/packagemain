@@ -57,7 +57,6 @@ func (s *state) getStatus() string {
 func (s *state) reset() {
 	s.gameOver = false
 	s.gameWon = false
-	s.startedAt = time.Now()
 	s.menu = true
 	s.rows = 9
 	s.cols = 9
@@ -93,6 +92,7 @@ func (s *state) start() {
 	}
 
 	s.menu = false
+	s.startedAt = time.Now()
 }
 
 func (s *state) doForNeighbours(x, y int, do func(x, y int)) {

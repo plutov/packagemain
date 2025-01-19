@@ -15,7 +15,7 @@ const (
 	minRowsCols      = 3
 	maxRowsCols      = 20
 	defaultWinWidth  = 300
-	defaultWinHeight = 400
+	defaultWinHeight = 450
 )
 
 type state struct {
@@ -58,9 +58,6 @@ func (s *state) reset() {
 	s.gameOver = false
 	s.gameWon = false
 	s.menu = true
-	s.rows = 9
-	s.cols = 9
-	s.mines = 10
 }
 
 func (s *state) start() {
@@ -97,14 +94,14 @@ func (s *state) start() {
 
 func (s *state) doForNeighbours(x, y int, do func(x, y int)) {
 	// with diagonals
-	dx := []int{-1, -1, -1, 0, 0, 1, 1, 1}
-	dy := []int{-1, 0, 1, -1, 1, -1, 0, 1}
+	dx := []int{-1, 0, 1, -1, 1, -1, 0, 1}
+	dy := []int{-1, -1, -1, 0, 0, 1, 1, 1}
 
 	for i := 0; i < len(dx); i++ {
 		nx := x + dx[i]
 		ny := y + dy[i]
 
-		if nx >= 0 && nx < int(s.cols) && ny >= 0 && ny < int(s.rows) {
+		if nx >= 0 && nx < int(s.rows) && ny >= 0 && ny < int(s.cols) {
 			do(nx, ny)
 		}
 	}
@@ -130,12 +127,13 @@ func (s *state) revealTile(x, y int) {
 		return
 	}
 
+	s.field[x][y].open = true
+
 	if s.field[x][y].hasMine {
 		s.gameOver = true
 		return
 	}
 
-	s.field[x][y].open = true
 	s.gameWon = s.checkIfGameWon()
 
 	// No neighbors, reveal all adjacent tiles recursively.
@@ -150,20 +148,41 @@ func (s *state) drawMenu() {
 	w, h := defaultWinWidth, defaultWinHeight
 	colw := float32(w / 2)
 	var rowh float32 = 50
+	var fontSize int32 = 20
+	buttonWidth := float32(w - 2*padding)
+
 	rl.SetWindowSize(w, h)
+	rl.SetWindowPosition((rl.GetMonitorWidth(0)-int(w))/2, (rl.GetMonitorHeight(0)-int(h))/2)
 
-	rl.DrawText("ROWS:", padding, int32(rowh), size, rl.White)
-	s.rows = gui.Spinner(rl.NewRectangle(colw, rowh, float32(colw-padding), size), "", &s.rows, minRowsCols, maxRowsCols, true)
+	if clicked := gui.Button(rl.NewRectangle(padding, rowh, buttonWidth, size), "BEGINNER"); clicked {
+		s.rows = 9
+		s.cols = 9
+		s.mines = 10
+	}
+	if clicked := gui.Button(rl.NewRectangle(padding, 2*rowh, buttonWidth, size), "INTERMEDIATE"); clicked {
+		s.rows = 16
+		s.cols = 16
+		s.mines = 40
+	}
+	if clicked := gui.Button(rl.NewRectangle(padding, 3*rowh, buttonWidth, size), "EXPERT"); clicked {
+		s.rows = 30
+		s.cols = 30
+		s.mines = 99
+	}
 
-	rl.DrawText("COLS:", padding, 2*int32(rowh), size, rl.White)
-	s.cols = gui.Spinner(rl.NewRectangle(colw, 2*rowh, float32(colw-padding), size), "", &s.cols, minRowsCols, maxRowsCols, true)
+	rl.DrawText("ROWS:", padding, 4*int32(rowh)+5, fontSize, rl.White)
+	s.rows = gui.Spinner(rl.NewRectangle(colw, 4*rowh, float32(colw-padding), size), "", &s.rows, minRowsCols, maxRowsCols, true)
 
-	rl.DrawText("MINES:", padding, 3*int32(rowh), size, rl.White)
-	s.mines = gui.Spinner(rl.NewRectangle(colw, 3*rowh, float32(colw-padding), size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
+	rl.DrawText("COLS:", padding, 5*int32(rowh)+5, fontSize, rl.White)
+	s.cols = gui.Spinner(rl.NewRectangle(colw, 5*rowh, float32(colw-padding), size), "", &s.cols, minRowsCols, maxRowsCols, true)
 
-	if clicked := gui.Button(rl.NewRectangle(padding, 4*rowh, float32(w-2*padding), size), "START"); clicked {
+	rl.DrawText("MINES:", padding, 6*int32(rowh)+5, fontSize, rl.White)
+	s.mines = gui.Spinner(rl.NewRectangle(colw, 6*rowh, float32(colw-padding), size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
+
+	if clicked := gui.Button(rl.NewRectangle(padding, 7*rowh, buttonWidth, size), "START"); clicked {
 		s.start()
 	}
+
 }
 
 func getTextColor(neighbors int) rl.Color {
@@ -184,11 +203,32 @@ func (s *state) drawField() {
 	h := float32(s.getHeight())
 
 	rl.SetWindowSize(int(w), int(h))
+	rl.SetWindowPosition((rl.GetMonitorWidth(0)-int(w))/2, (rl.GetMonitorHeight(0)-int(h))/2)
+
 	gui.StatusBar(rl.NewRectangle(0, h-size, w, size), s.getStatus())
+	if restart := gui.Button(rl.NewRectangle(w-65, h-size+5, 60, size-10), "RESTART"); restart {
+		s.reset()
+		return
+	}
 
 	for x := range s.field {
 		for y := range s.field[x] {
 			rect := rl.NewRectangle(float32(padding+x*size), float32(padding+y*size), size, size)
+
+			if s.gameOver {
+				// reveal current state
+				if s.field[x][y].hasMine {
+					rl.DrawText("*", 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, rl.Red)
+				} else {
+					text := ""
+					if s.field[x][y].neighbours > 0 {
+						text = fmt.Sprintf("%d", s.field[x][y].neighbours)
+					}
+
+					rl.DrawText(text, 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
+				}
+				continue
+			}
 
 			// Mark on right mouse button
 			if rl.IsMouseButtonPressed(rl.MouseButtonRight) {
@@ -217,26 +257,27 @@ func (s *state) drawField() {
 	}
 }
 
-func (s *state) drawMessageWithRestart() {
+func (s *state) congrats() {
 	w, h := defaultWinWidth, defaultWinHeight
 	var lineHeight int32 = 50
 	rl.SetWindowSize(w, h)
 
-	if s.gameOver {
-		rl.DrawText("GAME OVER :(", padding, lineHeight, size, rl.White)
-	}
 	if s.gameWon {
 		rl.DrawText("WELL DONE !", padding, lineHeight, size, rl.White)
 	}
 
-	clicked := gui.Button(rl.NewRectangle(padding, float32(2*lineHeight), float32(w-2*padding), size), "ONE MORE")
+	clicked := gui.Button(rl.NewRectangle(padding, float32(2*lineHeight), float32(w-2*padding), size), "PLAY AGAIN")
 	if clicked {
 		s.reset()
 	}
 }
 
 func main() {
-	game := &state{}
+	game := &state{
+		rows:  9,
+		cols:  9,
+		mines: 10,
+	}
 	game.reset()
 
 	rl.InitWindow(defaultWinWidth, defaultWinHeight, "minesweeper")
@@ -247,8 +288,8 @@ func main() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.DarkGray)
 
-		if game.gameOver || game.gameWon {
-			game.drawMessageWithRestart()
+		if game.gameWon {
+			game.congrats()
 		} else if game.menu {
 			game.drawMenu()
 		} else {

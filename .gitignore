@@ -12,6 +12,8 @@
 23-fuzz-testing-in-go/testdata
 24-nft-collection/collection/*.png
 
+.DS_Store
+
 # Binaries for programs and plugins
 *.exe
 *.dll

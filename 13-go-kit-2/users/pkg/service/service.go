@@ -20,7 +20,7 @@ type basicUsersService struct {
 
 func (b *basicUsersService) Create(ctx context.Context, email string) error {
 	// TODO: Add code to create a user
-	reply, err := b.notificatorServiceClient.SendEmail(context.Background(), &pb.SendEmailRequest{
+	reply, err := b.notificatorServiceClient.SendEmail(ctx, &pb.SendEmailRequest{
 		Email:   email,
 		Content: "Hi! Thank you for registration...",
 	})

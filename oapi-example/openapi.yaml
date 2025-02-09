@@ -1,0 +1,99 @@
+openapi: 3.1.1
+info:
+  title: Smart Home API
+  description: API Specification for Smart Home API
+  version: 0.0.1
+tags:
+  - name: device
+    description: Manage devices
+  - name: room
+    description: Manage rooms
+security:
+  - apiKeyAuth: []
+paths:
+  /devices:
+    get:
+      tags:
+        - device
+      summary: List Devices
+      operationId: listDevices
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+  /devices/{deviceId}:
+    get:
+      tags:
+        - device
+      summary: Get Device
+      operationId: getDevice
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ULID"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorNotFound"
+components:
+  schemas:
+    WithId:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          $ref: "#/components/schemas/ULID"
+
+    WithName:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+
+    Device:
+      allOf:
+        - $ref: "#/components/schemas/WithId"
+        - $ref: "#/components/schemas/WithName"
+
+    ErrorNotFound:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+    ULID:
+      type: string
+      minLength: 26
+      maxLength: 26
+      x-go-type: ulid.ULID
+      x-go-type-import:
+        path: github.com/oklog/ulid/v2
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key

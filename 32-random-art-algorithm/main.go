@@ -12,12 +12,14 @@ import (
 )
 
 func main() {
+	var output string
 	var phrase string
 	// higher depth requires more time but produces better results
 	var depth int
 	// same phrase will always result in the same image
 	flag.StringVar(&phrase, "phrase", "", "phrase")
 	flag.IntVar(&depth, "depth", 5, "depth of graph")
+	flag.StringVar(&output, "out", "image.png", "output file")
 	flag.Parse()
 
 	// seeded pseudo-random number generator
@@ -52,7 +54,7 @@ func main() {
 	}
 
 	// Encode as PNG.
-	f, _ := os.Create("image.png")
+	f, _ := os.Create(output)
 	png.Encode(f, img)
 }
 

@@ -1,12 +1,11 @@
 services:
-  postgres:
-    image: postgres:16.0-alpine
+  mysql:
     restart: always
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=db
+    image: mysql:9.2
     ports:
-      - "5432:5432"
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=pass
+    command: --init-file /data/application/init.sql
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/data/application/init.sql

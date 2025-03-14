@@ -6,6 +6,6 @@ services:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=pass
-    command: --init-file /data/application/init.sql
+    command: --init-file /data/init.sql
     volumes:
-      - ./init.sql:/data/application/init.sql
+      - ./init.sql:/data/init.sql

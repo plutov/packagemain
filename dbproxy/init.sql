@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS db;
+create database if not exists db;
 
-CREATE TABLE IF NOT EXISTS db.orders_v2 (name VARCHAR(255) NOT NULL) ENGINE = InnoDB;
+create table if not exists db.orders_v2 (name text not null) engine = innodb;
 
-INSERT INTO
+insert into
   db.orders_v2 (name)
-VALUES
+values
   ('order1');

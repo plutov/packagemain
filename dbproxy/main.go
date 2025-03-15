@@ -40,6 +40,7 @@ func transport(conn net.Conn) {
 		fmt.Printf("failed to connect to db: %v", err)
 		return
 	}
+	defer dbConn.Close()
 
 	// from proxy to db, intercept before forward
 	go intercept(conn, dbConn)
@@ -60,29 +61,18 @@ func intercept(src, dst net.Conn) {
 			// 3 - length of body, 1 - packet sequence number, 1 - command code, etc.
 			switch buffer[4] {
 			case COM_QUERY:
-				clientQuery := string(buffer[5:n])
-				newQuery := rewriteQuery(clientQuery)
-				fmt.Printf("client query: %s\n", clientQuery)
-				fmt.Printf("server query: %s\n", newQuery)
+				query := string(buffer[5:n])
+				// todo: use lexer here
+				newQuery := strings.ReplaceAll(query, "from orders_v1", "from orders_v2")
+				fmt.Printf("original query: %s\n", query)
+				fmt.Printf("new query: %s\n", newQuery)
 
-				writeModifiedPacket(dst, buffer[:5], newQuery)
-				continue
+				copy(buffer[5:], []byte(newQuery))
 			}
 
 		}
 
-		// otherwise forward as is
+		// forward
 		dst.Write(buffer[0:n])
 	}
-}
-
-func rewriteQuery(q string) string {
-	return strings.ReplaceAll(strings.ToLower(q), "from orders_v1", "from orders_v2")
-}
-
-func writeModifiedPacket(dst net.Conn, buffer []byte, q string) {
-	newBuffer := make([]byte, 5+len(q))
-	copy(newBuffer, buffer)
-	copy(newBuffer[5:], []byte(q))
-	dst.Write(newBuffer)
 }

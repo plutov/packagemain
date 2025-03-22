@@ -18,7 +18,7 @@ type Redis struct {
 }
 
 func (r *Redis) Init() error {
-	opts, err := redis.ParseURL(os.Getenv("REDIS_URI"))
+	opts, err := redis.ParseURL(os.Getenv("REDIS_ADDR"))
 	if err != nil {
 		return err
 	}

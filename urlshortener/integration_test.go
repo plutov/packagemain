@@ -28,8 +28,8 @@ func TestServerWithTestcontainers(t *testing.T) {
 	mongodbEndpoint, _ := mongodbContainer.Endpoint(ctx, "")
 	redisEndpoint, _ := redisContainer.Endpoint(ctx, "")
 
-	os.Setenv("MONGO_URI", "mongodb://"+mongodbEndpoint)
-	os.Setenv("REDIS_URI", "redis://"+redisEndpoint)
+	os.Setenv("MONGO_ADDR", "mongodb://"+mongodbEndpoint)
+	os.Setenv("REDIS_ADDR", "redis://"+redisEndpoint)
 
 	s, err := NewServer(&MongoDB{}, &Redis{})
 	assert.NoError(t, err)

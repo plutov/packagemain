@@ -30,7 +30,7 @@ func getTestResponse(method string, url string) (string, int, error) {
 
 func testServer(srv *httptest.Server, t *testing.T) {
 	_, code, _ := getTestResponse("GET", srv.URL+"/create?url=invalidurl")
-	assert.Equal(t, http.StatusInternalServerError, code)
+	assert.Equal(t, http.StatusBadRequest, code)
 
 	key, code, _ := getTestResponse("GET", srv.URL+"/create?url=https://packagemain.tech")
 	assert.Equal(t, http.StatusCreated, code)

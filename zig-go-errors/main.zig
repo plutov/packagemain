@@ -2,11 +2,11 @@ const std = @import("std");
 
 fn get_args_count(allocator: std.mem.Allocator) !usize {
     const args = try std.process.argsAlloc(allocator);
-    if (args.len < 2) {
+    if (args.len < 1) {
         return error.EmptyArgs;
     }
 
-    return args.len - 1;
+    return args.len;
 }
 
 fn get_args_count_msg(allocator: std.mem.Allocator) ![]const u8 {
@@ -38,9 +38,8 @@ pub fn main() void {
     const args_count = get_args_count(allocator) catch blk: {
         break :blk 0;
     };
+    std.debug.print("got {d} args\n", .{args_count});
 
     const msg = get_args_count_msg(allocator) catch unreachable;
     std.debug.print("{s}\n", .{msg});
-
-    std.debug.print("got {d} args\n", .{args_count});
 }

@@ -1,5 +1,4 @@
 //go:build realdeps
-// +build realdeps
 
 package main
 

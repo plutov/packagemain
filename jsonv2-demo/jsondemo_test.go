@@ -1,7 +1,7 @@
-package main_test
+package main
 
 import (
-	"encoding/json"
+	json "encoding/json/v2"
 	"os"
 	"testing"
 
@@ -9,16 +9,15 @@ import (
 )
 
 func BenchmarkJsonUnmarshal(b *testing.B) {
-	content, err := os.ReadFile("./swagger.json")
+	f, err := os.ReadFile("./swagger.json")
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	b.ResetTimer()
 	for b.Loop() {
-		t := spec.Swagger{}
-		err := json.Unmarshal(content, &t)
-		if err != nil {
+		out := spec.Swagger{}
+		if err := json.Unmarshal(f, &out); err != nil {
 			b.Fatal(err)
 		}
 	}

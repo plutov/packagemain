@@ -1,9 +1,9 @@
 package main
 
 import (
-	"encoding/json"
-	jsonv2 "encoding/json/v2"
+	json "encoding/json/v2"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -14,20 +14,15 @@ type Target struct {
 
 var in = `{
 	"msg": "hello1",
-	"time": "2025-03-10"
-}
-`
+	"Msg": "hello3",
+	"time": "2025-05-06"
+}`
 
 func main() {
 	out := Target{}
 	if err := json.Unmarshal([]byte(in), &out); err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-	fmt.Printf("v1 res: %+v\n", out)
 
-	out = Target{}
-	if err := jsonv2.Unmarshal([]byte(in), &out); err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("v2 res: %+v\n", out)
+	fmt.Printf("out: %+v\n", out)
 }

@@ -212,8 +212,8 @@ func (o *OpThreshold) Eval(x float64, y float64) []float64 {
 
 // OpBinaryMask
 type OpBinaryMask struct {
-	inputs   []Operation
-	treshold float64
+	inputs    []Operation
+	threshold float64
 }
 
 func (o *OpBinaryMask) InputsCount() uint8 {
@@ -238,7 +238,7 @@ func (o *OpBinaryMask) Eval(x float64, y float64) []float64 {
 	a := o.inputs[1].Eval(x, y)
 	b := o.inputs[2].Eval(x, y)
 
-	if length(in) > o.treshold {
+	if length(in) > o.threshold {
 		return a
 	}
 
@@ -294,7 +294,7 @@ func (o *OpTent) Eval(x float64, y float64) []float64 {
 // operations factory
 func pickOperation(prng *rand.Rand, depth int) Operation {
 	terminalOps := []string{"x", "y", "const", "circle"}
-	allOps := []string{"x", "y", "const", "circle", "colormix", "inverse", "sum", "product", "mod", "treshold", "binarymask", "well", "tent"}
+	allOps := []string{"x", "y", "const", "circle", "colormix", "inverse", "sum", "product", "mod", "threshold", "binarymask", "well", "tent"}
 
 	var opID string
 	if depth > 1 {
@@ -324,10 +324,10 @@ func pickOperation(prng *rand.Rand, depth int) Operation {
 		return &OpProduct{}
 	case "mod":
 		return &OpMod{}
-	case "treshold":
+	case "threshold":
 		return &OpThreshold{threshold: prng.Float64()}
 	case "binarymask":
-		return &OpBinaryMask{treshold: prng.Float64()}
+		return &OpBinaryMask{threshold: prng.Float64()}
 	case "well":
 		return &OpWell{}
 	case "tent":

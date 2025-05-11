@@ -47,7 +47,7 @@ func main() {
 
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(jwtCustomClaims)
+			return new(jwtClaims)
 		},
 		SigningKey:    publicKey,
 		SigningMethod: jwt.SigningMethodRS256.Name,
@@ -60,7 +60,7 @@ func main() {
 	e.Start("127.0.0.1:4242")
 }
 
-type jwtCustomClaims struct {
+type jwtClaims struct {
 	jwt.RegisteredClaims
 }
 
@@ -72,7 +72,7 @@ func login(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	claims := &jwtCustomClaims{
+	claims := &jwtClaims{
 		jwt.RegisteredClaims{
 			Subject:   username,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
@@ -93,7 +93,7 @@ func login(c echo.Context) error {
 
 func greet(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*jwtCustomClaims)
+	claims := user.Claims.(*jwtClaims)
 	sub := claims.Subject
 	return c.String(http.StatusOK, fmt.Sprintf("hi %s!", sub))
 }

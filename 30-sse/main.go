@@ -39,6 +39,7 @@ func sseHandler(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-clientGone:
 			fmt.Println("client has disconnected")
+			return
 		case <-memT.C:
 			m, err := mem.VirtualMemory()
 			if err != nil {

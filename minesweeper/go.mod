@@ -1,6 +1,6 @@
 module minesweeper
 
-go 1.23.4
+go 1.24.3
 
 require (
 	github.com/gen2brain/raylib-go/raygui v0.0.0-20250109172833-6dbba4f81a9b

@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	size      = 30
-	padding   = 20
-	minSize   = 3
-	maxSize   = 20
-	winWidth  = 300
-	winHeight = 450
+	size            = 30
+	minSize         = 3
+	maxSize         = 20
+	winWidth        = 300
+	winHeight       = 450
+	fontSize  int32 = 20
 )
 
 type state struct {
@@ -43,12 +43,12 @@ func (s *state) reset() {
 	s.menu = true
 }
 
-func (s *state) getWidth() int32 {
-	return size*s.cols + 2*padding
+func (s *state) getWidth() int {
+	return size * int(s.cols)
 }
 
-func (s *state) getHeight() int32 {
-	return size*s.rows + 2*padding + size
+func (s *state) getHeight() int {
+	return size*int(s.rows) + size
 }
 
 func (s *state) getStatus() string {
@@ -149,47 +149,46 @@ func (s *state) revealTile(x, y int) {
 }
 
 func (s *state) drawMenu() {
-	w := winWidth
-	colw := float32(w / 2)
-	rowSpacing := float32(50)
-	baseY := rowSpacing
-	var fontSize int32 = 20
-	buttonWidth := float32(w - 2*padding)
+	var (
+		colw       float32 = winWidth / 2
+		rowSpacing float32 = 50
+		baseY      float32
+	)
 
-	if clicked := gui.Button(rl.NewRectangle(padding, baseY, buttonWidth, size), "BEGINNER"); clicked {
+	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "BEGINNER"); clicked {
 		s.rows = 9
 		s.cols = 9
 		s.mines = 10
 	}
 	baseY += rowSpacing
 
-	if clicked := gui.Button(rl.NewRectangle(padding, baseY, buttonWidth, size), "INTERMEDIATE"); clicked {
+	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "INTERMEDIATE"); clicked {
 		s.rows = 16
 		s.cols = 16
 		s.mines = 40
 	}
 	baseY += rowSpacing
 
-	if clicked := gui.Button(rl.NewRectangle(padding, baseY, buttonWidth, size), "EXPERT"); clicked {
+	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "EXPERT"); clicked {
 		s.rows = 30
 		s.cols = 30
 		s.mines = 99
 	}
 	baseY += rowSpacing
 
-	rl.DrawText("ROWS:", padding, int32(baseY)+5, fontSize, rl.White)
-	s.rows = gui.Spinner(rl.NewRectangle(colw, baseY, float32(colw-padding), size), "", &s.rows, minSize, maxSize, true)
+	rl.DrawText("ROWS:", 0, int32(baseY), fontSize, rl.White)
+	s.rows = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.rows, minSize, maxSize, true)
 	baseY += rowSpacing
 
-	rl.DrawText("COLS:", padding, int32(baseY)+5, fontSize, rl.White)
-	s.cols = gui.Spinner(rl.NewRectangle(colw, baseY, float32(colw-padding), size), "", &s.cols, minSize, maxSize, true)
+	rl.DrawText("COLS:", 0, int32(baseY), fontSize, rl.White)
+	s.cols = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.cols, minSize, maxSize, true)
 	baseY += rowSpacing
 
-	rl.DrawText("MINES:", padding, int32(baseY)+5, fontSize, rl.White)
-	s.mines = gui.Spinner(rl.NewRectangle(colw, baseY, float32(colw-padding), size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
+	rl.DrawText("MINES:", 0, int32(baseY), fontSize, rl.White)
+	s.mines = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
 	baseY += rowSpacing
 
-	if clicked := gui.Button(rl.NewRectangle(padding, baseY, buttonWidth, size), "START"); clicked {
+	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "START"); clicked {
 		s.start()
 	}
 }
@@ -206,19 +205,19 @@ func (s *state) drawField() {
 
 	for x := range s.field {
 		for y := range s.field[x] {
-			rect := rl.NewRectangle(float32(padding+x*size), float32(padding+y*size), size, size)
+			rect := rl.NewRectangle(float32(x*size), float32(y*size), size, size)
 
 			if s.gameOver {
 				// reveal current state
 				if s.field[x][y].hasMine {
-					rl.DrawText("*", 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, rl.Red)
+					rl.DrawText("*", 5+int32(x)*size, 5+int32(y)*size, 20, rl.Red)
 				} else {
 					text := ""
 					if s.field[x][y].neighbours > 0 {
 						text = fmt.Sprintf("%d", s.field[x][y].neighbours)
 					}
 
-					rl.DrawText(text, 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
+					rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
 				}
 				continue
 			}
@@ -233,14 +232,14 @@ func (s *state) drawField() {
 			}
 
 			if s.field[x][y].marked {
-				rl.DrawText("M", 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, rl.Violet)
+				rl.DrawText("M", 5+int32(x)*size, 5+int32(y)*size, 20, rl.Violet)
 			} else if s.field[x][y].open {
 				text := ""
 				if s.field[x][y].neighbours > 0 {
 					text = fmt.Sprintf("%d", s.field[x][y].neighbours)
 				}
 
-				rl.DrawText(text, 5+padding+int32(x)*size, 5+padding+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
+				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
 			} else {
 				if open := gui.Button(rect, ""); open {
 					s.revealTile(x, y)
@@ -250,15 +249,15 @@ func (s *state) drawField() {
 	}
 }
 
-func (s *state) congrats() {
+func (s *state) drawCongrats() {
 	w := winWidth
 	var lineHeight int32 = 50
 
 	if s.gameWon {
-		rl.DrawText("WELL DONE !", padding, lineHeight, size, rl.White)
+		rl.DrawText("WELL DONE !", 0, lineHeight, size, rl.White)
 	}
 
-	clicked := gui.Button(rl.NewRectangle(padding, float32(2*lineHeight), float32(w-2*padding), size), "PLAY AGAIN")
+	clicked := gui.Button(rl.NewRectangle(0, float32(2*lineHeight), float32(w), size), "PLAY AGAIN")
 	if clicked {
 		s.reset()
 	}
@@ -277,9 +276,7 @@ func main() {
 	defer rl.CloseWindow()
 
 	for !rl.WindowShouldClose() {
-		if game.menu {
-			centerWindow(winWidth, winHeight)
-		} else if game.gameWon {
+		if game.menu || game.gameWon {
 			centerWindow(winWidth, winHeight)
 		} else {
 			centerWindow(game.getWidth(), game.getHeight())
@@ -289,7 +286,7 @@ func main() {
 		rl.ClearBackground(rl.DarkGray)
 
 		if game.gameWon {
-			game.congrats()
+			game.drawCongrats()
 		} else if game.menu {
 			game.drawMenu()
 		} else {

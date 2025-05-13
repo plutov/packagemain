@@ -251,9 +251,8 @@ func (s *state) drawField() {
 }
 
 func (s *state) congrats() {
-	w, h := winWidth, winHeight
+	w := winWidth
 	var lineHeight int32 = 50
-	rl.SetWindowSize(w, h)
 
 	if s.gameWon {
 		rl.DrawText("WELL DONE !", padding, lineHeight, size, rl.White)

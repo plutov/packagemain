@@ -150,9 +150,8 @@ func (s *state) revealTile(x, y int) {
 
 func (s *state) drawMenu() {
 	var (
-		colw       float32 = winWidth / 2
 		rowSpacing float32 = 50
-		baseY      float32
+		baseY      float32 = 50
 	)
 
 	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "BEGINNER"); clicked {
@@ -174,19 +173,7 @@ func (s *state) drawMenu() {
 		s.cols = 30
 		s.mines = 99
 	}
-	baseY += rowSpacing
-
-	rl.DrawText("ROWS:", 0, int32(baseY), fontSize, rl.White)
-	s.rows = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.rows, minSize, maxSize, true)
-	baseY += rowSpacing
-
-	rl.DrawText("COLS:", 0, int32(baseY), fontSize, rl.White)
-	s.cols = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.cols, minSize, maxSize, true)
-	baseY += rowSpacing
-
-	rl.DrawText("MINES:", 0, int32(baseY), fontSize, rl.White)
-	s.mines = gui.Spinner(rl.NewRectangle(colw, baseY, colw, size), "", &s.mines, 1, int(s.rows)*int(s.cols), true)
-	baseY += rowSpacing
+	baseY += rowSpacing * 2
 
 	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "START"); clicked {
 		s.start()

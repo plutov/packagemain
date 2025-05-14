@@ -22,19 +22,19 @@ type state struct {
 	menu       bool
 	gameOver   bool
 	gameWon    bool
-	startedAt  time.Time
-	finishedAt time.Time
 	rows       int32
 	cols       int32
 	mines      int32
 	field      [][]point
+	startedAt  time.Time
+	finishedAt time.Time
 }
 
 type point struct {
-	hasMine    bool
-	open       bool
-	marked     bool
-	neighbours int
+	hasMine     bool
+	open        bool
+	marked      bool
+	minesAround int
 }
 
 func (s *state) reset() {
@@ -86,7 +86,7 @@ func (s *state) start() {
 		s.field[x][y].hasMine = true
 		// mark neighbours
 		s.doForNeighbours(x, y, func(x, y int) {
-			s.field[x][y].neighbours++
+			s.field[x][y].minesAround++
 		})
 		m--
 	}
@@ -110,7 +110,7 @@ func (s *state) doForNeighbours(x, y int, do func(x, y int)) {
 	}
 }
 
-func (s *state) checkIfGameWon() bool {
+func (s *state) isGameWon() bool {
 	open := 0
 	total := int(s.rows * s.cols)
 
@@ -138,10 +138,10 @@ func (s *state) revealTile(x, y int) {
 		return
 	}
 
-	s.gameWon = s.checkIfGameWon()
+	s.gameWon = s.isGameWon()
 
 	// No neighbors, reveal all adjacent tiles recursively
-	if s.field[x][y].neighbours == 0 {
+	if s.field[x][y].minesAround == 0 {
 		s.doForNeighbours(x, y, func(nx, ny int) {
 			s.revealTile(nx, ny)
 		})
@@ -192,22 +192,25 @@ func (s *state) drawField() {
 
 	for x := range s.field {
 		for y := range s.field[x] {
-			rect := rl.NewRectangle(float32(x*size), float32(y*size), size, size)
-
 			if s.gameOver {
-				// reveal current state
-				if s.field[x][y].hasMine {
-					rl.DrawText("*", 5+int32(x)*size, 5+int32(y)*size, 20, rl.Red)
-				} else {
-					text := ""
-					if s.field[x][y].neighbours > 0 {
-						text = fmt.Sprintf("%d", s.field[x][y].neighbours)
-					}
+				var (
+					text  string
+					color rl.Color
+				)
 
-					rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
+				if s.field[x][y].hasMine {
+					text = "*"
+					color = rl.Red
+				} else if s.field[x][y].minesAround > 0 {
+					color = getTextColor(s.field[x][y].minesAround)
+					text = fmt.Sprintf("%d", s.field[x][y].minesAround)
 				}
+
+				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, color)
 				continue
 			}
+
+			rect := rl.NewRectangle(float32(x*size), float32(y*size), size, size)
 
 			// Mark on right mouse button
 			if rl.IsMouseButtonPressed(rl.MouseButtonRight) {
@@ -222,11 +225,11 @@ func (s *state) drawField() {
 				rl.DrawText("M", 5+int32(x)*size, 5+int32(y)*size, 20, rl.Violet)
 			} else if s.field[x][y].open {
 				text := ""
-				if s.field[x][y].neighbours > 0 {
-					text = fmt.Sprintf("%d", s.field[x][y].neighbours)
+				if s.field[x][y].minesAround > 0 {
+					text = fmt.Sprintf("%d", s.field[x][y].minesAround)
 				}
 
-				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].neighbours))
+				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].minesAround))
 			} else {
 				if open := gui.Button(rect, ""); open {
 					s.revealTile(x, y)

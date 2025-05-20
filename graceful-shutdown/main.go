@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -9,24 +10,19 @@ import (
 )
 
 func main() {
-	redisdb := redis.NewClient(&redis.Options{
+	cache := redis.NewClient(&redis.Options{
 		Addr: os.Getenv("REDIS_ADDR"),
+	})
+
+	http.HandleFunc("/incr", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond) // simulate some delay
+		cache.Incr("counter")
+		w.WriteHeader(http.StatusOK)
 	})
 
 	server := http.Server{
 		Addr: ":8080",
 	}
 
-	http.HandleFunc("/incr", func(w http.ResponseWriter, r *http.Request) {
-		go processRequest(redisdb)
-		w.WriteHeader(http.StatusOK)
-	})
-
 	server.ListenAndServe()
-}
-
-func processRequest(redisdb *redis.Client) {
-	// simulate some business logic here
-	time.Sleep(time.Second * 5)
-	redisdb.Incr("counter")
 }

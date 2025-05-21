@@ -2,7 +2,7 @@
 
 ## Requirements
 
-1. Kubernetes cluster
+1. Kubernetes cluster. For example using colima: `colima start --kubernetes --network-address`
 2. `kubectl` command installed
 3. `docker` command installed
 
@@ -35,7 +35,7 @@ Use [vegeta](https://github.com/tsenart/vegeta) to send 3000 requests (50 per se
 # reset redis counter
 kubectl exec -it redis-master-0 -n redis -- redis-cli set counter 0
 
-echo "GET http://127.0.0.1:30001/incr" | vegeta attack -duration=60s -rate=50 -http2=false | vegeta report
+echo "GET http://localhost:30001/incr" | vegeta attack -duration=60s -rate=50 -http2=false | vegeta report
 ```
 
 ## Test with Kubernetes Rolling Update

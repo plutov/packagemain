@@ -57,7 +57,9 @@ func main() {
 	g.Use(echojwt.WithConfig(config))
 	g.GET("/greet", greet)
 
-	e.Start("127.0.0.1:4242")
+	if err := e.Start("127.0.0.1:4242"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 type jwtClaims struct {

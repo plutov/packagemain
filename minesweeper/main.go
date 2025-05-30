@@ -4,18 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	gui "github.com/gen2brain/raylib-go/raygui"
-	rl "github.com/gen2brain/raylib-go/raylib"
 	"golang.org/x/exp/rand"
+
+	"github.com/gonutz/prototype/draw"
 )
 
 const (
-	size            = 30
-	minSize         = 3
-	maxSize         = 20
-	winWidth        = 300
-	winHeight       = 450
-	fontSize  int32 = 20
+	size      = 30
+	winWidth  = 30 * size
+	winHeight = 31 * size
 )
 
 type state struct {
@@ -52,7 +49,6 @@ func (s *state) getHeight() int {
 }
 
 func (s *state) getStatus() string {
-	fps := rl.GetFPS()
 	var elapsed time.Duration
 	if s.gameOver || s.gameWon {
 		elapsed = s.finishedAt.Sub(s.startedAt)
@@ -60,7 +56,7 @@ func (s *state) getStatus() string {
 		elapsed = time.Since(s.startedAt)
 	}
 
-	return fmt.Sprintf("FPS: %d, TIME: %.2f", fps, elapsed.Seconds())
+	return fmt.Sprintf("TIME: %.2f", elapsed.Seconds())
 }
 
 func (s *state) start() {
@@ -148,44 +144,71 @@ func (s *state) revealTile(x, y int) {
 	}
 }
 
-func (s *state) drawMenu() {
+func textBox(window draw.Window, x, y, w, h int, text string, textColor, borderColor, backColor draw.Color) {
+	window.FillRect(x, y, w, h, backColor)
+	window.DrawRect(x, y, w, h, borderColor)
+	textW, textH := window.GetTextSize(text)
+	window.DrawText(text, x+(w-textW)/2, y+(h-textH)/2, textColor)
+}
+
+func button(window draw.Window, x, y, w, h int, text string) bool {
+	mx, my := window.MousePosition()
+	backColor := draw.LightGray
+	if x <= mx && mx < x+w && y <= my && my < y+h {
+		backColor = draw.LightBlue
+	}
+	textBox(window, x, y, w, h, text, draw.Black, draw.Black, backColor)
+	for _, c := range window.Clicks() {
+		if c.Button == draw.LeftButton &&
+			x <= c.X && c.X < x+w &&
+			y <= c.Y && c.Y < y+h {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *state) drawMenu(window draw.Window) {
 	var (
-		rowSpacing float32 = 50
-		baseY      float32 = 50
+		rowSpacing = 50
+		baseY      = 50
 	)
 
-	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "BEGINNER"); clicked {
+	if clicked := button(window, 0, baseY, winWidth, size, "BEGINNER"); clicked {
 		s.rows = 9
 		s.cols = 9
 		s.mines = 10
 	}
 	baseY += rowSpacing
 
-	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "INTERMEDIATE"); clicked {
+	if clicked := button(window, 0, baseY, winWidth, size, "INTERMEDIATE"); clicked {
 		s.rows = 16
 		s.cols = 16
 		s.mines = 40
 	}
 	baseY += rowSpacing
 
-	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "EXPERT"); clicked {
+	if clicked := button(window, 0, baseY, winWidth, size, "EXPERT"); clicked {
 		s.rows = 30
 		s.cols = 30
 		s.mines = 99
 	}
 	baseY += rowSpacing * 2
 
-	if clicked := gui.Button(rl.NewRectangle(0, baseY, winWidth, size), "START"); clicked {
+	if clicked := button(window, 0, baseY, winWidth, size, "START"); clicked {
 		s.start()
 	}
 }
 
-func (s *state) drawField() {
-	w := float32(s.getWidth())
-	h := float32(s.getHeight())
+func (s *state) drawField(window draw.Window) {
+	w := s.getWidth()
+	h := s.getHeight()
 
-	gui.StatusBar(rl.NewRectangle(0, h-size, w, size), s.getStatus())
-	if restart := gui.Button(rl.NewRectangle(w-65, h-size+5, 60, size-10), "RESTART"); restart {
+	offsetX := (winWidth - w) / 2
+	offsetY := (winHeight - h) / 2
+
+	textBox(window, offsetX, offsetY+h-size, w-85, size, s.getStatus(), draw.Black, draw.Black, draw.LightGray)
+	if restart := button(window, offsetX+w-85, offsetY+h-size, 85, size, "RESTART"); restart {
 		s.reset()
 		return
 	}
@@ -195,26 +218,29 @@ func (s *state) drawField() {
 			if s.gameOver {
 				var (
 					text  string
-					color rl.Color
+					color draw.Color
 				)
 
 				if s.field[x][y].hasMine {
 					text = "*"
-					color = rl.Red
+					color = draw.LightRed
 				} else if s.field[x][y].minesAround > 0 {
 					color = getTextColor(s.field[x][y].minesAround)
 					text = fmt.Sprintf("%d", s.field[x][y].minesAround)
 				}
 
-				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, color)
+				textBox(window, offsetX+x*size, offsetY+y*size, size, size, text, color, draw.DarkGray, draw.DarkGray)
 				continue
 			}
 
-			rect := rl.NewRectangle(float32(x*size), float32(y*size), size, size)
+			fx := offsetX + x*size
+			fy := offsetY + y*size
 
 			// Mark on right mouse button
-			if rl.IsMouseButtonPressed(rl.MouseButtonRight) {
-				if rl.CheckCollisionPointRec(rl.GetMousePosition(), rect) {
+			for _, c := range window.Clicks() {
+				if c.Button == draw.RightButton &&
+					fx <= c.X && c.X < fx+size &&
+					fy <= c.Y && c.Y < fy+size {
 					if !s.field[x][y].open {
 						s.field[x][y].marked = !s.field[x][y].marked
 					}
@@ -222,16 +248,16 @@ func (s *state) drawField() {
 			}
 
 			if s.field[x][y].marked {
-				rl.DrawText("M", 5+int32(x)*size, 5+int32(y)*size, 20, rl.Violet)
+				textBox(window, fx+1, fy+1, size-2, size-2, "M", draw.DarkPurple, draw.LightPurple, draw.LightPurple)
 			} else if s.field[x][y].open {
 				text := ""
 				if s.field[x][y].minesAround > 0 {
 					text = fmt.Sprintf("%d", s.field[x][y].minesAround)
 				}
 
-				rl.DrawText(text, 5+int32(x)*size, 5+int32(y)*size, 20, getTextColor(s.field[x][y].minesAround))
+				textBox(window, fx, fy, size, size, text, getTextColor(s.field[x][y].minesAround), draw.DarkGray, draw.DarkGray)
 			} else {
-				if open := gui.Button(rect, ""); open {
+				if open := button(window, fx, fy, size, size, ""); open {
 					s.revealTile(x, y)
 				}
 			}
@@ -239,21 +265,22 @@ func (s *state) drawField() {
 	}
 }
 
-func (s *state) drawCongrats() {
+func (s *state) drawCongrats(window draw.Window) {
 	w := winWidth
-	var lineHeight int32 = 50
+	var lineHeight = 50
 
 	if s.gameWon {
-		rl.DrawText("WELL DONE !", 0, lineHeight, size, rl.White)
+		window.DrawText("WELL DONE !", 0, lineHeight, draw.White)
 	}
 
-	clicked := gui.Button(rl.NewRectangle(0, float32(2*lineHeight), float32(w), size), "PLAY AGAIN")
+	clicked := button(window, 0, 2*lineHeight, w, size, "PLAY AGAIN")
 	if clicked {
 		s.reset()
 	}
 }
 
 func main() {
+	rand.Seed(uint64(time.Now().UnixNano()))
 	game := &state{
 		rows:  9,
 		cols:  9,
@@ -261,28 +288,15 @@ func main() {
 	}
 	game.reset()
 
-	rl.InitWindow(winWidth, winHeight, "minesweeper")
-	rl.SetTargetFPS(60)
-	defer rl.CloseWindow()
-
-	for !rl.WindowShouldClose() {
-		if game.menu || game.gameWon {
-			centerWindow(winWidth, winHeight)
-		} else {
-			centerWindow(game.getWidth(), game.getHeight())
-		}
-
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.DarkGray)
+	draw.RunWindow("minesweeper", winWidth, winHeight, func(window draw.Window) {
+		window.FillRect(0, 0, winWidth, winHeight, draw.DarkGray)
 
 		if game.gameWon {
-			game.drawCongrats()
+			game.drawCongrats(window)
 		} else if game.menu {
-			game.drawMenu()
+			game.drawMenu(window)
 		} else {
-			game.drawField()
+			game.drawField(window)
 		}
-
-		rl.EndDrawing()
-	}
+	})
 }

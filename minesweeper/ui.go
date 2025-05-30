@@ -1,16 +1,16 @@
 package main
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import "github.com/gonutz/prototype/draw"
 
-func getTextColor(neighbors int) rl.Color {
+func getTextColor(neighbors int) draw.Color {
 	switch neighbors {
 	case 1:
-		return rl.Blue
+		return draw.LightBlue
 	case 2:
-		return rl.Green
+		return draw.Green
 	case 3:
-		return rl.Red
+		return draw.LightRed
 	default:
-		return rl.Black
+		return draw.White
 	}
 }

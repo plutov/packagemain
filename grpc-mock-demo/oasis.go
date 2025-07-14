@@ -38,11 +38,8 @@ func IsOasis(ctx context.Context, routeGuideSvcAddr string, point Point) (bool, 
 		Latitude:  point.latitude,
 		Longitude: point.longitude,
 	})
-	if err != nil {
+	if err != nil || feature.Name != FeatureForest {
 		return false, err
-	}
-	if feature.Name != FeatureForest {
-		return false, nil
 	}
 
 	// check if all adjacent points are deserts (with diagonal checks)
@@ -55,11 +52,8 @@ func IsOasis(ctx context.Context, routeGuideSvcAddr string, point Point) (bool, 
 			Longitude: point.longitude + dLong[i],
 		}
 		feature, err := client.GetFeature(ctx, adjacentPoint)
-		if err != nil {
+		if err != nil || feature.Name != FeatureDesert {
 			return false, err
-		}
-		if feature.Name != FeatureDesert {
-			return false, nil
 		}
 	}
 

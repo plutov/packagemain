@@ -1,0 +1,17 @@
+github.com/gonutz/d3d9 v1.2.4 h1:whsZkcFOxjPXkVgO6koGzE4prk2IkX5ZMxzIgW7gryk=
+github.com/gonutz/d3d9 v1.2.4/go.mod h1:q74g3QbR280b+qYauwEV0N9SVadszWPLZ4l/wHiD/AA=
+github.com/gonutz/ds v1.0.0 h1:GBgZTs+Rvimvq9qM8jij3xi+rUZNf0bux95uTFvUkXQ=
+github.com/gonutz/ds v1.0.0/go.mod h1:nqfTfJeXtECo3mp5MH6EHAsruRB1z74bnhYQ6frgXoU=
+github.com/gonutz/gl v1.0.0 h1:4T/gF/zEXx1GObi4m4NNjG7Jd9MRciNU7vp8N3bIfww=
+github.com/gonutz/gl v1.0.0/go.mod h1:W+YuOtOvWK8ITUbz/5vm43HIU0OTFzM1q1rEj1VBi4A=
+github.com/gonutz/glfw v1.0.2 h1:33lNFxnV3A0PY6a67fzMIc2aj6YOKX0PXbDdEC6p8SI=
+github.com/gonutz/glfw v1.0.2/go.mod h1:ztHop1Nq2cOXD+1cX2OIcbIpWEDaU8SyBkNe0odynic=
+github.com/gonutz/mixer v1.0.0 h1:w1NY3OChH7ICTrrlC8IJ+yEsXbXq0P2/VtNBXYqgddw=
+github.com/gonutz/mixer v1.0.0/go.mod h1:48Xg+NyQ/IduAK7zjy64CI01vtokXm/XgiefRE/K2yY=
+github.com/gonutz/prototype v1.7.2 h1:UBWUqCpmPqrcVN+VUElXneMsWfwrZGFQjIO856V+iJU=
+github.com/gonutz/prototype v1.7.2/go.mod h1:PZmucOvWPEqtkrFuouz6tD74SJwmQ+XXe4f+KiDptMQ=
+github.com/gonutz/w32/v2 v2.0.1/go.mod h1:MgtHx0AScDVNKyB+kjyPder4xIi3XAcHS6LDDU2DmdE=
+github.com/gonutz/w32/v2 v2.2.0 h1:XVC/Kd238O+gadaDEB+E6E+kn/UBhj2UNOS8v9QPc4Q=
+github.com/gonutz/w32/v2 v2.2.0/go.mod h1:MgtHx0AScDVNKyB+kjyPder4xIi3XAcHS6LDDU2DmdE=
+golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 h1:yqrTHse8TCMW1M1ZCP+VAR/l0kKxwaAIqN/il7x4voA=
+golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8/go.mod h1:tujkw807nyEEAamNbDrEGzRav+ilXA7PCRAd6xsmwiU=

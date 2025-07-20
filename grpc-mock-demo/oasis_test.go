@@ -1,4 +1,4 @@
-package main
+package grpcmockdemo
 
 import (
 	"fmt"
@@ -10,22 +10,20 @@ import (
 )
 
 func TestIsOasis(t *testing.T) {
-	routeGuideSvcAddr := "localhost:50051"
-	srv := createMockRouteGuideServer(routeGuideSvcAddr)
-	t.Cleanup(func() {
-		srv.Close()
-	})
+	routeGuideSvcAddr := "localhost:50001"
+	srv := createMockGrpcServer(routeGuideSvcAddr)
+	defer srv.Close()
 
 	tests := []struct {
 		point Point
 		want  bool
 	}{
 		{
-			Point{latitude: 10, longitude: 10},
+			Point{10, 10},
 			true,
 		},
 		{
-			Point{latitude: 20, longitude: 20},
+			Point{20, 20},
 			false,
 		},
 	}
@@ -34,37 +32,35 @@ func TestIsOasis(t *testing.T) {
 		t.Run(fmt.Sprintf("Point(%d,%d)", tt.point.latitude, tt.point.longitude), func(t *testing.T) {
 			got, err := IsOasis(t.Context(), routeGuideSvcAddr, tt.point)
 			if err != nil {
-				t.Fatalf("IsOasis() error = %v", err)
+				t.Fatalf("not expected err: %v", err)
 			}
+
 			if got != tt.want {
-				t.Errorf("IsOasis() = %v, want %v", got, tt.want)
+				t.Fatalf("got %t, want %t", got, tt.want)
 			}
 		})
 	}
 }
 
-func createMockRouteGuideServer(addr string) *grpcmock.Server {
+func createMockGrpcServer(addr string) *grpcmock.Server {
 	srv := grpcmock.NewServer(
 		grpcmock.WithAddress(addr),
-		grpcmock.RegisterService(routeguide.RegisterRouteGuideServer),
 		grpcmock.WithPlanner(planner.FirstMatch()),
+		grpcmock.RegisterService(routeguide.RegisterRouteGuideServer),
 		func(s *grpcmock.Server) {
-			// 10,10 is a forest
 			s.ExpectUnary(routeguide.RouteGuide_GetFeature_FullMethodName).
-				UnlimitedTimes().
 				WithPayload(&routeguide.Point{
 					Latitude:  10,
 					Longitude: 10,
 				}).
 				Return(&routeguide.Feature{
-					Name: "forest",
+					Name: FeatureForest,
 				})
 
-			// everything else is a desert
 			s.ExpectUnary(routeguide.RouteGuide_GetFeature_FullMethodName).
 				UnlimitedTimes().
 				Return(&routeguide.Feature{
-					Name: "desert",
+					Name: FeatureDesert,
 				})
 		},
 	)

@@ -16,21 +16,19 @@ func StartRSSMemoryMonitor() {
 		panic(err)
 	}
 
-	go func() {
-		fmt.Println("Memory:")
+	fmt.Println("Memory:")
 
-		for {
-			memInfo, _ := p.MemoryInfo()
-			rssMB := int(memInfo.RSS / 1024 / 1024)
+	for {
+		memInfo, _ := p.MemoryInfo()
+		rssMB := int(memInfo.RSS / 1024 / 1024)
 
-			barLength := 100
-			filled := min(rssMB, barLength)
+		barLength := 100
+		filled := min(rssMB, barLength)
 
-			bar := strings.Repeat("#", filled) + strings.Repeat(" ", barLength-filled)
+		bar := strings.Repeat("#", filled) + strings.Repeat(" ", barLength-filled)
 
-			fmt.Printf("[%s] %3dMB\n", bar, rssMB)
+		fmt.Printf("[%s] %3dMB\n", bar, rssMB)
 
-			time.Sleep(100 * time.Millisecond)
-		}
-	}()
+		time.Sleep(100 * time.Millisecond)
+	}
 }

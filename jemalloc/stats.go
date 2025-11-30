@@ -16,12 +16,13 @@ func StartRSSMemoryMonitor() {
 		panic(err)
 	}
 
-	fmt.Println("Memory:")
-
 	for {
-		memInfo, _ := p.MemoryInfo()
-		rssMB := int(memInfo.RSS / 1024 / 1024)
+		memInfo, err := p.MemoryInfo()
+		if err != nil {
+			panic(err)
+		}
 
+		rssMB := int(memInfo.RSS / 1024 / 1024)
 		barLength := 100
 		filled := min(rssMB, barLength)
 

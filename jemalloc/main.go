@@ -24,9 +24,10 @@ func simulateGC() {
 		data := make([]byte, size)
 
 		rand.Read(data)
-		time.Sleep(200 * time.Millisecond)
 
+		time.Sleep(500 * time.Millisecond)
 		data = nil
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	time.Sleep(2 * time.Second)
@@ -39,7 +40,7 @@ func simulateJemalloc() {
 
 		ptr := C.malloc(C.size_t(size))
 		if ptr == nil {
-			panic("unable to allocate memory")
+			panic("no memory")
 		}
 
 		data := unsafe.Slice((*byte)(ptr), size)
@@ -47,10 +48,8 @@ func simulateJemalloc() {
 		rand.Read(data)
 
 		time.Sleep(500 * time.Millisecond)
-
 		C.free(ptr)
 		data = nil
-
 		time.Sleep(500 * time.Millisecond)
 	}
 

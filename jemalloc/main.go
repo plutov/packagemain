@@ -7,15 +7,23 @@ import "C"
 
 import (
 	"crypto/rand"
+	"flag"
 	"time"
 	"unsafe"
 )
 
+var gc = flag.Bool("gc", false, "Use Go's GC for memory allocation instead of jemalloc")
+
 func main() {
+	flag.Parse()
+
 	go StartRSSMemoryMonitor()
 
-	// simulateGC()
-	simulateJemalloc()
+	if *gc {
+		simulateGC()
+	} else {
+		simulateJemalloc()
+	}
 }
 
 func simulateGC() {
@@ -35,7 +43,6 @@ func simulateGC() {
 
 func simulateJemalloc() {
 	for range 50 {
-
 		size := 20 * 1024 * 1024
 
 		ptr := C.malloc(C.size_t(size))

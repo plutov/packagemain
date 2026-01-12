@@ -1,6 +1,6 @@
 INSERT INTO users (id, name, email) VALUES (1000, "Alice", "alice@domain.com");
 INSERT INTO users (id, name, email) VALUES (1001, "Bob", "bob@domain.com");
-INSERT INTO users (id, name, email) VALUES (1002, "Charlie", "chalie@doman.com");
+INSERT INTO users (id, name, email) VALUES (1002, "Charlie", "chalie@domain.com");
 
 INSERT INTO blogs (id, name, url) VALUES (2000, "devsecops", "http://devsecops.com");
 INSERT INTO blogs (id, name, url) VALUES (2001, "devops", "http://devops.com");

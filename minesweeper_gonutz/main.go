@@ -282,7 +282,7 @@ func (s *state) drawField(window draw.Window) {
 						// Clicking both left and right mouse buttons on a
 						// number with all its mines will open all closed
 						// fields. Say you click both buttons on a 2 and there
-						// are exaclty 2 mines marked around that 2. Then all
+						// are exactly 2 mines marked around that 2. Then all
 						// other closed fields will be opened.
 						if s.field[x][y].open && s.field[x][y].minesAround == s.markedMinesAround(x, y) {
 							s.openUnmarkedAround(x, y)

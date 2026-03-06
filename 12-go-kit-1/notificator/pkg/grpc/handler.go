@@ -19,14 +19,14 @@ func makeSendEmailHandler(endpoints endpoint.Endpoints, options []grpc.ServerOpt
 // gRPC request to a user-domain sum request.
 // TODO implement the decoder
 func decodeSendEmailRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Notificator' Decoder is not impelemented")
+	return nil, errors.New("'Notificator' Decoder is not implemented")
 }
 
 // encodeSendEmailResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 // TODO implement the encoder
 func encodeSendEmailResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Notificator' Encoder is not impelemented")
+	return nil, errors.New("'Notificator' Encoder is not implemented")
 }
 func (g *grpcServer) SendEmail(ctx context1.Context, req *pb.SendEmailRequest) (*pb.SendEmailReply, error) {
 	_, rep, err := g.sendEmail.ServeGRPC(ctx, req)

@@ -44,7 +44,6 @@ async function handleAddManual() {
     showAddForm.value = false;
     await loadAccounts();
   } catch (e: any) {
-    console.log(e);
     addError.value = e;
   }
 }
@@ -80,15 +79,11 @@ async function confirmDelete() {
 }
 
 async function copyCode(account: main.AccountWithCode) {
-  try {
-    await navigator.clipboard.writeText(account.code);
-    copiedId.value = account.id;
-    setTimeout(() => {
-      copiedId.value = "";
-    }, 1500);
-  } catch (e) {
-    console.error("Failed to copy:", e);
-  }
+  await navigator.clipboard.writeText(account.code);
+  copiedId.value = account.id;
+  setTimeout(() => {
+    copiedId.value = "";
+  }, 1500);
 }
 
 function resetForm() {

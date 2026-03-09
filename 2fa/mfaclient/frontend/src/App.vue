@@ -1,174 +1,190 @@
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { GetAccounts, AddAccount, AddAccountFromURI, DeleteAccount } from '../wailsjs/go/main/App'
+import { ref, onMounted, onUnmounted } from "vue";
+import {
+  GetAccounts,
+  AddAccount,
+  AddAccountFromURI,
+  DeleteAccount,
+} from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
-interface AccountWithCode {
-    id: string
-    issuer: string
-    label: string
-    code: string
-    time_remaining: number
-}
+const accounts = ref<main.AccountWithCode[]>([]);
+const error = ref("");
+const showAddForm = ref(false);
+const addMode = ref<"manual" | "uri">("manual");
+const issuer = ref("");
+const label = ref("");
+const secret = ref("");
+const uri = ref("");
+const addError = ref("");
+const copiedId = ref("");
 
-const accounts = ref<AccountWithCode[]>([])
-const loading = ref(true)
-const error = ref('')
-
-const showAddForm = ref(false)
-const addMode = ref<'manual' | 'uri'>('manual')
-const issuer = ref('')
-const label = ref('')
-const secret = ref('')
-const uri = ref('')
-const addError = ref('')
-const copiedId = ref('')
-
-let refreshInterval: number | null = null
+let refreshInterval: number | null = null;
 
 async function loadAccounts() {
-    try {
-        accounts.value = await GetAccounts() || []
-        error.value = ''
-    } catch (e: any) {
-        error.value = e;
-    } finally {
-        loading.value = false
-    }
+  try {
+    accounts.value = (await GetAccounts()) || [];
+    error.value = "";
+  } catch (e: any) {
+    error.value = e;
+  }
 }
 
 async function handleAddManual() {
-    addError.value = ''
-    try {
-        await AddAccount(issuer.value, label.value, secret.value.toUpperCase().replace(/\s/g, ''))
-        issuer.value = ''
-        label.value = ''
-        secret.value = ''
-        showAddForm.value = false
-        await loadAccounts()
-    } catch (e: any) {
-        console.log(e);
-        addError.value = e;
-    }
+  addError.value = "";
+  try {
+    await AddAccount(
+      issuer.value,
+      label.value,
+      secret.value.toUpperCase().replace(/\s/g, ""),
+    );
+    issuer.value = "";
+    label.value = "";
+    secret.value = "";
+    showAddForm.value = false;
+    await loadAccounts();
+  } catch (e: any) {
+    console.log(e);
+    addError.value = e;
+  }
 }
 
 async function handleAddFromURI() {
-    addError.value = ''
-    try {
-        await AddAccountFromURI(uri.value)
-        uri.value = ''
-        showAddForm.value = false
-        await loadAccounts()
-    } catch (e: any) {
-        addError.value = e.message || 'Invalid URI'
-    }
+  addError.value = "";
+  try {
+    await AddAccountFromURI(uri.value);
+    uri.value = "";
+    showAddForm.value = false;
+    await loadAccounts();
+  } catch (e: any) {
+    addError.value = e;
+  }
 }
 
-const confirmDeleteAccount = ref<AccountWithCode | null>(null)
+const confirmDeleteAccount = ref<main.AccountWithCode | null>(null);
 
-async function handleDelete(account: AccountWithCode) {
-    confirmDeleteAccount.value = account
+async function handleDelete(account: main.AccountWithCode) {
+  confirmDeleteAccount.value = account;
 }
 
 async function confirmDelete() {
-    if (!confirmDeleteAccount.value) return
-    try {
-        await DeleteAccount(confirmDeleteAccount.value.id)
-        await loadAccounts()
-    } catch (e: any) {
-        error.value = e
-    } finally {
-        confirmDeleteAccount.value = null
-    }
+  if (!confirmDeleteAccount.value) return;
+  try {
+    await DeleteAccount(confirmDeleteAccount.value.id);
+    await loadAccounts();
+  } catch (e: any) {
+    error.value = e;
+  } finally {
+    confirmDeleteAccount.value = null;
+  }
 }
 
-async function copyCode(account: AccountWithCode) {
-    try {
-        await navigator.clipboard.writeText(account.code)
-        copiedId.value = account.id
-        setTimeout(() => { copiedId.value = '' }, 1500)
-    } catch (e) {
-        console.error('Failed to copy:', e)
-    }
+async function copyCode(account: main.AccountWithCode) {
+  try {
+    await navigator.clipboard.writeText(account.code);
+    copiedId.value = account.id;
+    setTimeout(() => {
+      copiedId.value = "";
+    }, 1500);
+  } catch (e) {
+    console.error("Failed to copy:", e);
+  }
 }
 
 function resetForm() {
-    showAddForm.value = !showAddForm.value
-    addError.value = ''
-    issuer.value = ''
-    label.value = ''
-    secret.value = ''
-    uri.value = ''
+  showAddForm.value = !showAddForm.value;
+  addError.value = "";
+  issuer.value = "";
+  label.value = "";
+  secret.value = "";
+  uri.value = "";
 }
 
 onMounted(() => {
-    loadAccounts()
-    refreshInterval = window.setInterval(loadAccounts, 1000)
-})
+  loadAccounts();
+  refreshInterval = window.setInterval(loadAccounts, 1000);
+});
 
 onUnmounted(() => {
-    if (refreshInterval) clearInterval(refreshInterval)
-})
+  if (refreshInterval) clearInterval(refreshInterval);
+});
 </script>
 
 <template>
-    <main>
-        <header>
-            <h1>🔐 2FA Authenticator</h1>
-            <button class="header-btn" @click="resetForm">
-                {{ showAddForm ? '✕ Cancel' : '+ Add Account' }}
-            </button>
-        </header>
+  <main>
+    <header>
+      <h1>🔐 2FA Authenticator</h1>
+      <button class="header-btn" @click="resetForm">
+        {{ showAddForm ? "✕ Cancel" : "+ Add Account" }}
+      </button>
+    </header>
 
-        <!-- Add Account Form -->
-        <div v-if="showAddForm" class="add-form">
-            <div class="tabs">
-                <button :class="{ active: addMode === 'manual' }" @click="addMode = 'manual'">Manual Entry</button>
-                <button :class="{ active: addMode === 'uri' }" @click="addMode = 'uri'">Paste URI</button>
-            </div>
+    <div v-if="showAddForm" class="add-form">
+      <div class="tabs">
+        <button
+          :class="{ active: addMode === 'manual' }"
+          @click="addMode = 'manual'"
+        >
+          Manual Entry
+        </button>
+        <button :class="{ active: addMode === 'uri' }" @click="addMode = 'uri'">
+          Paste URI
+        </button>
+      </div>
 
-            <div v-if="addMode === 'manual'" class="form-fields">
-                <input v-model="issuer" type="text" placeholder="Issuer" />
-                <input v-model="label" type="text" placeholder="Account" />
-                <input v-model="secret" type="text" placeholder="Secret Key" />
-                <button class="submit-btn" @click="handleAddManual">Add Account</button>
-            </div>
+      <div v-if="addMode === 'manual'" class="form-fields">
+        <input v-model="issuer" type="text" placeholder="Issuer" />
+        <input v-model="label" type="text" placeholder="Account" />
+        <input v-model="secret" type="text" placeholder="Secret Key" />
+        <button class="submit-btn" @click="handleAddManual">Add Account</button>
+      </div>
 
-            <div v-else class="form-fields">
-                <input v-model="uri" type="text" placeholder="otpauth://totp/..." />
-                <button class="submit-btn" @click="handleAddFromURI">Add from URI</button>
-            </div>
+      <div v-else class="form-fields">
+        <input v-model="uri" type="text" placeholder="otpauth://totp/..." />
+        <button class="submit-btn" @click="handleAddFromURI">
+          Add from URI
+        </button>
+      </div>
 
-            <div v-if="addError" class="error-msg">{{ addError }}</div>
+      <div v-if="addError" class="error-msg">{{ addError }}</div>
+    </div>
+
+    <div v-else class="accounts">
+      <div v-for="account in accounts" :key="account.id" class="account">
+        <div class="account-row">
+          <div>
+            <strong>{{ account.issuer || "Unknown" }}</strong>
+            <span class="label">{{ account.label }}</span>
+          </div>
+          <button @click="handleDelete(account)" title="Delete">🗑️</button>
         </div>
-
-        <!-- Account List -->
-        <div v-else class="accounts">
-            <div v-for="account in accounts" :key="account.id" class="account">
-                <div class="account-row">
-                    <div>
-                        <strong>{{ account.issuer || 'Unknown' }}</strong>
-                        <span class="label">{{ account.label }}</span>
-                    </div>
-                    <button @click="handleDelete(account)" title="Delete">🗑️</button>
-                </div>
-                <div class="account-row">
-                    <button class="code" @click="copyCode(account)" title="Click to copy">
-                        {{ account.code }} {{ copiedId === account.id ? '✅' : '📋' }}
-                    </button>
-                    <span :class="{ warning: account.time_remaining <= 10 }">⏱️ {{ account.time_remaining }}s</span>
-                </div>
-            </div>
+        <div class="account-row">
+          <button class="code" @click="copyCode(account)" title="Click to copy">
+            {{ account.code }} {{ copiedId === account.id ? "✅" : "📋" }}
+          </button>
+          <span :class="{ warning: account.time_remaining <= 10 }"
+            >⏱️ {{ account.time_remaining }}s</span
+          >
         </div>
+      </div>
+    </div>
 
-        <!-- Delete Confirmation -->
-        <div v-if="confirmDeleteAccount" class="confirm-overlay" @click.self="confirmDeleteAccount = null">
-            <div class="confirm-dialog">
-                <p>Delete {{ confirmDeleteAccount.issuer }} ({{ confirmDeleteAccount.label }})?</p>
-                <div class="confirm-actions">
-                    <button @click="confirmDeleteAccount = null">Cancel</button>
-                    <button class="danger-btn" @click="confirmDelete">Delete</button>
-                </div>
-            </div>
+    <div
+      v-if="confirmDeleteAccount"
+      class="confirm-overlay"
+      @click.self="confirmDeleteAccount = null"
+    >
+      <div class="confirm-dialog">
+        <p>
+          Delete {{ confirmDeleteAccount.issuer }} ({{
+            confirmDeleteAccount.label
+          }})?
+        </p>
+        <div class="confirm-actions">
+          <button @click="confirmDeleteAccount = null">Cancel</button>
+          <button class="danger-btn" @click="confirmDelete">Delete</button>
         </div>
-    </main>
+      </div>
+    </div>
+  </main>
 </template>

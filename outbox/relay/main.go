@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,7 +16,7 @@ type OutboxMessage struct {
 	Message []byte
 }
 
-func processOutboxMessages(ctx context.Context, pool *pgxpool.Pool, pubsubClient *pubsub.Client) error {
+func processOutboxMessages(ctx context.Context, pool *pgxpool.Pool) error {
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -49,13 +49,7 @@ func processOutboxMessages(ctx context.Context, pool *pgxpool.Pool, pubsubClient
 	}
 
 	log.Printf("Publishing message %s to topic %s", msg.ID, msg.Topic)
-	result := pubsubClient.Topic(msg.Topic).Publish(ctx, &pubsub.Message{
-		Data: msg.Message,
-	})
-	_, err = result.Get(ctx)
-	if err != nil {
-		return err
-	}
+	// TODO: implement pub/sub message publishing
 
 	// 3. Mark the message as processed
 	_, err = tx.Exec(ctx, "UPDATE outbox SET state = 'processed', processed_at = now() WHERE id = $1", msg.ID)
@@ -68,17 +62,17 @@ func processOutboxMessages(ctx context.Context, pool *pgxpool.Pool, pubsubClient
 }
 
 func main() {
-	// TODO: initialize actual Postgres and Pubsub connections
-	var (
-		pool         *pgxpool.Pool
-		pubsubClient *pubsub.Client
-	)
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
+	defer pool.Close()
 
-	// feel free to use another interval
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for range ticker.C {
-		if err := processOutboxMessages(context.Background(), pool, pubsubClient); err != nil {
+		if err := processOutboxMessages(context.Background(), pool); err != nil {
 			log.Printf("Error processing outbox: %v", err)
 		}
 	}

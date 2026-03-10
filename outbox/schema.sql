@@ -6,4 +6,3 @@ CREATE TABLE outbox (
     created_at timestamptz NOT NULL DEFAULT now(),
     processed_at timestamptz
 );
-

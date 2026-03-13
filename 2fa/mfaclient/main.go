@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"log"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,10 +12,12 @@ import (
 var assets embed.FS
 
 func main() {
+	// Create an instance of the app structure
 	app := NewApp()
 
+	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "2FA Client",
+		Title:  "mf2client",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -28,8 +29,7 @@ func main() {
 			app,
 		},
 	})
-
 	if err != nil {
-		log.Fatalf("unable to start: %v", err)
+		println("Error:", err.Error())
 	}
 }

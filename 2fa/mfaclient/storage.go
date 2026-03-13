@@ -1,44 +1,75 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 )
 
 type Account struct {
-	ID      string `json:"id"`
-	Issuer  string `json:"issuer"`
-	Label   string `json:"label"`
-	Secret  string `json:"secret"`
-	AddedAt int64  `json:"added_at"`
+	Id     string `json:"id"`
+	Issuer string `json:"issuer"`
+	Secret string `json:"secret"`
 }
+
 type Storage struct {
-	filepath string
-}
-
-func NewStorage(filepath string) (*Storage, error) {
-	return &Storage{filepath: filepath}, nil
-}
-
-func (s *Storage) SaveAccounts(accounts []Account) error {
-	data, err := json.Marshal(accounts)
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(s.filepath, data, 0600)
+	Filepath string
 }
 
 func (s *Storage) LoadAccounts() ([]Account, error) {
-	data, err := os.ReadFile(s.filepath)
+	data, err := os.ReadFile(s.Filepath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []Account{}, nil
 		}
+
 		return nil, err
 	}
 
 	var accounts []Account
 	json.Unmarshal(data, &accounts)
 	return accounts, nil
+}
+
+func generateID() string {
+	bytes := make([]byte, 8)
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
+}
+
+func (s *Storage) AddAccount(a Account) error {
+	accounts, err := s.LoadAccounts()
+	if err != nil {
+		return err
+	}
+
+	a.Id = generateID()
+	accounts = append(accounts, a)
+	return s.save(accounts)
+}
+
+func (s *Storage) DeleteAccount(id string) error {
+	accounts, err := s.LoadAccounts()
+	if err != nil {
+		return err
+	}
+
+	filtered := []Account{}
+	for _, acc := range accounts {
+		if acc.Id != id {
+			filtered = append(filtered, acc)
+		}
+	}
+
+	return s.save(filtered)
+}
+
+func (s *Storage) save(accounts []Account) error {
+	data, err := json.Marshal(accounts)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(s.Filepath, data, 0o600)
 }

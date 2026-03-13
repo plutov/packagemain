@@ -1,21 +1,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import {
-  GetAccounts,
-  AddAccount,
-  AddAccountFromURI,
-  DeleteAccount,
-} from "../wailsjs/go/main/App";
+import { GetAccounts, AddAccount, DeleteAccount } from "../wailsjs/go/main/App";
 import { main } from "../wailsjs/go/models";
 
 const accounts = ref<main.AccountWithCode[]>([]);
 const error = ref("");
-const showAddForm = ref(false);
-const addMode = ref<"manual" | "uri">("manual");
+const showForm = ref(false);
 const issuer = ref("");
-const label = ref("");
 const secret = ref("");
-const uri = ref("");
 const addError = ref("");
 const copiedId = ref("");
 
@@ -30,30 +22,13 @@ async function loadAccounts() {
   }
 }
 
-async function handleAddManual() {
+async function handleAddAccount() {
   addError.value = "";
   try {
-    await AddAccount(
-      issuer.value,
-      label.value,
-      secret.value.toUpperCase().replace(/\s/g, ""),
-    );
+    await AddAccount(issuer.value, secret.value);
     issuer.value = "";
-    label.value = "";
     secret.value = "";
-    showAddForm.value = false;
-    await loadAccounts();
-  } catch (e: any) {
-    addError.value = e;
-  }
-}
-
-async function handleAddFromURI() {
-  addError.value = "";
-  try {
-    await AddAccountFromURI(uri.value);
-    uri.value = "";
-    showAddForm.value = false;
+    showForm.value = false;
     await loadAccounts();
   } catch (e: any) {
     addError.value = e;
@@ -87,12 +62,10 @@ async function copyCode(account: main.AccountWithCode) {
 }
 
 function resetForm() {
-  showAddForm.value = !showAddForm.value;
+  showForm.value = !showForm.value;
   addError.value = "";
   issuer.value = "";
-  label.value = "";
   secret.value = "";
-  uri.value = "";
 }
 
 onMounted(() => {
@@ -110,37 +83,18 @@ onUnmounted(() => {
     <header>
       <h1>🔐 2FA Authenticator</h1>
       <button class="header-btn" @click="resetForm">
-        {{ showAddForm ? "✕ Cancel" : "+ Add Account" }}
+        {{ showForm ? "✕ Cancel" : "+ Add Account" }}
       </button>
     </header>
 
-    <div v-if="showAddForm" class="add-form">
-      <div class="tabs">
-        <button
-          :class="{ active: addMode === 'manual' }"
-          @click="addMode = 'manual'"
-        >
-          Manual Entry
-        </button>
-        <button :class="{ active: addMode === 'uri' }" @click="addMode = 'uri'">
-          Paste URI
-        </button>
-      </div>
-
-      <div v-if="addMode === 'manual'" class="form-fields">
+    <div v-if="showForm" class="add-form">
+      <div class="form-fields">
         <input v-model="issuer" type="text" placeholder="Issuer" />
-        <input v-model="label" type="text" placeholder="Account" />
         <input v-model="secret" type="text" placeholder="Secret Key" />
-        <button class="submit-btn" @click="handleAddManual">Add Account</button>
-      </div>
-
-      <div v-else class="form-fields">
-        <input v-model="uri" type="text" placeholder="otpauth://totp/..." />
-        <button class="submit-btn" @click="handleAddFromURI">
-          Add from URI
+        <button class="submit-btn" @click="handleAddAccount">
+          Add Account
         </button>
       </div>
-
       <div v-if="addError" class="error-msg">{{ addError }}</div>
     </div>
 
@@ -148,8 +102,7 @@ onUnmounted(() => {
       <div v-for="account in accounts" :key="account.id" class="account">
         <div class="account-row">
           <div>
-            <strong>{{ account.issuer || "Unknown" }}</strong>
-            <span class="label">{{ account.label }}</span>
+            <strong>{{ account.issuer }}</strong>
           </div>
           <button @click="handleDelete(account)" title="Delete">🗑️</button>
         </div>
@@ -170,11 +123,7 @@ onUnmounted(() => {
       @click.self="confirmDeleteAccount = null"
     >
       <div class="confirm-dialog">
-        <p>
-          Delete {{ confirmDeleteAccount.issuer }} ({{
-            confirmDeleteAccount.label
-          }})?
-        </p>
+        <p>Delete {{ confirmDeleteAccount.issuer }}?</p>
         <div class="confirm-actions">
           <button @click="confirmDeleteAccount = null">Cancel</button>
           <button class="danger-btn" @click="confirmDelete">Delete</button>

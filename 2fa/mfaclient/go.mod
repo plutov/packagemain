@@ -1,4 +1,4 @@
-module mfaclient
+module mf2client
 
 go 1.23
 

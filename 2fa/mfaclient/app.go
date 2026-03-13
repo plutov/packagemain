@@ -2,13 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base32"
-	"encoding/hex"
-	"fmt"
-	"net/url"
-	"strings"
-	"time"
 )
 
 type App struct {
@@ -28,7 +21,9 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.storage, _ = NewStorage("./accounts.data")
+	a.storage = &Storage{
+		Filepath: "./accounts.json",
+	}
 }
 
 func (a *App) GetAccounts() ([]AccountWithCode, error) {
@@ -39,77 +34,29 @@ func (a *App) GetAccounts() ([]AccountWithCode, error) {
 
 	result := make([]AccountWithCode, len(accounts))
 	for i, acc := range accounts {
-		code, timeLeft, _ := GenerateTOTP(acc.Secret)
+		code, timeRemaining, err := GenerateTotp(acc.Secret)
+		if err != nil {
+			return []AccountWithCode{}, err
+		}
+
 		result[i] = AccountWithCode{
 			Account:       acc,
 			Code:          code,
-			TimeRemaining: timeLeft,
+			TimeRemaining: timeRemaining,
 		}
 	}
 	return result, nil
 }
 
-func generateID() string {
-	bytes := make([]byte, 8)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)
-}
-
-func (a *App) AddAccount(issuer, label, secret string) error {
-	cleanSecret := strings.TrimRight(strings.ToUpper(secret), "=")
-	_, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(cleanSecret)
-	if err != nil {
-		return fmt.Errorf("unable to decode the secret")
-	}
-
-	accounts, _ := a.storage.LoadAccounts()
-
+func (a *App) AddAccount(issuer, secret string) error {
 	newAccount := Account{
-		ID:      generateID(),
-		Issuer:  issuer,
-		Label:   label,
-		Secret:  secret,
-		AddedAt: time.Now().Unix(),
+		Issuer: issuer,
+		Secret: secret,
 	}
 
-	accounts = append(accounts, newAccount)
-	return a.storage.SaveAccounts(accounts)
-}
-
-func (a *App) ParseOTPAuthURI(uri string) (issuer, label, secret string, err error) {
-	u, err := url.Parse(uri)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	if u.Scheme != "otpauth" || u.Host != "totp" {
-		return "", "", "", fmt.Errorf("invalid OTP URI")
-	}
-
-	label = strings.TrimPrefix(u.Path, "/")
-	secret = u.Query().Get("secret")
-	issuer = u.Query().Get("issuer")
-
-	return issuer, label, secret, nil
-}
-
-func (a *App) AddAccountFromURI(uri string) error {
-	issuer, label, secret, err := a.ParseOTPAuthURI(uri)
-	if err != nil {
-		return err
-	}
-	return a.AddAccount(issuer, label, secret)
+	return a.storage.AddAccount(newAccount)
 }
 
 func (a *App) DeleteAccount(id string) error {
-	accounts, _ := a.storage.LoadAccounts()
-
-	filtered := []Account{}
-	for _, acc := range accounts {
-		if acc.ID != id {
-			filtered = append(filtered, acc)
-		}
-	}
-
-	return a.storage.SaveAccounts(filtered)
+	return a.storage.DeleteAccount(id)
 }

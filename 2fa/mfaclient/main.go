@@ -18,8 +18,8 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "mf2client",
-		Width:  1024,
-		Height: 768,
+		Width:  500,
+		Height: 700,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

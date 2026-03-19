@@ -11,7 +11,7 @@
 20-tcp-chat/chat/chat
 23-fuzz-testing-in-go/testdata
 24-nft-collection/collection/*.png
-
+oc/oc-pre-commit
 .DS_Store
 
 # Binaries for programs and plugins

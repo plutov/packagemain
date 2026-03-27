@@ -98,6 +98,16 @@ func relay(ctx context.Context, pool *pgxpool.Pool, rdb *redis.Client) error {
 	return tx.Commit(ctx)
 }
 
+func startRelay(ctx context.Context, pool *pgxpool.Pool, rdb *redis.Client) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
+		if err := relay(context.Background(), pool, rdb); err != nil {
+			log.Printf("Relay error: %v", err)
+		}
+	}
+}
+
 func main() {
 	ctx := context.Background()
 
@@ -110,22 +120,29 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 	defer rdb.Close()
 
-	order := Order{
+	// This could be a separate service
+	go startRelay(ctx, pool, rdb)
+
+	order1 := Order{
 		ID:       uuid.New(),
 		Product:  "Super Widget",
 		Quantity: 10,
 	}
-
-	if err := createOrder(ctx, pool, order); err != nil {
+	if err := createOrder(ctx, pool, order1); err != nil {
 		log.Fatalf("Failed to create order: %v", err)
 	}
-	log.Printf("Created order %s", order.ID)
+	log.Printf("Created order 1 %s", order1.ID)
 
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-	for range ticker.C {
-		if err := relay(context.Background(), pool, rdb); err != nil {
-			log.Printf("Relay error: %v", err)
-		}
+	time.Sleep(5)
+	order2 := Order{
+		ID:       uuid.New(),
+		Product:  "Super Widget",
+		Quantity: 10,
 	}
+	if err := createOrder(ctx, pool, order2); err != nil {
+		log.Fatalf("Failed to create order: %v", err)
+	}
+	log.Printf("Created order 2 %s", order2.ID)
+
+	time.Sleep(5 * time.Second)
 }

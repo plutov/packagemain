@@ -1,3 +1,9 @@
+CREATE TABLE orders (
+    id uuid PRIMARY KEY,
+    product varchar(255) NOT NULL,
+    quantity int NOT NULL
+);
+
 CREATE TABLE outbox (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     topic varchar(255) NOT NULL,

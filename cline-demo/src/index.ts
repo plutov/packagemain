@@ -40,6 +40,7 @@ async function main() {
 
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY environment variable");
 
+  // Create an agent with the OpenAI provider, the system prompt, and the tool for reading recent commits
   const agent = new Agent({
     providerId: "openai-native",
     modelId: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",

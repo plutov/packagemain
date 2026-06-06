@@ -10,14 +10,34 @@ import (
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
 
-type searchItem struct {
-	Path     string
-	Module   string
-	Version  string
-	Synopsis string
+type focusMode int
+
+const (
+	focusInput focusMode = iota
+	focusResults
+	focusDetail
+)
+
+type Model struct {
+	client *pkgsiteapi.ClientWithResponses
+
+	input    textinput.Model
+	viewport viewport.Model
+
+	results  []pkgsiteapi.SearchResult
+	currItem *pkgsiteapi.SearchResult
+	versions *pkgsiteapi.PaginatedResponse
+	symbols  *pkgsiteapi.PackageSymbols
+	errMsg   string
+
+	loading       bool
+	currItemIndex int
+	focus         focusMode
 }
 
-type searchMsg struct{ items []searchItem }
+type searchMsg struct {
+	items []pkgsiteapi.SearchResult
+}
 
 type detailMsg struct {
 	path     string
@@ -25,21 +45,11 @@ type detailMsg struct {
 	symbols  *pkgsiteapi.PackageSymbols
 }
 
-type model struct {
-	input   textinput.Model
-	vp      viewport.Model
-	client  *pkgsiteapi.ClientWithResponses
-	results []searchItem
-	sel     int
-	focus   string
-	loading bool
-
-	item     searchItem
-	versions *pkgsiteapi.PaginatedResponse
-	symbols  *pkgsiteapi.PackageSymbols
+type errorMsg struct {
+	text string
 }
 
-func newModel(client *pkgsiteapi.ClientWithResponses) model {
+func newModel(client *pkgsiteapi.ClientWithResponses) Model {
 	input := textinput.New()
 	input.Placeholder = "Search Go packages"
 	input.Focus()
@@ -48,127 +58,114 @@ func newModel(client *pkgsiteapi.ClientWithResponses) model {
 	vp := viewport.New(80, 20)
 	vp.SetContent("Loading...")
 
-	return model{input: input, vp: vp, client: client, focus: "input"}
+	return Model{input: input, viewport: vp, client: client, focus: focusInput}
 }
 
-func (m model) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink, tea.SetWindowTitle("gopkg"))
+func (m Model) Init() tea.Cmd {
+	return tea.Batch(textinput.Blink)
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.input.Width = msg.Width - 4
-		if m.input.Width < 20 {
-			m.input.Width = 20
-		}
-		if m.input.Width > 80 {
-			m.input.Width = 80
-		}
-		m.vp.Width = msg.Width - 4
-		if m.vp.Width < 20 {
-			m.vp.Width = 20
-		}
-		m.vp.Height = msg.Height - 6
-		if m.vp.Height < 8 {
-			m.vp.Height = 8
-		}
-		m.refresh()
+		m.refreshViewport()
 		return m, nil
 	case searchMsg:
 		m.loading = false
+		m.errMsg = ""
 		m.results = msg.items
-		m.sel = 0
+		m.currItemIndex = 0
 		if len(m.results) > 0 {
-			m.focus = "results"
+			m.focus = focusResults
 			m.input.Blur()
 		}
+		m.refreshViewport()
 		return m, nil
 	case detailMsg:
-		if msg.path != m.item.Path {
-			return m, nil
-		}
 		m.loading = false
+		m.errMsg = ""
 		m.versions = msg.versions
 		m.symbols = msg.symbols
-		m.refresh()
+		m.refreshViewport()
+		return m, nil
+	case errorMsg:
+		m.loading = false
+		m.errMsg = msg.text
+		m.refreshViewport()
 		return m, nil
 	}
 
 	key, ok := msg.(tea.KeyMsg)
 	if !ok {
-		if m.focus == "input" {
+		if m.focus == focusInput {
 			var cmd tea.Cmd
 			m.input, cmd = m.input.Update(msg)
 			return m, cmd
 		}
-		if m.focus == "detail" {
+
+		if m.focus == focusDetail {
 			var cmd tea.Cmd
-			m.vp, cmd = m.vp.Update(msg)
+			m.viewport, cmd = m.viewport.Update(msg)
 			return m, cmd
 		}
 		return m, nil
 	}
 
 	switch key.String() {
-	case "ctrl+c", "q":
+	case "q":
 		return m, tea.Quit
 	case "tab":
-		if len(m.results) == 0 || m.focus == "detail" {
-			return m, nil
-		}
-		if m.focus == "input" {
-			m.focus = "results"
+		if m.focus == focusInput {
+			m.focus = focusResults
 			m.input.Blur()
 		} else {
-			m.focus = "input"
+			m.focus = focusInput
 			m.input.Focus()
 		}
 		return m, nil
 	}
 
-	if m.focus == "detail" {
-		if key.String() == "esc" || key.String() == "backspace" || key.String() == "left" || key.String() == "h" {
-			m.focus = "results"
+	if m.focus == focusDetail {
+		if key.String() == "esc" {
+			m.focus = focusResults
 			return m, nil
 		}
 		var cmd tea.Cmd
-		m.vp, cmd = m.vp.Update(msg)
+		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
 	}
 
-	if m.focus == "results" {
+	if m.focus == focusResults {
 		switch key.String() {
-		case "up", "k":
-			if m.sel > 0 {
-				m.sel--
+		case "k":
+			if m.currItemIndex > 0 {
+				m.currItemIndex--
 			}
-		case "down", "j":
-			if m.sel < len(m.results)-1 {
-				m.sel++
+		case "j":
+			if m.currItemIndex < len(m.results)-1 {
+				m.currItemIndex++
 			}
-		case "enter", "o", "right", "l":
-			if len(m.results) == 0 || m.loading {
-				return m, nil
-			}
-			m.focus = "detail"
+		case "enter":
+			m.focus = focusDetail
 			m.loading = true
-			m.item = m.results[m.sel]
+			m.errMsg = ""
+			m.currItem = &m.results[m.currItemIndex]
 			m.versions = nil
 			m.symbols = nil
-			m.vp.GotoTop()
-			m.refresh()
-			return m, detailCmd(m.client, m.item)
+			m.viewport.GotoTop()
+			m.refreshViewport()
+			return m, detailCmd(m.client, m.currItem)
 		}
 		return m, nil
 	}
 
 	if key.String() == "enter" {
 		q := strings.TrimSpace(m.input.Value())
-		if q == "" || m.loading {
+		if m.loading {
 			return m, nil
 		}
 		m.loading = true
+		m.errMsg = ""
 		return m, searchCmd(m.client, q)
 	}
 

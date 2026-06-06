@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
+
+	"log/slog"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -14,11 +15,12 @@ const apiBaseURL = "https://pkg.go.dev/v1beta"
 func main() {
 	client, err := pkgsiteapi.NewClientWithResponses(apiBaseURL)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		slog.Error("Error creating API client", "error", err)
 		os.Exit(1)
 	}
+
 	if _, err := tea.NewProgram(newModel(client), tea.WithAltScreen()).Run(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		slog.Error("Error running program", "error", err)
 		os.Exit(1)
 	}
 }

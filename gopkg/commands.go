@@ -2,12 +2,24 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
+
+func formatError(op string, status string, body []byte) string {
+	if bodyText := strings.TrimSpace(string(body)); bodyText != "" {
+		return fmt.Sprintf("%s failed: %s: %s", op, status, bodyText)
+	}
+	if status != "" {
+		return fmt.Sprintf("%s failed: %s", op, status)
+	}
+	return fmt.Sprintf("%s failed", op)
+}
 
 func searchCmd(client *pkgsiteapi.ClientWithResponses, q string) tea.Cmd {
 	return func() tea.Msg {
@@ -17,55 +29,51 @@ func searchCmd(client *pkgsiteapi.ClientWithResponses, q string) tea.Cmd {
 		limit := 10
 		resp, err := client.GetSearchWithResponse(ctx, &pkgsiteapi.GetSearchParams{Q: &q, Limit: &limit})
 		if err != nil {
-			panic(err)
+			return errorMsg{text: fmt.Sprintf("search failed: %v", err)}
 		}
 
-		items := make([]searchItem, 0, len(*resp.JSON200.Items))
-		for _, it := range *resp.JSON200.Items {
-			path, _ := it["packagePath"].(string)
-			module, _ := it["modulePath"].(string)
-			version, _ := it["version"].(string)
-			synopsis, _ := it["synopsis"].(string)
-			items = append(items, searchItem{Path: path, Module: module, Version: version, Synopsis: synopsis})
-		}
-		return searchMsg{items}
+		return searchMsg{resp.JSON200.SearchResults()}
 	}
 }
 
-func detailCmd(client *pkgsiteapi.ClientWithResponses, item searchItem) tea.Cmd {
+func detailCmd(client *pkgsiteapi.ClientWithResponses, item *pkgsiteapi.SearchResult) tea.Cmd {
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		path := item.Path
-		if item.Module != "" {
-			path = item.Module
+		path := item.PackagePath
+		if item.ModulePath != "" {
+			path = item.ModulePath
 		}
 
-		limit := 12
+		limit := 10
 		versions, err := client.GetVersionsWithResponse(ctx, path, &pkgsiteapi.GetVersionsParams{Limit: &limit})
 		if err != nil {
-			panic(err)
+			return errorMsg{text: fmt.Sprintf("loading versions failed: %v", err)}
 		}
 
 		var module, version *string
-		if item.Module != "" {
-			module = &item.Module
+		if item.ModulePath != "" {
+			module = &item.ModulePath
 		}
 		if item.Version != "" {
 			version = &item.Version
 		}
 
-		limit = 20
-		symbols, err := client.GetSymbolsWithResponse(ctx, item.Path, &pkgsiteapi.GetSymbolsParams{
+		limit = 10
+		symbols, err := client.GetSymbolsWithResponse(ctx, item.PackagePath, &pkgsiteapi.GetSymbolsParams{
 			Module:  module,
 			Version: version,
 			Limit:   &limit,
 		})
 		if err != nil {
-			panic(err)
+			return errorMsg{text: fmt.Sprintf("loading symbols failed: %v", err)}
 		}
 
-		return detailMsg{path: item.Path, versions: versions.JSON200, symbols: symbols.JSON200}
+		return detailMsg{
+			path:     item.PackagePath,
+			versions: versions.JSON200,
+			symbols:  symbols.JSON200,
+		}
 	}
 }

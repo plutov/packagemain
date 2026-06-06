@@ -1,32 +1,30 @@
 package main
 
-import (
-	"strings"
-	"time"
-)
+import "strings"
 
-func (m model) View() string {
-	if m.focus == "detail" {
-		return strings.Join([]string{
-			"gopkg — package details",
-			m.item.Path,
-			"",
-			m.vp.View(),
-			"",
-			"esc: back • j/k: scroll • q: quit",
-		}, "\n")
+func (m Model) View() string {
+	lines := []string{"gopkg — pkg.go.dev explorer"}
+	if m.errMsg != "" {
+		lines = append(lines, "Error: "+m.errMsg, "")
+	} else {
+		lines = append(lines, "")
 	}
 
-	lines := []string{"gopkg — pkg.go.dev explorer", "", m.input.View(), ""}
+	if m.focus == focusDetail {
+		lines = append(lines, m.currItem.PackagePath)
+		lines = append(lines, "", m.viewport.View(), "", "esc: back • j/k: scroll • q: quit")
+		return strings.Join(lines, "\n")
+	}
+
+	lines = append(lines, m.input.View(), "")
+
 	if m.loading {
 		lines = append(lines, "Loading...")
-	} else if len(m.results) == 0 {
-		lines = append(lines, "Type query and press Enter.")
-	} else {
+	} else if len(m.results) > 0 {
 		for i, it := range m.results {
-			line := "  " + it.Path
-			if i == m.sel {
-				line = "> " + it.Path
+			line := "  " + it.PackagePath
+			if i == m.currItemIndex {
+				line = "> " + it.PackagePath
 			}
 			if it.Version != "" {
 				line += "  " + it.Version
@@ -42,46 +40,43 @@ func (m model) View() string {
 	return strings.Join(lines, "\n")
 }
 
-func (m *model) refresh() {
-	if m.focus != "detail" || m.vp.Width == 0 || m.vp.Height == 0 {
+func (m *Model) refreshViewport() {
+	if m.focus != focusDetail || m.currItem == nil {
 		return
 	}
 	if m.loading {
-		m.vp.SetContent(m.item.Path + "\n\nLoading...")
+		m.viewport.SetContent(m.currItem.PackagePath + "\n\nLoading...")
 		return
 	}
 
-	lines := []string{m.item.Path}
-	if m.item.Module != "" {
-		lines = append(lines, m.item.Module)
+	lines := []string{m.currItem.PackagePath}
+	if m.currItem.ModulePath != "" {
+		lines = append(lines, m.currItem.ModulePath)
 	}
-	if m.item.Synopsis != "" {
-		lines = append(lines, "", m.item.Synopsis)
-	}
-
-	lines = append(lines, "", "Versions")
-	for _, v := range *m.versions.Items {
-		version, _ := v["version"].(string)
-		commit, _ := v["commitTime"].(string)
-		if t, err := time.Parse(time.RFC3339, commit); err == nil {
-			commit = t.Format("2006-01-02")
-		}
-		line := "- " + version
-		if commit != "" {
-			line += "  " + commit
-		}
-		lines = append(lines, line)
+	if m.currItem.Synopsis != "" {
+		lines = append(lines, "", m.currItem.Synopsis)
 	}
 
-	lines = append(lines, "", "Symbols")
-	for _, s := range *m.symbols.Symbols.Items {
-		kind, _ := s["kind"].(string)
-		name, _ := s["name"].(string)
-		lines = append(lines, "- "+kind+" "+name)
-		if synopsis, _ := s["synopsis"].(string); synopsis != "" {
-			lines = append(lines, "  "+synopsis)
+	if versions := m.versions.VersionResults(); len(versions) > 0 {
+		lines = append(lines, "", "Versions")
+		for _, v := range versions {
+			line := "- " + v.Version
+			if v.CommitTime != nil {
+				line += "  " + v.CommitTime.Format("2006-01-02")
+			}
+			lines = append(lines, line)
 		}
 	}
 
-	m.vp.SetContent(strings.Join(lines, "\n"))
+	if symbols := m.symbols.SymbolResults(); len(symbols) > 0 {
+		lines = append(lines, "", "Symbols")
+		for _, s := range symbols {
+			lines = append(lines, "- "+s.Kind+" "+s.Name)
+			if s.Synopsis != "" {
+				lines = append(lines, "  "+s.Synopsis)
+			}
+		}
+	}
+
+	m.viewport.SetContent(strings.Join(lines, "\n"))
 }

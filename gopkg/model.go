@@ -112,7 +112,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch key.String() {
-	case "q":
+	case "ctrl+c":
 		return m, tea.Quit
 	case "tab":
 		if m.focus == focusInput {
@@ -137,11 +137,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.focus == focusResults {
 		switch key.String() {
-		case "k":
+		case "k", "up":
 			if m.currItemIndex > 0 {
 				m.currItemIndex--
 			}
-		case "j":
+		case "j", "down":
 			if m.currItemIndex < len(m.results)-1 {
 				m.currItemIndex++
 			}

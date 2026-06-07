@@ -1,12 +1,10 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
-	"log/slog"
-
 	tea "github.com/charmbracelet/bubbletea"
-
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
 

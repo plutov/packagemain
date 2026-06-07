@@ -11,8 +11,7 @@ func (m Model) View() string {
 	}
 
 	if m.focus == focusDetail {
-		lines = append(lines, m.currItem.PackagePath)
-		lines = append(lines, "", m.viewport.View(), "", "esc: back • j/k: scroll • q: quit")
+		lines = append(lines, "", m.viewport.View(), "", "esc: back • j/k: scroll • ctrl+c: quit")
 		return strings.Join(lines, "\n")
 	}
 
@@ -36,7 +35,7 @@ func (m Model) View() string {
 			lines = append(lines, "")
 		}
 	}
-	lines = append(lines, "tab: switch • enter: search/open • q: quit")
+	lines = append(lines, "tab: switch • enter: search/open • ctrl+c: quit")
 	return strings.Join(lines, "\n")
 }
 
@@ -50,31 +49,26 @@ func (m *Model) refreshViewport() {
 	}
 
 	lines := []string{m.currItem.PackagePath}
-	if m.currItem.ModulePath != "" {
-		lines = append(lines, m.currItem.ModulePath)
-	}
 	if m.currItem.Synopsis != "" {
 		lines = append(lines, "", m.currItem.Synopsis)
 	}
 
-	if versions := m.versions.VersionResults(); len(versions) > 0 {
-		lines = append(lines, "", "Versions")
-		for _, v := range versions {
-			line := "- " + v.Version
-			if v.CommitTime != nil {
-				line += "  " + v.CommitTime.Format("2006-01-02")
-			}
-			lines = append(lines, line)
+	versions := m.versions.VersionResults()
+	lines = append(lines, "", "Versions")
+	for _, v := range versions {
+		line := "- " + v.Version
+		if v.CommitTime != nil {
+			line += "  " + v.CommitTime.Format("2006-01-02")
 		}
+		lines = append(lines, line)
 	}
 
-	if symbols := m.symbols.SymbolResults(); len(symbols) > 0 {
-		lines = append(lines, "", "Symbols")
-		for _, s := range symbols {
-			lines = append(lines, "- "+s.Kind+" "+s.Name)
-			if s.Synopsis != "" {
-				lines = append(lines, "  "+s.Synopsis)
-			}
+	symbols := m.symbols.SymbolResults()
+	lines = append(lines, "", "Symbols")
+	for _, s := range symbols {
+		lines = append(lines, "- "+s.Kind+" "+s.Name)
+		if s.Synopsis != "" {
+			lines = append(lines, "  "+s.Synopsis)
 		}
 	}
 

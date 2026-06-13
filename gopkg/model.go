@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
 
@@ -19,20 +18,19 @@ const (
 )
 
 type Model struct {
-	client *pkgsiteapi.ClientWithResponses
-
 	input    textinput.Model
 	viewport viewport.Model
 
+	loading       bool
+	focus         focusMode
+	currItemIndex int
+	errMsg        string
+
+	client   *pkgsiteapi.ClientWithResponses
 	results  []pkgsiteapi.SearchResult
 	currItem *pkgsiteapi.SearchResult
 	versions *pkgsiteapi.PaginatedResponse
 	symbols  *pkgsiteapi.PackageSymbols
-	errMsg   string
-
-	loading       bool
-	currItemIndex int
-	focus         focusMode
 }
 
 type searchMsg struct {
@@ -51,18 +49,22 @@ type errorMsg struct {
 
 func newModel(client *pkgsiteapi.ClientWithResponses) Model {
 	input := textinput.New()
-	input.Placeholder = "Search Go packages"
+	input.Placeholder = "Search Go Modules..."
 	input.Focus()
 	input.Width = 50
 
 	vp := viewport.New(80, 20)
-	vp.SetContent("Loading...")
 
-	return Model{input: input, viewport: vp, client: client, focus: focusInput}
+	return Model{
+		input:    input,
+		viewport: vp,
+		focus:    focusInput,
+		client:   client,
+	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink)
+	return textinput.Blink
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

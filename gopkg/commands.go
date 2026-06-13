@@ -3,23 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
-
-func formatError(op string, status string, body []byte) string {
-	if bodyText := strings.TrimSpace(string(body)); bodyText != "" {
-		return fmt.Sprintf("%s failed: %s: %s", op, status, bodyText)
-	}
-	if status != "" {
-		return fmt.Sprintf("%s failed: %s", op, status)
-	}
-	return fmt.Sprintf("%s failed", op)
-}
 
 func searchCmd(client *pkgsiteapi.ClientWithResponses, q string) tea.Cmd {
 	return func() tea.Msg {

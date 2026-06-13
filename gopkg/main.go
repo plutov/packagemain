@@ -8,17 +8,18 @@ import (
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
 
-const apiBaseURL = "https://pkg.go.dev/v1beta"
+const apiBaseUrl = "https://pkg.go.dev/v1beta"
 
 func main() {
-	client, err := pkgsiteapi.NewClientWithResponses(apiBaseURL)
+	client, err := pkgsiteapi.NewClientWithResponses(apiBaseUrl)
 	if err != nil {
-		slog.Error("Error creating API client", "error", err)
+		slog.Error("Unable to create an API client", "err", err)
 		os.Exit(1)
 	}
 
-	if _, err := tea.NewProgram(newModel(client), tea.WithAltScreen()).Run(); err != nil {
-		slog.Error("Error running program", "error", err)
+	_, err = tea.NewProgram(newModel(client), tea.WithAltScreen()).Run()
+	if err != nil {
+		slog.Error("Unable to run Tea program", "err", err)
 		os.Exit(1)
 	}
 }

@@ -2,43 +2,43 @@ package pkgsiteapi
 
 import "time"
 
-type SearchResult struct {
-	PackagePath string `json:"packagePath,omitempty"`
-	ModulePath  string `json:"modulePath,omitempty"`
-	Version     string `json:"version,omitempty"`
-	Synopsis    string `json:"synopsis,omitempty"`
+// SearchResultData is the UI-friendly representation of a search result.
+type SearchResultData struct {
+	PackagePath string
+	ModulePath  string
+	Version     string
+	Synopsis    string
 }
 
 type VersionResult struct {
-	Version    string     `json:"version,omitempty"`
-	CommitTime *time.Time `json:"commitTime,omitempty"`
+	Version    string
+	CommitTime *time.Time
 }
 
 type SymbolResult struct {
-	Kind     string `json:"kind,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Synopsis string `json:"synopsis,omitempty"`
+	Kind     string
+	Name     string
+	Synopsis string
 }
 
-func (p *PaginatedResponse) SearchResults() []SearchResult {
+func (p *PaginatedResponseSearchResult) SearchResults() []SearchResultData {
 	if p == nil || p.Items == nil {
 		return nil
 	}
 
-	items := make([]SearchResult, 0, len(*p.Items))
+	items := make([]SearchResultData, 0, len(*p.Items))
 	for _, item := range *p.Items {
-		items = append(items, SearchResult{
-			PackagePath: stringValue(item, "packagePath"),
-			ModulePath:  stringValue(item, "modulePath"),
-			Version:     stringValue(item, "version"),
-			Synopsis:    stringValue(item, "synopsis"),
+		items = append(items, SearchResultData{
+			PackagePath: derefString(item.PackagePath),
+			ModulePath:  derefString(item.ModulePath),
+			Version:     derefString(item.Version),
+			Synopsis:    derefString(item.Synopsis),
 		})
 	}
-
 	return items
 }
 
-func (p *PaginatedResponse) VersionResults() []VersionResult {
+func (p *PaginatedResponseModuleVersion) VersionResults() []VersionResult {
 	if p == nil || p.Items == nil {
 		return nil
 	}
@@ -46,15 +46,14 @@ func (p *PaginatedResponse) VersionResults() []VersionResult {
 	items := make([]VersionResult, 0, len(*p.Items))
 	for _, item := range *p.Items {
 		items = append(items, VersionResult{
-			Version:    stringValue(item, "version"),
-			CommitTime: timeValue(item, "commitTime"),
+			Version:    derefString(item.Version),
+			CommitTime: item.CommitTime,
 		})
 	}
-
 	return items
 }
 
-func (p *PaginatedResponse) SymbolResults() []SymbolResult {
+func (p *PaginatedResponseSymbol) SymbolResults() []SymbolResult {
 	if p == nil || p.Items == nil {
 		return nil
 	}
@@ -62,37 +61,24 @@ func (p *PaginatedResponse) SymbolResults() []SymbolResult {
 	items := make([]SymbolResult, 0, len(*p.Items))
 	for _, item := range *p.Items {
 		items = append(items, SymbolResult{
-			Kind:     stringValue(item, "kind"),
-			Name:     stringValue(item, "name"),
-			Synopsis: stringValue(item, "synopsis"),
+			Kind:     derefString(item.Kind),
+			Name:     derefString(item.Name),
+			Synopsis: derefString(item.Synopsis),
 		})
 	}
-
 	return items
 }
 
 func (p *PackageSymbols) SymbolResults() []SymbolResult {
-	if p == nil || p.Symbols == nil {
+	if p == nil {
 		return nil
 	}
 	return p.Symbols.SymbolResults()
 }
 
-func stringValue(item map[string]interface{}, key string) string {
-	value, _ := item[key].(string)
-	return value
-}
-
-func timeValue(item map[string]interface{}, key string) *time.Time {
-	value, _ := item[key].(string)
-	if value == "" {
-		return nil
+func derefString(value *string) string {
+	if value == nil {
+		return ""
 	}
-
-	t, err := time.Parse(time.RFC3339, value)
-	if err != nil {
-		return nil
-	}
-
-	return &t
+	return *value
 }

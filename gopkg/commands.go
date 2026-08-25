@@ -20,12 +20,24 @@ func searchCmd(client *pkgsiteapi.ClientWithResponses, q string) tea.Cmd {
 		if err != nil {
 			return errorMsg{text: fmt.Sprintf("search failed: %v", err)}
 		}
+		if resp == nil || resp.JSON200 == nil {
+			return errorMsg{text: "search failed: " + responseError(resp, func(r *pkgsiteapi.GetSearchResponse) *pkgsiteapi.Error { return r.JSONDefault })}
+		}
 
 		return searchMsg{resp.JSON200.SearchResults()}
 	}
 }
 
-func detailCmd(client *pkgsiteapi.ClientWithResponses, item *pkgsiteapi.SearchResult) tea.Cmd {
+func responseError[T any](response *T, defaultError func(*T) *pkgsiteapi.Error) string {
+	if response != nil {
+		if apiError := defaultError(response); apiError != nil && apiError.Message != nil {
+			return *apiError.Message
+		}
+	}
+	return "unexpected response"
+}
+
+func detailCmd(client *pkgsiteapi.ClientWithResponses, item *pkgsiteapi.SearchResultData) tea.Cmd {
 	return func() tea.Msg {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -36,9 +48,16 @@ func detailCmd(client *pkgsiteapi.ClientWithResponses, item *pkgsiteapi.SearchRe
 		}
 
 		limit := 10
-		versions, err := client.GetVersionsWithResponse(ctx, path, &pkgsiteapi.GetVersionsParams{Limit: &limit})
+		pseudo := true
+		versions, err := client.GetVersionsWithResponse(ctx, path, &pkgsiteapi.GetVersionsParams{
+			Limit:  &limit,
+			Pseudo: &pseudo,
+		})
 		if err != nil {
 			return errorMsg{text: fmt.Sprintf("loading versions failed: %v", err)}
+		}
+		if versions == nil || versions.JSON200 == nil {
+			return errorMsg{text: "loading versions failed: " + responseError(versions, func(r *pkgsiteapi.GetVersionsResponse) *pkgsiteapi.Error { return r.JSONDefault })}
 		}
 
 		var module, version *string
@@ -57,6 +76,9 @@ func detailCmd(client *pkgsiteapi.ClientWithResponses, item *pkgsiteapi.SearchRe
 		})
 		if err != nil {
 			return errorMsg{text: fmt.Sprintf("loading symbols failed: %v", err)}
+		}
+		if symbols == nil || symbols.JSON200 == nil {
+			return errorMsg{text: "loading symbols failed: " + responseError(symbols, func(r *pkgsiteapi.GetSymbolsResponse) *pkgsiteapi.Error { return r.JSONDefault })}
 		}
 
 		return detailMsg{

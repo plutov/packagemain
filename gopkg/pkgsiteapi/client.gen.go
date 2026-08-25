@@ -26,11 +26,10 @@ type Candidate struct {
 type Error struct {
 	Candidates *[]Candidate `json:"candidates,omitempty"`
 
-	// Code HTTP status code
-	Code *int   `json:"code,omitempty"`
-	Err  *Error `json:"err,omitempty"`
+	// Code Code is the HTTP status code.
+	Code *int `json:"code,omitempty"`
 
-	// Fixes suggestions for how to fix
+	// Fixes Fixes are suggestions for how to fix.
 	Fixes   *[]string `json:"fixes,omitempty"`
 	Message *string   `json:"message,omitempty"`
 }
@@ -59,52 +58,147 @@ type Module struct {
 	Version           *string    `json:"version,omitempty"`
 }
 
+// ModuleVersion defines model for ModuleVersion.
+type ModuleVersion struct {
+	CommitTime        *time.Time `json:"commitTime,omitempty"`
+	Deprecated        *bool      `json:"deprecated,omitempty"`
+	DeprecationReason *string    `json:"deprecationReason,omitempty"`
+
+	// HasGoMod HasGoMod is whether the module has a go.mod file.
+	HasGoMod *bool `json:"hasGoMod,omitempty"`
+
+	// IsRedistributable IsRedistributable is whether the license allows distribution.
+	IsRedistributable *bool `json:"isRedistributable,omitempty"`
+
+	// LatestVersion LatestVersion is the latest unretracted version.
+	LatestVersion    *string `json:"latestVersion,omitempty"`
+	ModulePath       *string `json:"modulePath,omitempty"`
+	Retracted        *bool   `json:"retracted,omitempty"`
+	RetractionReason *string `json:"retractionReason,omitempty"`
+	Version          *string `json:"version,omitempty"`
+}
+
 // Package defines model for Package.
 type Package struct {
-	Docs              *string    `json:"docs,omitempty"`
-	Goarch            *string    `json:"goarch,omitempty"`
-	Goos              *string    `json:"goos,omitempty"`
-	Imports           *[]string  `json:"imports,omitempty"`
-	IsLatest          *bool      `json:"isLatest,omitempty"`
+	Docs     *string   `json:"docs,omitempty"`
+	Goarch   *string   `json:"goarch,omitempty"`
+	Goos     *string   `json:"goos,omitempty"`
+	Imports  *[]string `json:"imports,omitempty"`
+	IsLatest *bool     `json:"isLatest,omitempty"`
+
+	// IsRedistributable IsRedistributable is whether the license allows distribution.
+	IsRedistributable *bool      `json:"isRedistributable,omitempty"`
 	IsStandardLibrary *bool      `json:"isStandardLibrary,omitempty"`
 	Licenses          *[]License `json:"licenses,omitempty"`
 	ModulePath        *string    `json:"modulePath,omitempty"`
+	Name              *string    `json:"name,omitempty"`
+	Path              *string    `json:"path,omitempty"`
+	Synopsis          *string    `json:"synopsis,omitempty"`
 	Version           *string    `json:"version,omitempty"`
 }
 
 // PackageImportedBy defines model for PackageImportedBy.
 type PackageImportedBy struct {
-	ImportedBy *PaginatedResponse `json:"importedBy,omitempty"`
-	ModulePath *string            `json:"modulePath,omitempty"`
-	Version    *string            `json:"version,omitempty"`
+	ImportedBy *PaginatedResponseString `json:"importedBy,omitempty"`
+	ModulePath *string                  `json:"modulePath,omitempty"`
+	Version    *string                  `json:"version,omitempty"`
+}
+
+// PackageInfo defines model for PackageInfo.
+type PackageInfo struct {
+	// IsRedistributable IsRedistributable is whether the license allows distribution.
+	IsRedistributable *bool   `json:"isRedistributable,omitempty"`
+	Name              *string `json:"name,omitempty"`
+	Path              *string `json:"path,omitempty"`
+	Synopsis          *string `json:"synopsis,omitempty"`
 }
 
 // PackageSymbols defines model for PackageSymbols.
 type PackageSymbols struct {
-	ModulePath *string            `json:"modulePath,omitempty"`
-	Symbols    *PaginatedResponse `json:"symbols,omitempty"`
-	Version    *string            `json:"version,omitempty"`
+	ModulePath *string                  `json:"modulePath,omitempty"`
+	Symbols    *PaginatedResponseSymbol `json:"symbols,omitempty"`
+	Version    *string                  `json:"version,omitempty"`
 }
 
 // PackagesResponse defines model for PackagesResponse.
 type PackagesResponse struct {
-	IsStandardLibrary *bool              `json:"isStandardLibrary,omitempty"`
-	ModulePath        *string            `json:"modulePath,omitempty"`
-	Packages          *PaginatedResponse `json:"packages,omitempty"`
-	Version           *string            `json:"version,omitempty"`
+	IsStandardLibrary *bool                         `json:"isStandardLibrary,omitempty"`
+	ModulePath        *string                       `json:"modulePath,omitempty"`
+	Packages          *PaginatedResponsePackageInfo `json:"packages,omitempty"`
+	Version           *string                       `json:"version,omitempty"`
 }
 
-// PaginatedResponse defines model for PaginatedResponse.
-type PaginatedResponse struct {
-	Items         *[]map[string]interface{} `json:"items,omitempty"`
-	NextPageToken *string                   `json:"nextPageToken,omitempty"`
-	Total         *int                      `json:"total,omitempty"`
+// PaginatedResponseModuleVersion defines model for PaginatedResponse_ModuleVersion.
+type PaginatedResponseModuleVersion struct {
+	Items         *[]ModuleVersion `json:"items,omitempty"`
+	NextPageToken *string          `json:"nextPageToken,omitempty"`
+	Total         *int             `json:"total,omitempty"`
+}
+
+// PaginatedResponsePackageInfo defines model for PaginatedResponse_PackageInfo.
+type PaginatedResponsePackageInfo struct {
+	Items         *[]PackageInfo `json:"items,omitempty"`
+	NextPageToken *string        `json:"nextPageToken,omitempty"`
+	Total         *int           `json:"total,omitempty"`
+}
+
+// PaginatedResponseSearchResult defines model for PaginatedResponse_SearchResult.
+type PaginatedResponseSearchResult struct {
+	Items         *[]SearchResult `json:"items,omitempty"`
+	NextPageToken *string         `json:"nextPageToken,omitempty"`
+	Total         *int            `json:"total,omitempty"`
+}
+
+// PaginatedResponseSymbol defines model for PaginatedResponse_Symbol.
+type PaginatedResponseSymbol struct {
+	Items         *[]Symbol `json:"items,omitempty"`
+	NextPageToken *string   `json:"nextPageToken,omitempty"`
+	Total         *int      `json:"total,omitempty"`
+}
+
+// PaginatedResponseVulnerability defines model for PaginatedResponse_Vulnerability.
+type PaginatedResponseVulnerability struct {
+	Items         *[]Vulnerability `json:"items,omitempty"`
+	NextPageToken *string          `json:"nextPageToken,omitempty"`
+	Total         *int             `json:"total,omitempty"`
+}
+
+// PaginatedResponseString defines model for PaginatedResponse_string.
+type PaginatedResponseString struct {
+	Items         *[]string `json:"items,omitempty"`
+	NextPageToken *string   `json:"nextPageToken,omitempty"`
+	Total         *int      `json:"total,omitempty"`
 }
 
 // Readme defines model for Readme.
 type Readme struct {
 	Contents *string `json:"contents,omitempty"`
 	Filepath *string `json:"filepath,omitempty"`
+}
+
+// SearchResult defines model for SearchResult.
+type SearchResult struct {
+	ModulePath  *string `json:"modulePath,omitempty"`
+	PackagePath *string `json:"packagePath,omitempty"`
+	Synopsis    *string `json:"synopsis,omitempty"`
+	Version     *string `json:"version,omitempty"`
+}
+
+// Symbol defines model for Symbol.
+type Symbol struct {
+	// Kind Kind is one of "Constant", "Variable", "Function", "Type", "Field", or "Method".
+	Kind     *string `json:"kind,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	Parent   *string `json:"parent,omitempty"`
+	Synopsis *string `json:"synopsis,omitempty"`
+}
+
+// Vulnerability defines model for Vulnerability.
+type Vulnerability struct {
+	Details      *string `json:"details,omitempty"`
+	FixedVersion *string `json:"fixedVersion,omitempty"`
+	Id           *string `json:"id,omitempty"`
+	Summary      *string `json:"summary,omitempty"`
 }
 
 // GetImportedByParams defines parameters for GetImportedBy.
@@ -238,6 +332,9 @@ type GetVersionsParams struct {
 
 	// Filter Include only items matching the regular expression filter.
 	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// Pseudo Whether to include pseudo-versions in the result.
+	Pseudo *bool `form:"pseudo,omitempty" json:"pseudo,omitempty"`
 }
 
 // GetVulnsParams defines parameters for GetVulns.
@@ -1195,6 +1292,18 @@ func NewGetVersionsRequest(server string, path string, params *GetVersionsParams
 
 		}
 
+		if params.Pseudo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pseudo", *params.Pseudo, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if encoded := queryValues.Encode(); encoded != "" {
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
@@ -1390,6 +1499,7 @@ type GetImportedByResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PackageImportedBy
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1420,6 +1530,7 @@ type GetModuleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Module
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1450,6 +1561,7 @@ type GetPackageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Package
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1480,6 +1592,7 @@ type GetPackagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PackagesResponse
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1509,7 +1622,8 @@ func (r GetPackagesResponse) ContentType() string {
 type GetSearchResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PaginatedResponse
+	JSON200      *PaginatedResponseSearchResult
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1540,6 +1654,7 @@ type GetSymbolsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PackageSymbols
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1569,7 +1684,8 @@ func (r GetSymbolsResponse) ContentType() string {
 type GetVersionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PaginatedResponse
+	JSON200      *PaginatedResponseModuleVersion
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1599,7 +1715,8 @@ func (r GetVersionsResponse) ContentType() string {
 type GetVulnsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PaginatedResponse
+	JSON200      *PaginatedResponseVulnerability
+	JSONDefault  *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -1719,6 +1836,13 @@ func ParseGetImportedByResponse(rsp *http.Response) (*GetImportedByResponse, err
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1744,6 +1868,13 @@ func ParseGetModuleResponse(rsp *http.Response) (*GetModuleResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1771,6 +1902,13 @@ func ParseGetPackageResponse(rsp *http.Response) (*GetPackageResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1797,6 +1935,13 @@ func ParseGetPackagesResponse(rsp *http.Response) (*GetPackagesResponse, error) 
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1817,11 +1962,18 @@ func ParseGetSearchResponse(rsp *http.Response) (*GetSearchResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PaginatedResponse
+		var dest PaginatedResponseSearchResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1849,6 +2001,13 @@ func ParseGetSymbolsResponse(rsp *http.Response) (*GetSymbolsResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
 	}
 
 	return response, nil
@@ -1869,11 +2028,18 @@ func ParseGetVersionsResponse(rsp *http.Response) (*GetVersionsResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PaginatedResponse
+		var dest PaginatedResponseModuleVersion
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1895,11 +2061,18 @@ func ParseGetVulnsResponse(rsp *http.Response) (*GetVulnsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PaginatedResponse
+		var dest PaginatedResponseVulnerability
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
 
 	}
 

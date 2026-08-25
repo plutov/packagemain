@@ -8,7 +8,7 @@ import (
 	"github.com/plutov/gopkg/pkgsiteapi"
 )
 
-const apiBaseUrl = "https://pkg.go.dev/v1beta"
+const apiBaseUrl = "https://pkg.go.dev/v1"
 
 func main() {
 	client, err := pkgsiteapi.NewClientWithResponses(apiBaseUrl)

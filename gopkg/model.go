@@ -27,19 +27,19 @@ type Model struct {
 	errMsg        string
 
 	client   *pkgsiteapi.ClientWithResponses
-	results  []pkgsiteapi.SearchResult
-	currItem *pkgsiteapi.SearchResult
-	versions *pkgsiteapi.PaginatedResponse
+	results  []pkgsiteapi.SearchResultData
+	currItem *pkgsiteapi.SearchResultData
+	versions *pkgsiteapi.PaginatedResponseModuleVersion
 	symbols  *pkgsiteapi.PackageSymbols
 }
 
 type searchMsg struct {
-	items []pkgsiteapi.SearchResult
+	items []pkgsiteapi.SearchResultData
 }
 
 type detailMsg struct {
 	path     string
-	versions *pkgsiteapi.PaginatedResponse
+	versions *pkgsiteapi.PaginatedResponseModuleVersion
 	symbols  *pkgsiteapi.PackageSymbols
 }
 

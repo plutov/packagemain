@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dtop</title>
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js"
+    ></script>
+  </head>
+  <body data-init="@get('/events')">
+    <main class="container">
+      <h1>SERVER: {{.Host}}</h1>
+      <hr />
+      <section id="metrics" aria-live="polite">
+        <p>CPU &nbsp; {{bar .CPU.Value}} {{.CPU.Value}}%</p>
+        <p>RAM &nbsp; {{bar .RAM.Value}} {{.RAM.Value}}%</p>
+        <p>DISK &nbsp;{{bar .Disk.Value}} {{.Disk.Value}}%</p>
+        <p>Network &nbsp; ↓ {{.Down}} &nbsp; ↑ {{.Up}}</p>
+        <hr />
+        <h2>Processes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th align="left">COMMAND</th>
+              <th align="right">CPU</th>
+              <th align="right">MEMORY</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Processes}}
+            <tr>
+              <td>{{.Name}}</td>
+              <td align="right">{{.CPU}}</td>
+              <td align="right">{{.Memory}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </section>
+      <hr />
+      <small>updates every second</small>
+    </main>
+  </body>
+</html>
